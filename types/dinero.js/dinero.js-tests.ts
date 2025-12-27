@@ -1,5 +1,14 @@
 import Dinero = require("dinero.js");
 
+// Defaults
+Dinero.defaultAmount = 100;
+Dinero.defaultCurrency = "USD";
+Dinero.defaultPrecision = 2;
+// Globals
+Dinero.globalLocale = "en-US";
+Dinero.globalFormat = "0,0 dollar";
+Dinero.globalRoundingMode = "HALF_UP";
+Dinero.globalFormatRoundingMode = "0,0 dollar";
 Dinero.globalExchangeRatesApi = {
     endpoint: "https://yourexchangerates.api/latest?base={{from}}",
     propertyPath: "data.rates.{{to}}",
@@ -9,6 +18,19 @@ Dinero.globalExchangeRatesApi = {
 };
 Dinero.globalExchangeRatesApi = {
     endpoint: "https://yourexchangerates.api/latest?base={{from}}",
+    propertyPath: "data.rates.{{to}}",
+    roundingMode: "HALF_UP",
+};
+Dinero.globalExchangeRatesApi = {
+    endpoint: new Promise((resolve) =>
+        resolve({
+            data: {
+                rates: {
+                    USD: 1.337,
+                },
+            },
+        })
+    ),
     propertyPath: "data.rates.{{to}}",
     roundingMode: "HALF_UP",
 };
@@ -30,6 +52,7 @@ number = dinero.getAmount();
 string = dinero.getCurrency();
 string = dinero.setLocale("fr-FR").getLocale();
 number = dinero.convertPrecision(4).getPrecision();
+number = dinero.convertPrecision(4, "HALF_DOWN").getPrecision();
 dinero = dinero.add(Dinero({ amount: 104545, precision: 4 }));
 dinero = dinero.subtract(Dinero({ amount: 104545, precision: 4 }));
 dinero = dinero.multiply(2.00125);
@@ -37,6 +60,7 @@ dinero = dinero.multiply(2.00125, "HALF_UP");
 dinero = dinero.divide(2);
 dinero = dinero.divide(2, "HALF_UP");
 dinero = dinero.percentage(50);
+dinero = dinero.percentage(50, "HALF_UP");
 dineroArr = dinero.allocate([50, 50]);
 dinero.convert("EUR").then(d => (dinero = d));
 dinero.convert("XBT", {
@@ -64,8 +88,18 @@ string = dinero.toFormat("0,0 dollar", "HALF_EVEN");
 number = dinero.toUnit();
 number = dinero.toRoundedUnit(1);
 number = dinero.toRoundedUnit(1, "HALF_EVEN");
+number = dinero.toRoundedUnit(1, "DOWN");
 dineroObject = dinero.toObject();
+dineroObject = dinero.toJSON();
 dineroArr = Dinero.normalizePrecision([
     Dinero({ amount: 100, precision: 2 }),
     Dinero({ amount: 1000, precision: 3 }),
+]);
+dinero = Dinero.minimum([
+    Dinero({ amount: 100 }),
+    Dinero({ amount: 1000 }),
+]);
+dinero = Dinero.maximum([
+    Dinero({ amount: 100 }),
+    Dinero({ amount: 1000 }),
 ]);

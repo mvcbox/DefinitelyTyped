@@ -1,23 +1,33 @@
-import { trust, parseQueryString, buildQueryString } from 'mithril';
-import h = require('mithril/hyperscript');
-import { render } from 'mithril/render';
-import { redraw } from 'mithril/redraw';
-import withAttr = require('mithril/withAttr');
+import { buildQueryString, censor, parseQueryString, trust } from "mithril";
+import h from "mithril/hyperscript";
+import { redraw } from "mithril/redraw";
+import { render } from "mithril/render";
 
-const vnode = trust('Some <strong>bold</strong> text.');
+const vnode = trust("Some <strong>bold</strong> text.");
 
-const params = parseQueryString('?id=123');
+const params = parseQueryString("?id=123");
 
-const qstr = buildQueryString({id: 123});
+const qstr = buildQueryString({ id: 123 });
 
-render(document.body, 'Hello');
-render(document.body, h('h1', 'Test'));
+const censored = censor({ one: "two", enabled: false, oninit: () => {} }, ["enabled"] as const);
+// @ts-expect-error
+censored.enabled;
+// @ts-expect-error
+censored.oninit;
+censored.one;
+
+render(document.body, "Hello");
+render(document.body, h("h1", "Test"));
 render(document.body, [
-	h('h1', 'Test'), "abc", null, 123, false, h('p', 'Vnode array'),
-	['a', 123, undefined, h('div', 'Nested')]
+    h("h1", "Test"),
+    "abc",
+    null,
+    123,
+    false,
+    h("p", "Vnode array"),
+    ["a", 123, undefined, h("div", "Nested")],
 ]);
 
 redraw();
 
-const handler = withAttr("value", (value) => {});
-handler({currentTarget: {value: 10}});
+redraw.sync();

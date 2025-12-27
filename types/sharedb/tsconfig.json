@@ -1,28 +1,20 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6",
             "dom"
         ],
         "noImplicitAny": false,
-        "noImplicitThis": false,
+        "noImplicitThis": true,
         "strictNullChecks": false,
         "strictFunctionTypes": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
-        "paths": {
-        },
         "types": [],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true
     },
     "files": [
-        "lib/sharedb.d.ts",
         "index.d.ts",
-        "lib/client.d.ts",
         "sharedb-tests.ts"
     ]
 }

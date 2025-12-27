@@ -1,33 +1,34 @@
-import * as React from 'react';
-import { View, Text } from 'react-native';
+import * as React from "react";
+import { Text, View } from "react-native";
 import {
     ActionButton,
     Avatar,
-    ThemeContext,
-    COLOR,
     Badge,
+    BottomNavigation,
     Button,
     Card,
     Checkbox,
+    COLOR,
     Dialog,
     DialogDefaultActions,
-    BottomNavigation,
+    getTheme,
+    IconToggle,
+    ThemeContext,
     Toolbar,
-    getTheme
-} from 'react-native-material-ui';
+} from "react-native-material-ui";
 
 const theme = {
     palette: {
         accentColor: COLOR.amber500,
-        primaryColor: COLOR.indigo700
+        primaryColor: COLOR.indigo700,
     },
-    fontFamily: 'System'
+    fontFamily: "System",
 };
 
-const Example = () =>
+const Example = () => (
     <ThemeContext.Provider value={getTheme(theme)}>
-        <View>
-            <ActionButton style={{ positionContainer: { marginBottom: 3 }}} />
+        <View testID="viewTestID">
+            <ActionButton style={{ positionContainer: { marginBottom: 3 } }} />
             <ActionButton icon="done" />
 
             <Avatar text="A" />
@@ -37,20 +38,26 @@ const Example = () =>
             <Avatar icon="mic" size={75} />
 
             <Badge />
+            <Badge text="3" />
+            <Badge icon="grade" />
+            <Badge icon={{ name: "grade", color: "blue", size: 10 }} />
+            <Badge size={10} />
 
-            <Button text="I'm a button" />
+            <IconToggle testID="iconToggleTestID" name="anIconToggle" />
+            <Button testID="buttonTestID" text="I'm a button" />
 
             <Card>
                 <ThemeContext.Consumer>
-                    {theme => <Text>Hello world!</Text> }
+                    {theme => <Text>Hello world!</Text>}
                 </ThemeContext.Consumer>
             </Card>
 
-            <Checkbox label="Select me" value="chicken" onCheck={a => console.log(a)}/>
+            <Checkbox label="Select me" value="chicken" onCheck={a => console.log(a)} />
         </View>
-    </ThemeContext.Provider>;
+    </ThemeContext.Provider>
+);
 
-const DialogExample = () =>
+const DialogExample = () => (
     <Dialog>
         <Dialog.Title>
             <Text>Hello world</Text>
@@ -64,59 +71,61 @@ const DialogExample = () =>
 
         <Dialog.Actions>
             <DialogDefaultActions
-                actions={['Dismiss', 'Keep']}
+                actions={["Dismiss", "Keep"]}
                 onActionPress={() => {}}
             />
         </Dialog.Actions>
-    </Dialog>;
+    </Dialog>
+);
 
-class BottomNavigationExample extends React.Component<null, {active: string}> {
+class BottomNavigationExample extends React.Component<null, { active: string }> {
     state = {
-        active: 'today'
+        active: "today",
     };
 
     render() {
         return (
-            <BottomNavigation active={this.state.active} hidden={false} >
+            <BottomNavigation active={this.state.active} hidden={false}>
                 <BottomNavigation.Action
+                    testID="bottomNavActionTestID"
                     key="today"
                     icon="today"
                     label="Today"
-                    active={this.state.active === 'today'}
-                    onPress={() => this.setState({ active: 'today' })}
+                    active={this.state.active === "today"}
+                    onPress={() => this.setState({ active: "today" })}
                 />
 
                 <BottomNavigation.Action
                     key="people"
                     icon="people"
                     label="People"
-                    active={this.state.active === 'people'}
-                    onPress={() => this.setState({ active: 'people' })}
+                    active={this.state.active === "people"}
+                    onPress={() => this.setState({ active: "people" })}
                 />
 
                 <BottomNavigation.Action
                     key="bookmark-border"
                     icon="bookmark-border"
                     label="Bookmark"
-                    active={this.state.active === 'bookmark-border'}
-                    onPress={() => this.setState({ active: 'bookmark-border' })}
+                    active={this.state.active === "bookmark-border"}
+                    onPress={() => this.setState({ active: "bookmark-border" })}
                 />
 
                 <BottomNavigation.Action
                     key="settings"
                     icon="settings"
                     label="Settings"
-                    active={this.state.active === 'settings'}
-                    onPress={() => this.setState({ active: 'settings' })}
+                    active={this.state.active === "settings"}
+                    onPress={() => this.setState({ active: "settings" })}
                 />
             </BottomNavigation>
         );
     }
 }
 
-class ToolbarExample extends React.Component<{}, {search: string}> {
+class ToolbarExample extends React.Component<{}, { search: string }> {
     state = {
-        search: ''
+        search: "",
     };
 
     handleResults(search: string) {
@@ -129,11 +138,15 @@ class ToolbarExample extends React.Component<{}, {search: string}> {
                 centerElement="Collections"
                 searchable={{
                     autoFocus: true,
-                    placeholder: 'Search',
+                    placeholder: "Search",
                     onChangeText: (text: string) => this.handleResults(text),
-                    onSearchCloseRequested: () => this.handleResults(''),
+                    onSearchCloseRequested: () => this.handleResults(""),
                 }}
             />
         );
     }
 }
+
+const CheckboxExample = () => (
+    <Checkbox value="checked" onCheck={console.log} label="Check Me" style={{ icon: { color: "pink" } }} />
+);

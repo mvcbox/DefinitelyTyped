@@ -1,8 +1,3 @@
-// Type definitions for BaiduMap v3.0
-// Project: http://lbsyun.baidu.com/index.php?title=jspopular3.0
-// Definitions by: Codemonk <http://www.youxianxueche.com/>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 /* *****************************************************************************
 Copyright [Codemonk] [Codemonk@live.cn]
 
@@ -31,29 +26,29 @@ SOFTWARE.
 /// <reference path="./baidumap.base.d.ts" />
 /// <reference path="./baidumap.maplayer.d.ts" />
 declare namespace BMap {
-	class MapType {
-		constructor(name: string, layers: TileLayer | TileLayer[], opts?: MapTypeOptions);
-		getName(): string;
-		getTileLayer(): TileLayer;
-		getMinZoom(): number;
-		getMaxZoom(): number;
-		getProjection(): Projection;
-		getTextColor(): string;
-		getTips(): string;
-	}
-	interface MapTypeOptions {
-		minZoom?: number;
-		maxZoom?: number;
-		errorImageUrl?: string;
-		textColor?: number;
-		tips?: string;
-	}
-	interface Projection {
-		lngLatToPoint(lngLat: Point): Pixel;
-		pointToLngLat(point: Pixel): Point;
-	}
-	type MercatorProjection = Projection;
-	type PerspectiveProjection = Projection;
+    class MapType {
+        constructor(name: string, layers: TileLayer | TileLayer[], opts?: MapTypeOptions);
+        getName(): string;
+        getTileLayer(): TileLayer;
+        getMinZoom(): number;
+        getMaxZoom(): number;
+        getProjection(): Projection;
+        getTextColor(): string;
+        getTips(): string;
+    }
+    interface MapTypeOptions {
+        minZoom?: number | undefined;
+        maxZoom?: number | undefined;
+        errorImageUrl?: string | undefined;
+        textColor?: number | undefined;
+        tips?: string | undefined;
+    }
+    interface Projection {
+        lngLatToPoint(lngLat: Point): Pixel;
+        pointToLngLat(point: Pixel): Point;
+    }
+    type MercatorProjection = Projection;
+    type PerspectiveProjection = Projection;
 }
 declare const BMAP_NORMAL_MAP: BMap.MapType;
 declare const BMAP_PERSPECTIVE_MAP: BMap.MapType;

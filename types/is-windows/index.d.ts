@@ -1,8 +1,10 @@
-// Type definitions for is-windows 0.2
-// Project: https://github.com/jonschlinkert/is-windows
-// Definitions by: Mizunashi Mana <https://github.com/mizunashi-mana>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
+/**
+ * Returns `true` if the platform is windows.
+ */
 declare function isWindows(): boolean;
-declare namespace isWindows {}
+
+// Export CJS function
 export = isWindows;
+
+// Export UMD namespace
+export as namespace isWindows;

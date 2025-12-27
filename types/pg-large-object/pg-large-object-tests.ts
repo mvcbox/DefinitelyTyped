@@ -1,14 +1,7 @@
-import {
-  LargeObject,
-  LargeObjectManager,
-  LargeObjectManagerSettings,
-  ReadStream,
-  WriteStream
-} from "pg-large-object";
-import { Buffer } from "buffer";
+import { LargeObject, LargeObjectManager, LargeObjectManagerSettings, ReadStream, WriteStream } from "pg-large-object";
 import pg = require("pg");
 
-const buffer = new Buffer("");
+const buffer = Buffer.from("");
 const bufferSize = 16384;
 const length = 16384;
 const oid = 1;
@@ -20,7 +13,7 @@ const lo = new LargeObject({}, oid, {});
 lo.close((error: Error) => {}); // $ExpectType void
 lo.closeAsync(); // $ExpectType Promise<any>
 lo.read(length, (error: Error, data: Buffer) => {}); // $ExpectType void
-lo.readAsync(length); // $ExpectType Promise<Buffer>
+lo.readAsync(length); // $ExpectType Promise<Buffer> || Promise<Buffer<ArrayBufferLike>>
 lo.write(buffer, (error: Error) => {}); // $ExpectType void
 lo.writeAsync(buffer); // $ExpectType Promise<any>
 lo.seek(0, LargeObject.SEEK_CUR, (error: Error, position: number) => {}); // $ExpectType void
@@ -38,8 +31,8 @@ const writeConst = LargeObjectManager.WRITE; // $ExpectType number
 const readConst = LargeObjectManager.READ; // $ExpectType number
 const readWriteConst = LargeObjectManager.READWRITE; // $ExpectType number
 const config: LargeObjectManagerSettings = {
-  pg: new pg.Client(),
-  pgPromise: {}
+    pg: new pg.Client(),
+    pgPromise: {},
 };
 
 const lom = new LargeObjectManager(config);

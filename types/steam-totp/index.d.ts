@@ -1,9 +1,3 @@
-// Type definitions for steam-totp 2.0
-// Project: https://github.com/DoctorMcKay/node-steam-totp
-// Definitions by: Max Uetrecht <https://github.com/phenomax>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
-
 /// <reference types="node" />
 
 export type TimeOffsetFunction = () => number;
@@ -21,7 +15,7 @@ export function time(timeOffset?: number): number;
  * @param [timeOffset=0] - If you know how far off your clock is from the Steam servers, put the offset here in seconds
  * @returns the generated auth code
  */
-export function generateAuthCode(secret: string, timeOffset: number | TimeOffsetFunction): string;
+export function generateAuthCode(secret: string, timeOffset?: number | TimeOffsetFunction): string;
 
 /**
  * Generate a Steam-style TOTP authentication code.
@@ -29,7 +23,7 @@ export function generateAuthCode(secret: string, timeOffset: number | TimeOffset
  * @param [timeOffset=0] - If you know how far off your clock is from the Steam servers, put the offset here in seconds
  * @returns the generated auth code
  */
-export function getAuthCode(secret: string, timeOffset: number | TimeOffsetFunction): string;
+export function getAuthCode(secret: string, timeOffset?: number | TimeOffsetFunction): string;
 
 /**
  * Generate a base64 confirmation key for use with mobile trade confirmations. The key can only be used once.

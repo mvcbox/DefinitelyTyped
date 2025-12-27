@@ -1,184 +1,194 @@
-// Type definitions for rox-react-native 4.5
-// Project: https://rollout.io
-// Definitions by: ahanriat <https://github.com/ahanriat>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 3.0
-
 /**
- * DISCLAIMER:
- *
- * Those type definition are based on the Javascript browser documentation
- * as well as using and reversing the React-Native SDK
- *
- * Important note: Dedicated React-Native documentation as well as open source
- * SDK are supposed to come.
+ * Official documentation for rox-react-native is available here:
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api
  */
 
-export {};
-
 export interface RoxContainer {
-    [key: string]: Flag | Configuration | Variant;
+    [key: string]: Flag | RoxNumber | RoxString;
 }
 
 /**
  * The register function should be called before the call to Rox.setup()
  *
- * https://support.rollout.io/docs/javascript-browser-api#section-register
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/nodejs-api#_register
  */
 export function register(namespace: string, roxContainer: RoxContainer): void;
+
+export function register(roxContainer: RoxContainer): void;
 
 /**
  * Initiate connection with Rox servers for the application identified by the application key.
  * The registered containers will be synced and Rox entities will get the appropriate values.
  *
- * https://support.rollout.io/docs/javascript-browser-api#section-setup
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/nodejs-api#_setup
  */
 export function setup(
     apiKey: string,
-    options?: RoxSetupOptions
+    options?: RoxSetupOptions,
 ): Promise<unknown>;
 
 export interface RoxSetupOptions {
-    version?: string;
-    // https://support.rollout.io/docs/javascript-browser-api#section-configurationfetchedhandler
+    version?: string | undefined;
+    // https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_configurationfetchedhandler
     configurationFetchedHandler?(fetcherResult: RoxFetcherResult): void;
-    debugLevel?: 'verbose';
-    // https://support.rollout.io/docs/javascript-browser-api#section-using-the-impressionhandler-option
-    impressionHandler?(
-        reporting: RoxReporting,
-        experiment: RoxExperiment,
-        context: unknown
-    ): void;
-    platform?: string;
-    freeze?: 'untilLaunch' | 'none';
+    debugLevel?: "verbose" | undefined;
+    // https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_using_the_impressionhandler_option
+    impressionHandler?(reporting: RoxReporting, context: unknown): void;
+    platform?: string | undefined;
+    freeze?: FreezeOptions | undefined;
+    disableNetworkFetch?: boolean | undefined;
+    devModeSecret?: string | undefined;
+    /**
+     * Set Roxy's URL for automated tests or local development.
+     *
+     * https://docs.cloudbees.com/docs/cloudbees-feature-flags/latest/debugging/microservices-automated-testing-and-local-development
+     */
+    roxy?: string | undefined;
+    // https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_asyncstorage
+    AsyncStorage?: any; // AsyncStorage from 'react-native' package
+    // https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_asyncstorage
+    dynamicPropertyRuleHandler?(propName: string, context: any): any;
+}
+
+export enum RoxFetcherStatus {
+    AppliedFromEmbedded = "APPLIED_FROM_EMBEDDED",
+    AppliedFromCache = "APPLIED_FROM_CACHE",
+    AppliedFromNetwork = "APPLIED_FROM_NETWORK",
+    ErrorFetchFailed = "ERROR_FETCH_FAILED",
+}
+
+export enum RoxErrorTrigger {
+    DYNAMIC_PROPERTIES_RULE = "DYNAMIC_PROPERTIES_RULE",
+    CONFIGURATION_FETCHED_HANDLER = "CONFIGURATION_FETCHED_HANDLER",
+    IMPRESSION_HANDLER = "IMPRESSION_HANDLER",
+    CUSTOM_PROPERTY_GENERATOR = "CUSTOM_PROPERTY_GENERATOR",
 }
 
 export interface RoxFetcherResult {
-    fetcherStatus:
-        | 'APPLIED_FROM_EMBEDDED'
-        | 'APPLIED_FROM_CACHE'
-        | 'APPLIED_FROM_NETWORK'
-        | 'ERROR_FETCH_FAILED';
+    fetcherStatus: RoxFetcherStatus;
     creationDate: Date;
     hasChanges: boolean;
-    errorDetails?: string;
+    errorDetails?: string | undefined;
 }
 
 export interface RoxReporting {
     name: string;
     value: string;
-}
-
-export interface RoxExperiment {
-    identifier: string; //  experiment id
-    name: string;
-    isArchived: boolean;
-    labels: string[]; // experiment's labels. assigned from dashboard
+    targeting: boolean;
 }
 
 /**
  * Note that you might have to call unfreeze after setting custom properties such as email after login
- * https://support.rollout.io/docs/custom-properties
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags/latest/feature-releases/custom-properties
  */
 export function setCustomNumberProperty(
     name: string,
-    value: number | (() => number)
+    value: number | (() => number),
 ): void;
 export function setCustomStringProperty(
     name: string,
-    value: string | (() => string)
+    value: string | (() => string),
 ): void;
 export function setCustomBooleanProperty(
     name: string,
-    value: boolean | (() => boolean)
+    value: boolean | (() => boolean),
+): void;
+
+// https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/javascript-browser-api#_setuserspaceunhandlederrorhandler
+export function setUserspaceUnhandledErrorHandler(
+    handler: (errorTrigger: RoxErrorTrigger, error: Error) => void,
 ): void;
 
 /**
  * Unfreeze the state of all flags in code
  * Calling this function will unfreeze all flags, and using a flag will return it’s most updated value
  *
- * https://support.rollout.io/docs/flags-update-flow#section-flag-unfreeze
- * https://support.rollout.io/docs/javascript-browser-api#section-unfreeze
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags/latest/feature-flags/flag-freeze#_flag_unfreeze
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_unfreeze_4
  */
 export function unfreeze(namespace?: string): void;
 
 /**
  * Pulls the latest configuration and flag values down from the Rollout servers
  *
- * https://support.rollout.io/docs/javascript-browser-api#section-fetch
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_fetch
  */
-export function fetch(): Promise<unknown>;
+export function fetch(): void;
 
 /**
  * Default is untilForeground
  *
- * https://support.rollout.io/docs/flags-update-flow#section-flag-freeze-level
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_freezeoptions
  */
-export type RoxFlagFreezeLevel = 'none' | 'untilForeground' | 'untilLaunch';
+export enum FreezeOptions {
+    freezeOptionUntilLaunch = 1,
+    freezeOptionUntilForeground = 2,
+    freezeOptionNone = 3,
+}
+
 export interface RoxFlagOptions {
-    freeze?: RoxFlagFreezeLevel;
+    freeze?: FreezeOptions | undefined;
 }
 
 /**
  * Creates a new Flag
- * https://support.rollout.io/docs/javascript-browser-api#section--rox-flag-
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_flag
  */
 export class Flag {
-    constructor(defaultValue: boolean, options?: RoxFlagOptions);
+    constructor(defaultValue?: boolean, options?: RoxFlagOptions);
 
     // The name of the Flag
-    name: string;
+    readonly name: string;
+
+    // Default value of the Flag
+    readonly defaultValue: boolean;
 
     // Returns true when the flag is enabled
     isEnabled(): boolean;
 
-    getNameDetails(): RoxNameDetails;
-
     // Unlock the Flag value from changes from the last time it was freezed
     unfreeze(): void;
 }
 
 /**
- * Used to create and manage Rollout feature flags that determine different predefined values
+ * Used to create and manage Rollout feature flags that determine different predefined string values
  *
- * https://support.rollout.io/docs/javascript-browser-api#section--rox-variant-
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_roxstring
  */
-export class Variant<T extends string = string> {
-    constructor(defaultValue: T, options: T[], name?: string);
+export class RoxString {
+    constructor(defaultValue: string, options?: string[]);
 
     // The name of the Flag
-    name: string;
+    readonly name: string;
+
+    // Default value of the Variant
+    readonly defaultValue: string;
 
     // Returns the current value of the Variant, accounting for value overrides
-    getValue(): T;
-
-    getNameDetails(): RoxNameDetails;
+    getValue(): string;
 
     // Unlock the Flag value from changes from the last time it was freezed
     unfreeze(): void;
 }
 
-interface RoxNameDetails {
-    name: string;
-    namespace: string;
-}
-
 /**
- * manages a remote configuration setting with a value of type string, boolean, or number.
- * The constructor sets the default value for the remote configuration setting
+ * Used to create and manage Rollout feature flags that determine different predefined number values
  *
- * https://support.rollout.io/docs/javascript-browser-api#section--rox-configuration-
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_roxnumber
  */
-export class Configuration<T extends string | boolean | number = string> {
-    constructor(defaultValue: T);
+export class RoxNumber {
+    constructor(defaultValue: number, options?: number[]);
 
-    // The name of the Configuration
-    name: string;
+    // The name of the Flag
+    readonly name: string;
 
-    // Returns the current value of the Configuration, accounting for value overrides
-    getValue(): T;
+    // Default value of the Variant
+    readonly defaultValue: number;
 
-    // Unlock the Configuration value from changes from the last time it was freezed
+    // Returns the current value of the Variant, accounting for value overrides
+    getValue(): number;
+
+    // Unlock the Flag value from changes from the last time it was freezed
     unfreeze(): void;
 }
 
@@ -191,39 +201,58 @@ export class Configuration<T extends string | boolean | number = string> {
  * right after you call Rox.setup. To clear the override from the cache you need to
  * call the Rox.overrides.clearOverride method
  *
- * https://support.rollout.io/docs/javascript-browser-api#section--rox-overrides-
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_overrides
  */
-export interface RoxOverrides {
+export namespace overrides {
     /**
      * Sets an override value on a specific flag, this function accepts two parameters flag name (
      * full flag name including namespace) and desired value (from type String).
      * This function also saves the override value on the local device disk,
      * so it is "remembered" for the next the SDK is loaded to production.
      *
-     * https://support.rollout.io/docs/javascript-browser-api#section--rox-overrides-setoverride-
+     * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_overrides_setoverride
      *
      * Note that for boolean flag we still give the value as a string.
      */
-    setOverride(
-        nameSpacedFlagName: string,
-        value: string | 'false' | 'true'
-    ): void;
+    function setOverride(nameSpacedFlagName: string, value: string | "false" | "true"): void;
 
     /**
      * Clears the override value from the flag (and the disk).
      *
-     * https://support.rollout.io/docs/javascript-browser-api#section--rox-overrides-clearoverride-
+     * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_overrides_clearoverride
      */
-    clearOverride(nameSpacedFlagName: string): void;
+    function clearOverride(nameSpacedFlagName: string): void;
 
-    getOriginalValue(nameSpacedFlagName: string): string;
+    function getOriginalValue(nameSpacedFlagName: string): string;
 
     /**
      * full flag name including namespace
      *
-     * https://support.rollout.io/docs/javascript-browser-api#section--rox-overrides-hasoverride-
+     * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_overrides_hasoverride
      */
-    hasOverride(nameSpacedFlagName: string): boolean;
+    function hasOverride(nameSpacedFlagName: string): boolean;
 }
 
-export const overrides: RoxOverrides;
+/**
+ * Dynamic API is an alternative to Rollout static API for defining flags on the
+ * different container objects and accessing them from that container object.
+ * https://docs.cloudbees.com/docs/cloudbees-feature-flags-api/latest/api-reference/react-native-api#_rox_dynamicapi
+ */
+export namespace dynamicApi {
+    /**
+     * Getting boolean value of a flag
+     */
+    function isEnabled(nameSpacedFlagName: string, defaultValue: boolean, context?: unknown): boolean;
+
+    /**
+     * Getting string value of a string flag
+     */
+    function value(nameSpacedFlagName: string, defaultValue: string, context?: unknown): string;
+
+    /**
+     * Getting string value of a number flag
+     */
+    function getNumber(nameSpacedFlagName: string, defaultValue: number, context?: unknown): number;
+}
+
+export const flags: readonly Flag[];

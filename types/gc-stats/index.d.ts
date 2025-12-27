@@ -1,7 +1,4 @@
-// Type definitions for gc-stats 1.4
-// Project: https://github.com/dainis/node-gcstats#readme
-// Definitions by: Vitor Fernandes <https://github.com/vfernandestoptal>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+/// <reference types="node" />
 
 import { EventEmitter } from "events";
 
@@ -13,10 +10,10 @@ declare namespace GCStats {
         heapSizeLimit: number;
         totalPhysicalSize: number;
         totalAvailableSize: number;
-        mallocedMemory?: number; // became available with node 7+
-        peakMallocedMemory?: number; // became available with node 7+
-        numberOfNativeContexts?: number; // became available with node 10+
-        numberOfDetachedContexts?: number; // became available with node 10+
+        mallocedMemory?: number | undefined; // became available with node 7+
+        peakMallocedMemory?: number | undefined; // became available with node 7+
+        numberOfNativeContexts?: number | undefined; // became available with node 10+
+        numberOfDetachedContexts?: number | undefined; // became available with node 10+
     }
 
     interface GCStatistics {

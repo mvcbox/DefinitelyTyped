@@ -1,53 +1,50 @@
 import * as React from "react";
+import { IconGlyph } from "../Icon/Icon";
 
-export type SideNavigationProps = {
-    className?: string;
-    /* Set to **true** to only render icons for each `SideNavListItem`. */
-    icons?: boolean;
-    /* The `id` of the selected `SideNavListItem`. */
-    selectedId?: string;
-    /* Callback function when a navigation item is selected. Arguments passed are the event and the id of the selected item. */
-    onItemSelect?: (e: any, id: any) => void;
-} & { [x: string]: any };
+export type SideNavProps = {
+    className?: string | undefined;
+    compact?: boolean | undefined;
+    condensed?: boolean | undefined;
+    disableStyles?: boolean | undefined;
+    selectedId?: string | undefined;
+    skipLink?: { href: string; label: string } | undefined;
+    onItemSelect?: ((e: any, id: any) => void) | undefined;
+} & React.HTMLAttributes<Element>;
 
 export type SideNavListProps = {
-    className?: string;
-    /* _INTERNAL USE ONLY._ */
-    hasParent?: boolean;
-    headingLevel?: 2 | 3 | 4 | 5 | 6;
-    /* _INTERNAL USE ONLY._ */
-    open?: boolean;
-    /* _INTERNAL USE ONLY._ */
-    selectedId?: string;
-    title?: string;
-    titleProps?: { [x: string]: any };
-    /* _INTERNAL USE ONLY._ */
-    onItemSelect?: (e: any, id: any) => void;
-} & { [x: string]: any };
+    className?: string | undefined;
+    compact?: boolean | undefined;
+    condensed?: boolean | undefined;
+    groupLabel?: string | undefined;
+    hasParent?: boolean | undefined;
+    isUtility?: boolean | undefined;
+    level?: number | undefined;
+    open?: boolean | undefined;
+    selectedId?: string | undefined;
+    title?: string | undefined;
+    titleProps?: any;
+    onItemSelect?: ((...args: any[]) => any) | undefined;
+} & React.HTMLAttributes<Element>;
 
 export type SideNavListItemProps = {
-    /* Set to **true** to have this item initially render as expanded and its children items shown. */
-    expanded?: boolean;
-    glyph?: string;
-    id?: string;
-    /* _INTERNAL USE ONLY._ */
-    isSubItem?: boolean;
-    /* Localized text for the item (when `url` is provided). */
-    name?: string;
-    /* _INTERNAL USE ONLY._ */
-    selected?: boolean;
-    /* _INTERNAL USE ONLY._ */
-    selectedId?: string;
-    /* Enables use of `<a>` element. Value to be applied to the anchor\'s `href` attribute. */
-    url?: string;
-    onClick?: (e: React.MouseEvent) => void;
-    /* _INTERNAL USE ONLY._ */
-    onItemSelect?: (e: React.MouseEvent, id: any, hasChild: boolean) => void;
-} & { [x: string]: any };
+    condensed?: boolean | undefined;
+    expanded?: boolean | undefined;
+    expandSubmenuLabel?: string | undefined;
+    glyph?: IconGlyph | undefined;
+    id?: string | undefined;
+    isSubItem?: boolean | undefined;
+    name?: React.ReactNode | undefined;
+    selected?: boolean | undefined;
+    selectedId?: string | undefined;
+    url?: string | undefined;
+    onClick?: ((...args: any[]) => any) | undefined;
+    onItemSelect?: ((...args: any[]) => any) | undefined;
+} & React.HTMLAttributes<Element>;
 
-declare class SideNav extends React.Component<SideNavigationProps> {
-    static List: React.ComponentClass<SideNavListProps>;
-    static ListItem: React.ComponentClass<SideNavListItemProps>;
+declare class SideNav extends React.Component<SideNavProps> {
+    static displayName: "SideNav";
+    static List: React.ComponentClass<SideNavListProps> & { displayName: "SideNav.List" };
+    static ListItem: React.ComponentClass<SideNavListItemProps> & { displayName: "SideNav.ListItem" };
 }
 
 export default SideNav;

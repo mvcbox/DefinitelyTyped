@@ -1,8 +1,22 @@
+import express from "express";
+import favicon from "serve-favicon";
 
-import express = require('express');
-import favicon = require('serve-favicon');
-var app = express();
+const app = express();
 
-app.use(favicon(__dirname + '/public/favicon.ico', {
-    maxAge: 86400000
-}));
+app.use(
+    favicon(__dirname + "/public/favicon.ico", {
+        maxAge: 86400000,
+    }),
+);
+
+app.use(
+    favicon(__dirname + "/public/favicon.ico", {
+        maxAge: "2 days",
+    }),
+);
+
+app.use(
+    favicon(__dirname + "/public/favicon.ico", {
+        maxAge: "2d",
+    }),
+);

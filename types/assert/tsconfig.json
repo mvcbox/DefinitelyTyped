@@ -1,24 +1,19 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
-            "es6",
-            "dom"
+            "es2015"
         ],
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
         "types": [],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true
     },
     "files": [
-        "index.d.ts",
-        "assert-tests.ts"
+        "assert-tests.ts",
+        "index.d.ts"
     ]
 }

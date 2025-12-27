@@ -1,13 +1,13 @@
-import cssbeautify = require('./index');
+import cssbeautify = require("cssbeautify");
 
-var str = '';
+var str = "";
 
 str = cssbeautify(str);
 
 str = cssbeautify(str, {});
 
 str = cssbeautify(str, {
-  indent: '  ',
-  openbrace: 'separate-line',
-  autosemicolon: true
+    indent: "  ",
+    openbrace: "separate-line",
+    autosemicolon: true,
 });

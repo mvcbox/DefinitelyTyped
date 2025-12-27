@@ -7,7 +7,14 @@ const newDoc = new Recipe("new", "test.pdf", {
     version: 1.6,
     author: "John Doe",
     title: "Hummus Recipe",
-    subject: "A brand new PDF"
+    subject: "A brand new PDF",
+    colorspace: "rgb",
+    keywords: ["hummus", "recipe"],
+    password: "password",
+    userPassword: "userPassword",
+    ownerPassword: "ownerPassword",
+    userProtectionFlag: "print",
+    fontSrcPath: "path/to/fonts",
 });
 
 // $ExpectType Recipe
@@ -17,7 +24,7 @@ newDoc
     .endPage()
     .endPDF();
 
-// $ExpectError
+// @ts-expect-error
 newDoc.createPage("A5")
     .text("Memento Mori", 100, 100)
     .endPage()
@@ -33,6 +40,12 @@ bufferDoc
     .endPage()
     .endPDF(
         (outBuffer: Buffer) =>
-            // $ExpectType Buffer
-            outBuffer
+            // $ExpectType Buffer || Buffer<ArrayBufferLike>
+            outBuffer,
     );
+
+// $ExpectType Metadata
+bufferDoc.metadata;
+
+// $ExpectType PageInfo
+bufferDoc.metadata[1];

@@ -1,44 +1,38 @@
-// Type definitions for node-jose 1.1
-// Project: https://github.com/cisco/node-jose
-// Definitions by: Nadun Indunil <https://github.com/nadunindunil>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 3.3
-
 /// <reference types="node" />
 
 export function canYouSee(ks: JWK.Key | JWK.KeyStore, opts: object): JWS.Verifier;
 
 export namespace JWA {
     interface DecryptEncryptOptions {
-        aad?: Buffer;
-        adata?: Buffer;
-        iv?: Buffer;
-        tag?: Buffer; // Not used in encrypt
-        mac?: Buffer; // Not used in encrypt
-        epu?: Buffer; // encryption party info
-        epv?: Buffer; // encryption party info
-        kdata?: Buffer;
-        epk?: Buffer; // ephemeral pub key used in ec
-        enc?: string; // algorithm to use in ec
-        alg?: string; // variation of enc, probably oversight in lib code
-        apu?: Buffer; // agreement party info used in ec
-        apv?: Buffer; // agreement party info used in ec
-        p2s?: Buffer; // used in pbes
-        p2c?: number; // used in pbes
+        aad?: Buffer | undefined;
+        adata?: Buffer | undefined;
+        iv?: Buffer | undefined;
+        tag?: Buffer | undefined; // Not used in encrypt
+        mac?: Buffer | undefined; // Not used in encrypt
+        epu?: Buffer | undefined; // encryption party info
+        epv?: Buffer | undefined; // encryption party info
+        kdata?: Buffer | undefined;
+        epk?: Buffer | undefined; // ephemeral pub key used in ec
+        enc?: string | undefined; // algorithm to use in ec
+        alg?: string | undefined; // variation of enc, probably oversight in lib code
+        apu?: Buffer | undefined; // agreement party info used in ec
+        apv?: Buffer | undefined; // agreement party info used in ec
+        p2s?: Buffer | undefined; // used in pbes
+        p2c?: number | undefined; // used in pbes
     }
 
     interface DeriveOptions {
-        length?: number; // key length
-        otherInfo?: Buffer; // info used in concatkdf
-        public?: Buffer; // public key used in ecdh
-        hash?: Buffer; // hash used in ecdh
-        salt?: Buffer; // salt value used in hkdf
-        info?: Buffer; // app identifier info used in hkdf
+        length?: number | undefined; // key length
+        otherInfo?: Buffer | undefined; // info used in concatkdf
+        public?: Buffer | undefined; // public key used in ecdh
+        hash?: Buffer | undefined; // hash used in ecdh
+        salt?: Buffer | undefined; // salt value used in hkdf
+        info?: Buffer | undefined; // app identifier info used in hkdf
     }
 
     interface EncryptReturn {
         data: Buffer; // The cipher text
-        tag?: Buffer; // The tag used in some algorithms
+        tag?: Buffer | undefined; // The tag used in some algorithms
     }
 
     interface SignReturn {
@@ -47,7 +41,7 @@ export namespace JWA {
     }
 
     interface SignVerifyOptions {
-        loose?: boolean;
+        loose?: boolean | undefined;
     }
 
     interface VerifyReturn {
@@ -60,7 +54,7 @@ export namespace JWA {
         alg: string,
         key: string | Buffer,
         cdata: string | Buffer,
-        props?: DecryptEncryptOptions
+        props?: DecryptEncryptOptions,
     ): Promise<Buffer>;
 
     function derive(alg: string, key: string | Buffer, props?: DeriveOptions): Promise<Buffer>;
@@ -71,14 +65,14 @@ export namespace JWA {
         alg: string,
         key: string | Buffer,
         pdata: string | Buffer,
-        props?: DecryptEncryptOptions
+        props?: DecryptEncryptOptions,
     ): Promise<EncryptReturn>;
 
     function sign(
         alg: string,
         key: string | Buffer,
         pdata: string | Buffer,
-        props: SignVerifyOptions
+        props: SignVerifyOptions,
     ): Promise<SignReturn>;
 
     function verify(
@@ -86,20 +80,22 @@ export namespace JWA {
         key: string | Buffer,
         pdata: string | Buffer,
         mac: string | Buffer,
-        props: SignVerifyOptions
+        props: SignVerifyOptions,
     ): Promise<VerifyReturn>;
 }
 
 export namespace JWE {
+    interface EncryptOptions {
+        format?: "general" | "compact" | "flattened" | undefined;
+        zip?: boolean | "DEF" | undefined;
+        fields?: object | undefined;
+        contentAlg?: string | undefined;
+        protect?: string | string[] | undefined;
+        iv?: string | Buffer | undefined;
+    }
+
     function createEncrypt(keys: JWK.Key | JWK.Key[]): Encryptor;
-    function createEncrypt(
-        options: {
-            format?: 'compact' | 'flattened';
-            zip?: boolean;
-            fields?: object;
-        },
-        key: JWK.Key
-    ): Encryptor;
+    function createEncrypt(options: EncryptOptions, key: JWK.Key | JWK.Key[]): Encryptor;
 
     function createDecrypt(key: JWK.Key | JWK.KeyStore, opts?: any): Decryptor;
 
@@ -113,10 +109,19 @@ export namespace JWE {
     }
 
     interface DecryptResult {
+        header: object;
         /**
          * an array of the member names from the "protected" member
          */
         protected: string[];
+        /**
+         * Key used to decrypt
+         */
+        key: JWK.Key;
+        /**
+         * Buffer of the decrypted content
+         */
+        payload: Buffer;
         /**
          * the decrypted content (alternate)
          */
@@ -139,7 +144,8 @@ export namespace JWK {
 
     function asKey(
         key: string | Buffer | object | RawKey,
-        form?: 'json' | 'private' | 'pkcs8' | 'public' | 'spki' | 'pkix' | 'x509' | 'pem'
+        form?: "json" | "private" | "pkcs8" | "public" | "spki" | "pkix" | "x509" | "pem",
+        extras?: Record<string, unknown>,
     ): Promise<Key>;
     /**
      * To import a JWK-set as a keystore
@@ -156,7 +162,7 @@ export namespace JWK {
 
     function isKeyStore(input: any): input is KeyStore;
 
-    type KeyUse = 'sig' | 'enc' | 'desc';
+    type KeyUse = "sig" | "enc" | "desc";
 
     interface JWEEncryptor {
         update(input: any): this;
@@ -167,6 +173,7 @@ export namespace JWK {
         alg: string;
         kty: string;
         use: KeyUse;
+        kid: string;
 
         // e and n make up the public key
         e: string;
@@ -174,9 +181,9 @@ export namespace JWK {
     }
 
     interface KeyStoreGetFilter {
-        kty?: string;
-        use?: KeyUse;
-        alg?: string;
+        kty?: string | undefined;
+        use?: KeyUse | undefined;
+        alg?: string | undefined;
     }
 
     interface KeyStoreGetOptions extends KeyStoreGetFilter {
@@ -191,9 +198,9 @@ export namespace JWK {
         /**
          * To retrieve a key from a keystore
          */
-        get(kid: string, filter?: KeyStoreGetFilter): RawKey;
-        get(options: KeyStoreGetOptions): RawKey;
-        all(options?: Partial<KeyStoreGetOptions>): RawKey[];
+        get(kid: string, filter?: KeyStoreGetFilter): Key;
+        get(options: KeyStoreGetOptions): Key;
+        all(options?: Partial<KeyStoreGetOptions>): Key[];
         add(key: RawKey): Promise<Key>;
         /**
          * @param key
@@ -212,9 +219,27 @@ export namespace JWK {
          */
         add(
             key: string | Buffer | Key | object,
-            form?: 'json' | 'private' | 'pkcs8' | 'public' | 'spki' | 'pkix' | 'x509' | 'pem'
+            form?: "json" | "private" | "pkcs8" | "public" | "spki" | "pkix" | "x509" | "pem",
+            extras?: Record<string, unknown>,
         ): Promise<Key>;
 
+        /**
+         * Generates a new random Key into this KeyStore.
+         *
+         * The type of {size} depends on the value of {kty}:
+         *
+         * + **`EC`**: String naming the curve to use, which can be one of:
+         *   `"P-256"`, `"P-384"`, or `"P-521"` (default is **`"P-256"`**).
+         * + **`RSA`**: Number describing the size of the key, in bits (default is
+         *   **`2048`**).
+         * + **`oct`**: Number describing the size of the key, in bits (default is
+         *   **`256`**).
+         *
+         * Any properties in {props} are applied before the key is generated,
+         * and are expected to be data types acceptable in JSON.  This allows the
+         * generated key to have a specific key identifier, or to specify its
+         * acceptable usage.
+         */
         generate(kty: string, size?: string | number, props?: any): Promise<Key>;
 
         remove(key: Key): void;
@@ -235,23 +260,22 @@ export namespace JWK {
 }
 
 export namespace JWS {
+    interface SignOptions {
+        format?: "compact" | "flattened" | undefined;
+        alg?: string | undefined;
+        compact?: boolean | undefined;
+        fields?: object | undefined;
+    }
+
     function createSign(keys: JWK.Key | JWK.Key[]): Signer;
-    function createSign(
-        options: {
-            format?: 'compact' | 'flattened';
-            alg?: string;
-            compact?: boolean;
-            fields?: object;
-        },
-        key: JWK.Key | JWK.Key[]
-    ): Signer;
+    function createSign(options: SignOptions, key: JWK.Key | JWK.Key[]): Signer;
 
     /**
      * Using a keystore.
      */
     function createVerify(
         input?: string | JWK.Key | JWK.KeyStore | object,
-        opts?: { allowEmbeddedKey?: boolean; algorithms?: string[]; handlers?: any }
+        opts?: { allowEmbeddedKey?: boolean | undefined; algorithms?: string[] | undefined; handlers?: any },
     ): Verifier;
 
     interface CreateSignResult {
@@ -287,7 +311,7 @@ export namespace JWS {
     }
 
     interface Verifier {
-        verify(input: string, opts?: { allowEmbeddedKey?: boolean }): Promise<VerificationResult>;
+        verify(input: string, opts?: { allowEmbeddedKey?: boolean | undefined }): Promise<VerificationResult>;
     }
 
     interface Exp {
@@ -295,8 +319,8 @@ export namespace JWS {
     }
 
     interface VerifyOptions {
-        allowEmbeddedKey?: boolean;
-        algorithms?: string[];
+        allowEmbeddedKey?: boolean | undefined;
+        algorithms?: string[] | undefined;
         handlers: { exp: boolean | Exp };
     }
 }
@@ -305,8 +329,8 @@ export function parse(input: Buffer | string | object): parse.ParseReturn;
 
 export namespace parse {
     interface ParseReturn {
-        type: 'JWS' | 'JWE';
-        format: 'compact' | 'json';
+        type: "JWS" | "JWE";
+        format: "compact" | "json";
         input: Buffer | string | object;
         header: object;
         perform: (ks: JWK.KeyStore) => Promise<JWE.DecryptResult> | Promise<JWS.VerificationResult>;
@@ -322,7 +346,7 @@ export namespace util {
     function randomBytes(len: number): Buffer;
 
     namespace base64url {
-        function decode(base64url: string): string;
+        function decode(base64url: string): Buffer;
 
         function encode(buffer: string | Buffer, encoding?: string): string;
     }

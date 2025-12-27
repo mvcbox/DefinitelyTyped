@@ -1,8 +1,3 @@
-// Type definitions for line-by-line 0.1
-// Project: https://github.com/Osterjour/line-by-line
-// Definitions by: Sean Roach <https://github.com/TheEdgyDev>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 /// <reference types="node" />
 
 import { EventEmitter } from "events";
@@ -10,16 +5,16 @@ import { Readable } from "stream";
 
 interface LineByLineReaderOptions {
     /** The encoding to use. */
-    encoding?: "ascii" | "base64" | "utf8";
+    encoding?: "ascii" | "utf8" | "utf16le" | "ucs2" | "base64" | "latin1" | "binary" | "hex" | undefined;
     /** If set to true, empty lines do not emit the "line" event. */
-    skipEmptyLines?: boolean;
+    skipEmptyLines?: boolean | undefined;
 }
 
 interface LineByLineReaderFileOptions extends LineByLineReaderOptions {
     /** The `end` position in bytes to read from the file. */
-    end?: number;
+    end?: number | undefined;
     /** The `start` position in bytes to read from the file. */
-    start?: number;
+    start?: number | undefined;
 }
 
 declare class LineByLineReader extends EventEmitter {

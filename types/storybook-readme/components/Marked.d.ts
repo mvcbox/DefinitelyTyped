@@ -1,3 +1,2 @@
-import * as React from "react";
-
+import { JSX } from "react";
 export default function Marked(props: { md: string }): JSX.Element;

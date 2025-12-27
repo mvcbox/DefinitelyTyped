@@ -1,11 +1,14 @@
-// Type definitions for express-flash 0.0
-// Project: https://github.com/RGBboy/express-flash
-// Definitions by: Ian Mobley <https://github.com/iMobs>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
+import express = require("express");
 
-/// <reference types="connect-flash" />
+declare global {
+    namespace Express {
+        interface Request {
+            flash(message?: string): { [key: string]: string[] };
+            flash(event: string, message: string | string[]): any;
+        }
+    }
+}
 
-import express = require('express');
 declare function flash(): express.RequestHandler;
+
 export = flash;

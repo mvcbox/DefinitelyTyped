@@ -1,0 +1,40 @@
+name: Update CODEOWNERs
+
+# For testing
+# on: push
+
+# For production
+on:
+  schedule:
+    # https://crontab.guru/#5_8_*_*_1
+    - cron: '5 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    permissions:
+      contents: write # for Git to git push
+    runs-on: ubuntu-latest
+    if: github.repository == 'DefinitelyTyped/DefinitelyTyped'
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-for-scripts
+
+      - run: git config --global user.email "typescriptbot@microsoft.com"
+      - run: git config --global user.name "TypeScript Bot"
+
+      - run: pnpm run update-codeowners
+
+      - uses: stefanzweifel/git-auto-commit-action@28e16e81777b558cc906c8750092100bbb34c5e3 # v7.0.0
+        with:
+          commit_author: 'TypeScript Bot <typescriptbot@microsoft.com>'
+          commit_message: '🤖 Update CODEOWNERS'
+          commit_user_email: 'typescriptbot@microsoft.com'
+          commit_user_name: 'TypeScript Bot'

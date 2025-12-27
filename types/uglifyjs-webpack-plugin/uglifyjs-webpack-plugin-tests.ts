@@ -1,5 +1,5 @@
-import * as webpack from "webpack";
-import * as UglifyjsWebpackPlugin from "uglifyjs-webpack-plugin";
+import UglifyjsWebpackPlugin from "uglifyjs-webpack-plugin";
+import webpack from "webpack";
 
 const compiler = webpack({
     plugins: [
@@ -10,9 +10,9 @@ const compiler = webpack({
 const compilerOptions = webpack({
     plugins: [
         new UglifyjsWebpackPlugin({
-			cache: false,
-			parallel: true,
-			sourceMap: true,
-		}),
+            cache: false,
+            parallel: true,
+            sourceMap: true,
+        }),
     ],
 });

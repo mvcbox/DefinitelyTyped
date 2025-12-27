@@ -1,10 +1,4 @@
-// Type definitions for gradient-string 1.1
-// Project: https://github.com/bokub/gradient-string
-// Definitions by: Junyoung Clare Jang <https://github.com/Ailrun>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.1
-
-import tinycolor = require('tinycolor2');
+import tinycolor = require("tinycolor2");
 
 declare namespace gradient {
     interface PositionedColorInput {
@@ -18,22 +12,22 @@ declare namespace gradient {
     }
 
     interface Options {
-        interpolation?: string;
-        hsvSpin?: string;
+        interpolation?: string | undefined;
+        hsvSpin?: string | undefined;
     }
 
     const atlas: Gradient;
-	const cristal: Gradient;
-	const teen: Gradient;
-	const mind: Gradient;
-	const morning: Gradient;
-	const vice: Gradient;
-	const passion: Gradient;
-	const fruit: Gradient;
-	const instagram: Gradient;
-	const retro: Gradient;
-	const summer: Gradient;
-	const rainbow: Gradient;
+    const cristal: Gradient;
+    const teen: Gradient;
+    const mind: Gradient;
+    const morning: Gradient;
+    const vice: Gradient;
+    const passion: Gradient;
+    const fruit: Gradient;
+    const instagram: Gradient;
+    const retro: Gradient;
+    const summer: Gradient;
+    const rainbow: Gradient;
     const pastel: Gradient;
 }
 

@@ -1,12 +1,12 @@
-import { PortDiscoveryConfig } from './wire';
-import { Environment } from '../environment/environment';
-export declare class PortDiscovery {
+import { Environment } from "../environment/environment";
+import { PortDiscoveryConfig } from "./wire";
+export default class PortDiscovery {
     private savedConfig;
     private namedPipeName;
     private manifestLocation;
     private namedPipeServer;
     private pipeConnection;
-    private timeoutTimer;
+    private timeoutTimer?;
     private environment;
     constructor(config: PortDiscoveryConfig, environment: Environment);
     retrievePort(): Promise<number>;

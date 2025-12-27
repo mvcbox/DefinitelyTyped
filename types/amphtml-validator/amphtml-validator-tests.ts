@@ -12,9 +12,8 @@ import * as ampHtmlValidator from "amphtml-validator";
                 col,
                 message,
                 specUrl,
-                category,
                 code,
-                params
+                params,
             } = err;
             return err;
         });
@@ -23,6 +22,6 @@ import * as ampHtmlValidator from "amphtml-validator";
 
 (() => {
     const validator = ampHtmlValidator.newInstance("");
-    const result = validator.validateString("<html></html>");
+    const result = validator.validateString("<html></html>", "AMP4ADS");
     const { status, errors } = result;
 })();

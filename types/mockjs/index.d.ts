@@ -1,281 +1,313 @@
-// Type definitions for mockjs 1.0
-// Project: http://mockjs.com/
-// Definitions by: lavyun <httpS://github.com/lavyun>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
-
 declare namespace mockjs {
-  type N = number;
-  type S = string;
-  type B = boolean;
+    type N = number;
+    type S = string;
+    type B = boolean;
 
-  // Interface for global namespace 'Mockjs'
-  interface Mockjs {
-    mock: MockjsMock;
-    setup: MockjsSetup;
-    Random: MockjsRandom;
-    valid: MockjsValid;
-    toJSONSchema: MockjsToJSONSchema;
-    version: number;
-  }
+    // Interface for global namespace 'Mockjs'
+    interface Mockjs {
+        mock: MockjsMock;
+        setup: MockjsSetup;
+        Random: MockjsRandom;
+        valid: MockjsValid;
+        toJSONSchema: MockjsToJSONSchema;
+        version: number;
+    }
 
-  // Mockjs.mock()
-  // see https://github.com/nuysoft/Mock/wiki/Mock.mock()
-  interface MockjsMock {
-    (rurl: S | RegExp, rtype: S, template: any): Mockjs;
+    interface MockjsRequestOptions {
+        url: string;
+        type: string;
+        body: any;
+    }
 
-    (rurl: S | RegExp, template: any): Mockjs;
+    type templateOrFn = ((options: MockjsRequestOptions) => any) | object;
 
-    (template: any): any;
-  }
+    // Mockjs.mock()
+    // see https://github.com/nuysoft/Mock/wiki/Mock.mock()
+    interface MockjsMock {
+        (rurl: S | RegExp, rtype: S, template: templateOrFn): Mockjs;
 
-  interface MockjsSetupSettings {
-    timeout?: number | S;
-  }
+        (rurl: S | RegExp, template: templateOrFn): Mockjs;
 
-  // Mockjs.setup()
-  // see https://github.com/nuysoft/Mock/wiki/Mock.setup()
-  type MockjsSetup = (settings: MockjsSetupSettings) => void;
+        (template: any): any;
+    }
 
-  // Mockjs.Random - Basic
-  // see https://github.com/nuysoft/Mock/wiki/Basic
-  interface MockjsRandomBasic {
-    // Random.boolean
-    boolean(min: N, max: N, current: B): B;
-    boolean(): B;
+    interface MockjsSetupSettings {
+        timeout?: number | S | undefined;
+    }
 
-    // Random.natural
-    natural(min?: N, max?: N): N;
+    // Mockjs.setup()
+    // see https://github.com/nuysoft/Mock/wiki/Mock.setup()
+    type MockjsSetup = (settings: MockjsSetupSettings) => void;
 
-    // Random.integer
-    integer(min?: N, max?: N): N;
+    // Mockjs.Random - Basic
+    // see https://github.com/nuysoft/Mock/wiki/Basic
+    interface MockjsRandomBasic {
+        // Random.boolean
+        boolean(min: N, max: N, current: B): B;
+        boolean(): B;
 
-    // Random.float
-    float(min?: N, max?: N, dmin?: N, dmax?: N): N;
+        // Random.natural
+        natural(min?: N, max?: N): N;
 
-    // Random.character
-    character(pool: 'lower' | 'upper' | 'number' | 'symbol'): S;
-    character(pool?: S): S;
+        // Random.integer
+        integer(min?: N, max?: N): N;
 
-    // Random.string
-    string(pool?: S | N, min?: N, max?: N): S;
+        // Random.float
+        float(min?: N, max?: N, dmin?: N, dmax?: N): N;
 
-    // Random.range
-    range(start?: N, stop?: N, step?: N): N;
-  }
+        // Random.character
+        character(pool: "lower" | "upper" | "number" | "symbol"): S;
+        character(pool?: S): S;
 
-  // Mockjs.Random - Date
-  // see https://github.com/nuysoft/Mock/wiki/Date
-  type RandomDateUtilString = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second' | 'week';
-  interface MockjsRandomDate {
-    // Random.date
-    date(format?: S): S;
+        // Random.string
+        string(pool?: S | N, min?: N, max?: N): S;
 
-    // Random.time
-    time(format?: S): S;
+        // Random.range
+        range(start?: N, stop?: N, step?: N): N[];
+    }
 
-    // Random.datetime
-    datetime(format?: S): S;
+    // Mockjs.Random - Date
+    // see https://github.com/nuysoft/Mock/wiki/Date
+    type RandomDateUtilString = "year" | "month" | "week" | "day" | "hour" | "minute" | "second" | "week";
+    interface MockjsRandomDate {
+        // Random.date
+        date(format?: S): S;
 
-    // Random.now
-    now(util: RandomDateUtilString, format?: S): S;
-    mow(format?: S): S;
-  }
+        // Random.time
+        time(format?: S): S;
 
-  // Mockjs.Random - Image
-  // see https://github.com/nuysoft/Mock/wiki/Image
-  type RandomImageFormatString = 'png' | 'gif' | 'jpg';
-  interface MockjsRandomImage {
-    // Random.image
-    image(size?: S, background?: S, foreground?: S, format?: RandomImageFormatString | S, text?: S): S;
+        // Random.datetime
+        datetime(format?: S): S;
 
-    // Random.dataImage
-    dataImage(size?: S, text?: S): S;
-  }
+        // Random.now
+        now(util: RandomDateUtilString, format?: S): S;
+        now(format?: S): S;
+    }
 
-  // Mockjs.Random - Color
-  // see https://github.com/nuysoft/Mock/wiki/Color
-  interface MockjsRandomColor {
-    // Random.color
-    color(): S;
+    // Mockjs.Random - Image
+    // see https://github.com/nuysoft/Mock/wiki/Image
+    type RandomImageFormatString = "png" | "gif" | "jpg";
+    interface MockjsRandomImage {
+        // Random.image
+        image(size?: S, background?: S, foreground?: S, format?: RandomImageFormatString | S, text?: S): S;
 
-    // Random.hex
-    hex(): S;
+        // Random.dataImage
+        dataImage(size?: S, text?: S): S;
+    }
 
-    // Random.rgb
-    rgb(): S;
+    // Mockjs.Random - Color
+    // see https://github.com/nuysoft/Mock/wiki/Color
+    interface MockjsRandomColor {
+        // Random.color
+        color(): S;
 
-    // Random.rgba
-    rgba(): S;
+        // Random.hex
+        hex(): S;
 
-    // Random.hsl
-    hsl(): S;
-  }
+        // Random.rgb
+        rgb(): S;
 
-  // Mockjs.Random - Text
-  // see https://github.com/nuysoft/Mock/wiki/Text
-  interface MockjsRandomText {
-    // Random.paragraph
-    paragraph(min?: N, max?: N): S;
+        // Random.rgba
+        rgba(): S;
 
-    // Random.cparagraph
-    cparagraph(min?: N, max?: N): S;
+        // Random.hsl
+        hsl(): S;
+    }
 
-    // Random.sentence
-    sentence(min?: N, max?: N): S;
+    // Mockjs.Random - Text
+    // see https://github.com/nuysoft/Mock/wiki/Text
+    interface MockjsRandomText {
+        // Random.paragraph
+        paragraph(min?: N, max?: N): S;
 
-    // Random.csentence
-    csentence(min?: N, max?: N): S;
+        // Random.cparagraph
+        cparagraph(min?: N, max?: N): S;
 
-    // Random.word
-    word(min?: N, max?: N): S;
+        // Random.sentence
+        sentence(min?: N, max?: N): S;
 
-    // Random.cword
-    cword(pool?: S | N, min?: N, max?: N): S;
+        // Random.csentence
+        csentence(min?: N, max?: N): S;
 
-    // Random.title
-    title(min?: N, max?: N): S;
+        // Random.word
+        word(min?: N, max?: N): S;
 
-    // Random.ctitle
-    ctitle(min?: N, max?: N): S;
-  }
+        // Random.cword
+        cword(pool?: S | N, min?: N, max?: N): S;
 
-  // Mockjs.Random - Name
-  // see https://github.com/nuysoft/Mock/wiki/Name
-  interface MockjsRandomName {
-    // Random.first
-    first(): S;
+        // Random.title
+        title(min?: N, max?: N): S;
 
-    // Random.last
-    last(): S;
+        // Random.ctitle
+        ctitle(min?: N, max?: N): S;
+    }
 
-    // Random.name
-    name(middle?: B): S;
+    // Mockjs.Random - Name
+    // see https://github.com/nuysoft/Mock/wiki/Name
+    interface MockjsRandomName {
+        // Random.first
+        first(): S;
 
-    // Random.cfirst
-    cfirst(): S;
+        // Random.last
+        last(): S;
 
-    // Random.clast
-    clast(): S;
+        // Random.name
+        name(middle?: B): S;
 
-    // Random.cname
-    cname(): S;
-  }
+        // Random.cfirst
+        cfirst(): S;
 
-  // Mockjs.Random - Web
-  // see https://github.com/nuysoft/Mock/wiki/Web
-  type RandomWebProtocal = 'http' | 'ftp' | 'gopher' | 'mailto' | 'mid' | 'cid' | 'news' | 'nntp' | 'prospero' | 'telnet' | 'rlogin' | 'tn3270' | 'wais';
-  interface MockjsRandomWeb {
-    // Random.url
-    url(protocol?: S, host?: S): S;
+        // Random.clast
+        clast(): S;
 
-    // Random.protocol
-    protocal(): RandomWebProtocal;
+        // Random.cname
+        cname(): S;
+    }
 
-    // Random.domain
-    domain(): S;
+    // Mockjs.Random - Web
+    // see https://github.com/nuysoft/Mock/wiki/Web
+    type RandomWebProtocal =
+        | "http"
+        | "ftp"
+        | "gopher"
+        | "mailto"
+        | "mid"
+        | "cid"
+        | "news"
+        | "nntp"
+        | "prospero"
+        | "telnet"
+        | "rlogin"
+        | "tn3270"
+        | "wais";
+    interface MockjsRandomWeb {
+        // Random.url
+        url(protocol?: S, host?: S): S;
 
-    // Random.tld
-    dtl(): S;
+        // Random.protocol
+        protocal(): RandomWebProtocal;
 
-    // Random.email
-    email(domain?: S): S;
+        // Random.domain
+        domain(): S;
 
-    // Random.ip
-    ip(): S;
-  }
+        // Random.tld
+        dtl(): S;
 
-  // Mockjs.Random - Address
-  // see https://github.com/nuysoft/Mock/wiki/Address
-  interface MockjsRandomAddress {
-    // Random.region
-    region(): S;
+        // Random.email
+        email(domain?: S): S;
 
-    // Random.province
-    province(): S;
+        // Random.ip
+        ip(): S;
+    }
 
-    // Random.city
-    city(prefix?: B): S;
+    // Mockjs.Random - Address
+    // see https://github.com/nuysoft/Mock/wiki/Address
+    interface MockjsRandomAddress {
+        // Random.region
+        region(): S;
 
-    // Random.county
-    county(prefix?: B): S;
+        // Random.province
+        province(): S;
 
-    // Random.zip
-    zip(prefix?: B): S;
-  }
+        // Random.city
+        city(prefix?: B): S;
 
-  // Mockjs.Random - Helper
-  // see https://github.com/nuysoft/Mock/wiki/Helper
-  interface MockjsRandomHelper {
-    // Random.capitalize
-    capitalize(word: S): S;
+        // Random.county
+        county(prefix?: B): S;
 
-    // Random.upper
-    upper(str: S): S;
+        // Random.zip
+        zip(prefix?: B): S;
+    }
 
-    // Random.lower
-    lower(str: S): S;
+    // Mockjs.Random - Helper
+    // see https://github.com/nuysoft/Mock/wiki/Helper
+    interface MockjsRandomHelper {
+        // Random.capitalize
+        capitalize(word: S): S;
 
-    // Random.pick
-    pick(arr: any[]): any;
+        // Random.upper
+        upper(str: S): S;
 
-    // Random.shuffle
-    shuffle(arr: any[]): any[];
-  }
+        // Random.lower
+        lower(str: S): S;
 
-  // Mockjs.Random - Miscellaneous
-  // see https://github.com/nuysoft/Mock/wiki/Miscellaneous
-  interface MockjsRandomMiscellaneous {
-    // Random.guid
-    guid(): S;
+        // Random.pick
+        pick(arr: any[]): any;
 
-    // Random.id
-    id(): S;
+        // Random.shuffle
+        shuffle(arr: any[]): any[];
+    }
 
-    // Random.increment
-    increment(step?: N): N;
-  }
+    // Mockjs.Random - Miscellaneous
+    // see https://github.com/nuysoft/Mock/wiki/Miscellaneous
+    interface MockjsRandomMiscellaneous {
+        // Random.guid
+        guid(): S;
 
-  // Mockjs.Random
-  // see https://github.com/nuysoft/Mock/wiki/Mock.Random
-  interface MockjsRandom extends MockjsRandomBasic, MockjsRandomDate,
-    MockjsRandomImage, MockjsRandomColor, MockjsRandomAddress,
-    MockjsRandomHelper, MockjsRandomMiscellaneous, MockjsRandomName,
-    MockjsRandomText, MockjsRandomWeb { }
+        // Random.id
+        id(): S;
 
-  interface MockjsValidRsItem {
-    action: S;
-    actual: S;
-    expected: S;
-    message: S;
-    path: S[];
-    type: S;
-  }
+        // Random.increment
+        increment(step?: N): N;
+    }
 
-  // Mockjs.valid()
-  // see https://github.com/nuysoft/Mock/wiki/Mock.valid()
-  type MockjsValid = (template: any, data: any) => MockjsValidRsItem[];
+    interface MockjsRandomExtendOption {
+        [randomType: string]: (...args: any[]) => any;
+    }
 
-  interface MockjsToJSONSchemaRs {
-    name: S | undefined;
-    template: any;
-    type: S;
-    rule: object;
-    path: S[];
-    properties?: MockjsToJSONSchemaRs[];
-    items?: MockjsToJSONSchemaRs[];
-  }
+    // Mockjs.Random
+    // see https://github.com/nuysoft/Mock/wiki/Mock.Random
+    interface MockjsRandom
+        extends
+            MockjsRandomBasic,
+            MockjsRandomDate,
+            MockjsRandomImage,
+            MockjsRandomColor,
+            MockjsRandomAddress,
+            MockjsRandomHelper,
+            MockjsRandomMiscellaneous,
+            MockjsRandomName,
+            MockjsRandomText,
+            MockjsRandomWeb,
+            MockjsRandomExtendOption
+    {
+        // Random.extend
+        extend(extendOption: MockjsRandomExtendOption): MockjsRandom;
+    }
 
-  // Mockjs.toJSONSchema()
-  // see https://github.com/nuysoft/Mock/wiki/Mock.toJSONSchema()
-  type MockjsToJSONSchema = (template: any) => MockjsToJSONSchemaRs;
+    interface MockjsValidRsItem {
+        action: S;
+        actual: S;
+        expected: S;
+        message: S;
+        path: S[];
+        type: S;
+    }
 
-  let mock: MockjsMock;
-  let setup: MockjsSetup;
-  let Random: MockjsRandom;
-  let valid: MockjsValid;
-  let toJSONSchema: MockjsToJSONSchema;
-  let version: number;
+    // Mockjs.valid()
+    // see https://github.com/nuysoft/Mock/wiki/Mock.valid()
+    type MockjsValid = (template: any, data: any) => MockjsValidRsItem[];
+
+    interface MockjsToJSONSchemaRs {
+        name: S | undefined;
+        template: any;
+        type: S;
+        rule: object;
+        path: S[];
+        properties?: MockjsToJSONSchemaRs[] | undefined;
+        items?: MockjsToJSONSchemaRs[] | undefined;
+    }
+
+    // Mockjs.toJSONSchema()
+    // see https://github.com/nuysoft/Mock/wiki/Mock.toJSONSchema()
+    type MockjsToJSONSchema = (template: any) => MockjsToJSONSchemaRs;
+
+    let mock: MockjsMock;
+    let setup: MockjsSetup;
+    let Random: MockjsRandom;
+    let valid: MockjsValid;
+    let toJSONSchema: MockjsToJSONSchema;
+    let version: number;
 }
 
 export = mockjs;

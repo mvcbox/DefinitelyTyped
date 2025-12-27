@@ -1,44 +1,35 @@
-// Type definitions for gulp-sass 4.0.2
-// Project: https://github.com/dlmanning/gulp-sass
-// Definitions by: Asana <https://asana.com>
-//                 Yuma Hashimoto <https://github.com/yuma84>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.7
-
 /// <reference types="node"/>
 
-import { Options } from 'node-sass';
+import { CompileResult, FileImporter, Importer, Options } from "@sass/types";
 
-interface SassResults {
-    css: string;
-    map: string;
-    stats: {
-        entry: string;
-        start: Date;
-        end: Date;
-        duration: number;
-        includedFiles: string[];
-    }
+interface GulpSassError extends Error {
+    messageFormatted: string;
+    messageOriginal: string;
+    relativePath: string;
 }
 
-interface SassOptions extends Options {
-    success?: (results: SassResults) => any;
-    error?: (err: Error) => any;
-    imagePaths?: string[];
+type GulpSassOptions<sync extends "sync" | "async", TNodePackageImporter extends {}> =
+    & Omit<Options<sync>, "importers">
+    & {
+        importers?: (Importer<sync> | FileImporter<sync> | TNodePackageImporter)[];
+    };
+
+interface GulpSass<TNodePackageImporter extends {}> {
+    (opts?: GulpSassOptions<"async", TNodePackageImporter>): NodeJS.ReadWriteStream;
+    logError(error?: GulpSassError): void;
+    sync(options?: GulpSassOptions<"sync", TNodePackageImporter>): NodeJS.ReadWriteStream;
 }
 
-interface GulpSassOptions extends SassOptions {
-    errLogToConsole?: boolean;
-    onSuccess?: (css: string) => any;
-    onError?: (err: Error) => any;
-    sync?: boolean;
+interface Compiler<TNodePackageImporter extends {}> {
+    compile(path: string, options: GulpSassOptions<"sync", TNodePackageImporter>): CompileResult;
+    compileAsync(path: string, options: GulpSassOptions<"async", TNodePackageImporter>): Promise<CompileResult>;
+    compileString(source: string, options: GulpSassOptions<"sync", TNodePackageImporter>): CompileResult;
+    compileStringAsync(source: string, options: GulpSassOptions<"async", TNodePackageImporter>): Promise<CompileResult>;
 }
 
-interface Sass {
-    (opts?: GulpSassOptions): NodeJS.ReadWriteStream;
-    logError(error?: string): void;
-    sync(options?: GulpSassOptions): NodeJS.ReadWriteStream;
+interface GulpSassFactory {
+    <TNodePackageImporter extends {}>(compiler: Compiler<TNodePackageImporter>): GulpSass<TNodePackageImporter>;
 }
 
-declare var _tmp: Sass;
+declare var _tmp: GulpSassFactory;
 export = _tmp;

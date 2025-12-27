@@ -27,5 +27,5 @@ VersionCheck.getLatestVersion()
     .catch((error: any) => {});
 
 VersionCheck.needUpdate()
-    .then(({ isNeeded, currentVersion, latestVersion }) => {})
+    .then(({ isNeeded, currentVersion, latestVersion, storeUrl }) => {})
     .catch((error: any) => {});

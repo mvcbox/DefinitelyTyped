@@ -1,43 +1,40 @@
-// Type definitions for Koa 2.x
-// Project: http://koajs.com
-// Definitions by: DavidCai1993 <https://github.com/DavidCai1993>
-//                 jKey Lu <https://github.com/jkeylu>
-//                 Brice Bernard <https://github.com/brikou>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
-
 /* =================== USAGE ===================
 
     import * as Koa from "koa"
     const app = new Koa()
 
-    async function (ctx: Koa.Context, next: Function) {
+    async function (ctx: Koa.Context, next: Koa.Next) {
       // ...
     }
 
  =============================================== */
 /// <reference types="node" />
-import * as accepts from "accepts";
-import * as Cookies from "cookies";
+import accepts = require("accepts");
+import { AsyncLocalStorage } from "async_hooks";
+import Cookies = require("cookies");
 import { EventEmitter } from "events";
-import { IncomingMessage, ServerResponse, Server } from "http";
-import { Http2ServerRequest, Http2ServerResponse } from 'http2';
+import { IncomingHttpHeaders, IncomingMessage, OutgoingHttpHeaders, Server, ServerResponse } from "http";
+import { Http2ServerRequest, Http2ServerResponse } from "http2";
 import httpAssert = require("http-assert");
-import * as Keygrip from "keygrip";
-import * as compose from "koa-compose";
-import { Socket, ListenOptions } from "net";
+import contentDisposition = require("content-disposition");
+import HttpErrors = require("http-errors");
+import Keygrip = require("keygrip");
+import compose = require("koa-compose");
+import { ListenOptions, Socket } from "net";
+import { ParsedUrlQuery } from "querystring";
 import * as url from "url";
+import type httpErrors = require("http-errors");
 
 declare interface ContextDelegatedRequest {
     /**
      * Return request header.
      */
-    header: any;
+    header: IncomingHttpHeaders;
 
     /**
      * Return request header, alias as request.header
      */
-    headers: any;
+    headers: IncomingHttpHeaders;
 
     /**
      * Get/Set request URL.
@@ -69,7 +66,7 @@ declare interface ContextDelegatedRequest {
      * Get parsed query-string.
      * Set query-string as an object.
      */
-    query: any;
+    query: ParsedUrlQuery;
 
     /**
      * Get/Set query string.
@@ -176,7 +173,7 @@ declare interface ContextDelegatedRequest {
 
     /**
      * Check if the given `type(s)` is acceptable, returning
-     * the best match when true, otherwise `undefined`, in which
+     * the best match when true, otherwise `false`, in which
      * case you should respond with 406 "Not Acceptable".
      *
      * The `type` value may be a single mime type string
@@ -210,9 +207,9 @@ declare interface ContextDelegatedRequest {
      *     this.accepts('html', 'json');
      *     // => "json"
      */
-    accepts(): string[] | boolean;
-    accepts(...types: string[]): string | boolean;
-    accepts(types: string[]): string | boolean;
+    accepts(): string[];
+    accepts(...types: string[]): string | false;
+    accepts(types: string[]): string | false;
 
     /**
      * Return accepted encodings or best fit based on `encodings`.
@@ -222,9 +219,9 @@ declare interface ContextDelegatedRequest {
      *
      *     ['gzip', 'deflate']
      */
-    acceptsEncodings(): string[] | boolean;
-    acceptsEncodings(...encodings: string[]): string | boolean;
-    acceptsEncodings(encodings: string[]): string | boolean;
+    acceptsEncodings(): string[];
+    acceptsEncodings(...encodings: string[]): string | false;
+    acceptsEncodings(encodings: string[]): string | false;
 
     /**
      * Return accepted charsets or best fit based on `charsets`.
@@ -234,9 +231,9 @@ declare interface ContextDelegatedRequest {
      *
      *     ['utf-8', 'utf-7', 'iso-8859-1']
      */
-    acceptsCharsets(): string[] | boolean;
-    acceptsCharsets(...charsets: string[]): string | boolean;
-    acceptsCharsets(charsets: string[]): string | boolean;
+    acceptsCharsets(): string[];
+    acceptsCharsets(...charsets: string[]): string | false;
+    acceptsCharsets(charsets: string[]): string | false;
 
     /**
      * Return accepted languages or best fit based on `langs`.
@@ -246,9 +243,9 @@ declare interface ContextDelegatedRequest {
      *
      *     ['es', 'pt', 'en']
      */
-    acceptsLanguages(): string[] | boolean;
-    acceptsLanguages(...langs: string[]): string | boolean;
-    acceptsLanguages(langs: string[]): string | boolean;
+    acceptsLanguages(): string[];
+    acceptsLanguages(...langs: string[]): string | false;
+    acceptsLanguages(langs: string[]): string | false;
 
     /**
      * Check if the incoming request contains the "Content-Type"
@@ -272,14 +269,15 @@ declare interface ContextDelegatedRequest {
      *     this.is('html'); // => false
      */
     // is(): string | boolean;
-    is(...types: string[]): string | boolean;
-    is(types: string[]): string | boolean;
+    is(...types: string[]): string | false | null;
+    is(types: string[]): string | false | null;
 
     /**
-     * Return request header.
+     * Return request header. If the header is not set, will return an empty
+     * string.
      *
-     * The `Referrer` header field is special-cased,
-     * both `Referrer` and `Referer` are interchangeable.
+     * The `Referrer` header field is special-cased, both `Referrer` and
+     * `Referer` are interchangeable.
      *
      * Examples:
      *
@@ -290,7 +288,7 @@ declare interface ContextDelegatedRequest {
      *     // => "text/plain"
      *
      *     this.get('Something');
-     *     // => undefined
+     *     // => ''
      */
     get(field: string): string;
 }
@@ -309,7 +307,7 @@ declare interface ContextDelegatedResponse {
     /**
      * Get/Set response body.
      */
-    body: any;
+    body: unknown;
 
     /**
      * Return parsed response Content-Length when present.
@@ -325,7 +323,19 @@ declare interface ContextDelegatedResponse {
     /**
      * Vary on `field`.
      */
-    vary(field: string): void;
+    vary(field: string | string[]): void;
+
+    /**
+     * Perform a special-cased "back" to provide Referrer support.
+     * When Referrer is not present, `alt` or "/" is used.
+     *
+     * Examples:
+     *
+     *    ctx.back()
+     *    ctx.back('/index.html')
+     */
+
+    back(alt?: string): void;
 
     /**
      * Perform a 302 redirect to `url`.
@@ -336,17 +346,16 @@ declare interface ContextDelegatedResponse {
      *
      * Examples:
      *
-     *    this.redirect('back');
-     *    this.redirect('back', '/index.html');
      *    this.redirect('/login');
      *    this.redirect('http://google.com');
      */
-    redirect(url: string, alt?: string): void;
+    redirect(url: string): void;
 
     /**
-     * Set Content-Disposition header to "attachment" with optional `filename`.
+     * Set Content-Disposition to "attachment" to signal the client to prompt for download.
+     * Optionally specify the filename of the download and some options.
      */
-    attachment(filename: string): void;
+    attachment(filename?: string, options?: contentDisposition.Options): void;
 
     /**
      * Return the response mime type void of
@@ -397,7 +406,7 @@ declare interface ContextDelegatedResponse {
      *    this.set('Accept', 'application/json');
      *    this.set({ Accept: 'text/plain', 'X-API-Key': 'tobi' });
      */
-    set(field: { [key: string]: string }): void;
+    set(field: { [key: string]: string | string[] }): void;
     set(field: string, val: string | string[]): void;
 
     /**
@@ -431,53 +440,56 @@ declare interface ContextDelegatedResponse {
     flushHeaders(): void;
 }
 
-declare class Application<StateT = any, CustomT = {}> extends EventEmitter {
+declare class Application<
+    StateT = Application.DefaultState,
+    ContextT = Application.DefaultContext,
+> extends EventEmitter {
     proxy: boolean;
-    middleware: Application.Middleware<StateT, CustomT>[];
+    proxyIpHeader: string;
+    maxIpsCount: number;
+    middleware: Array<Application.Middleware<StateT, ContextT>>;
     subdomainOffset: number;
     env: string;
-    context: Application.BaseContext & CustomT;
+    context: Application.BaseContext & ContextT;
     request: Application.BaseRequest;
     response: Application.BaseResponse;
     silent: boolean;
     keys: Keygrip | string[];
+    ctxStorage: AsyncLocalStorage<ContextT> | undefined;
 
-    constructor();
+    /**
+     * @param {object} [options] Application options
+     * @param {string} [options.env='development'] Environment
+     * @param {string[]} [options.keys] Signed cookie keys
+     * @param {boolean} [options.proxy] Trust proxy headers
+     * @param {number} [options.subdomainOffset] Subdomain offset
+     * @param {string} [options.proxyIpHeader] Proxy IP header, defaults to X-Forwarded-For
+     * @param {number} [options.maxIpsCount] Max IPs read from proxy IP header, default to 0 (means infinity)
+     * @param {boolean} [options.asyncLocalStorage] Enable AsyncLocalStorage
+     */
+    constructor(options?: {
+        env?: string | undefined;
+        keys?: string[] | undefined;
+        proxy?: boolean | undefined;
+        subdomainOffset?: number | undefined;
+        proxyIpHeader?: string | undefined;
+        maxIpsCount?: number | undefined;
+        asyncLocalStorage?: boolean | undefined;
+    });
 
     /**
      * Shorthand for:
      *
      *    http.createServer(app.callback()).listen(...)
      */
-    listen(
-        port?: number,
-        hostname?: string,
-        backlog?: number,
-        listeningListener?: () => void,
-    ): Server;
-    listen(
-        port: number,
-        hostname?: string,
-        listeningListener?: () => void,
-    ): Server;
-    listen(
-        port: number,
-        backlog?: number,
-        listeningListener?: () => void,
-    ): Server;
+    listen(port?: number, hostname?: string, backlog?: number, listeningListener?: () => void): Server;
+    listen(port: number, hostname?: string, listeningListener?: () => void): Server;
+    listen(port: number, backlog?: number, listeningListener?: () => void): Server;
     listen(port: number, listeningListener?: () => void): Server;
-    listen(
-        path: string,
-        backlog?: number,
-        listeningListener?: () => void,
-    ): Server;
+    listen(path: string, backlog?: number, listeningListener?: () => void): Server;
     listen(path: string, listeningListener?: () => void): Server;
     listen(options: ListenOptions, listeningListener?: () => void): Server;
-    listen(
-        handle: any,
-        backlog?: number,
-        listeningListener?: () => void,
-    ): Server;
+    listen(handle: any, backlog?: number, listeningListener?: () => void): Server;
     listen(handle: any, listeningListener?: () => void): Server;
 
     /**
@@ -497,22 +509,22 @@ declare class Application<StateT = any, CustomT = {}> extends EventEmitter {
      *
      * Old-style middleware will be converted.
      */
-    use<NewStateT = {}, NewCustomT = {}>(
-        middleware: Application.Middleware<StateT & NewStateT, CustomT & NewCustomT>,
-    ): Application<StateT & NewStateT, CustomT & NewCustomT>;
+    use<NewStateT = {}, NewContextT = {}>(
+        middleware: Application.Middleware<StateT & NewStateT, ContextT & NewContextT>,
+    ): Application<StateT & NewStateT, ContextT & NewContextT>;
 
     /**
      * Return a request handler callback
      * for node's native http/http2 server.
      */
-    callback(): (req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) => void;
+    callback(): (req: IncomingMessage | Http2ServerRequest, res: ServerResponse | Http2ServerResponse) => Promise<void>;
 
     /**
      * Initialize a new context.
      *
      * @api private
      */
-    createContext<StateT = any>(
+    createContext<StateT = Application.DefaultState>(
         req: IncomingMessage,
         res: ServerResponse,
     ): Application.ParameterizedContext<StateT>;
@@ -523,10 +535,34 @@ declare class Application<StateT = any, CustomT = {}> extends EventEmitter {
      * @api private
      */
     onerror(err: Error): void;
+
+    /**
+     * return current context from async local storage
+     */
+    readonly currentContext: ContextT | undefined;
 }
 
 declare namespace Application {
-    type Middleware<StateT = any, CustomT = {}> = compose.Middleware<ParameterizedContext<StateT, CustomT>>;
+    type DefaultStateExtends = any;
+    /**
+     * This interface can be augmented by users to add types to Koa's default state
+     */
+    interface DefaultState extends DefaultStateExtends {}
+
+    type DefaultContextExtends = {};
+    /**
+     * This interface can be augmented by users to add types to Koa's default context
+     */
+    interface DefaultContext extends DefaultContextExtends {
+        /**
+         * Custom properties.
+         */
+        [key: PropertyKey]: any;
+    }
+
+    type Middleware<StateT = DefaultState, ContextT = DefaultContext, ResponseBodyT = any> = compose.Middleware<
+        ParameterizedContext<StateT, ContextT, ResponseBodyT>
+    >;
 
     interface BaseRequest extends ContextDelegatedRequest {
         /**
@@ -568,12 +604,12 @@ declare namespace Application {
         /**
          * Return response header.
          */
-        header: any;
+        header: OutgoingHttpHeaders;
 
         /**
          * Return response header, alias as response.header
          */
-        headers: any;
+        headers: OutgoingHttpHeaders;
 
         /**
          * Check whether the response is one of the listed types.
@@ -584,11 +620,15 @@ declare namespace Application {
          * @api public
          */
         // is(): string;
-        is(...types: string[]): string;
-        is(types: string[]): string;
+        is(...types: string[]): string | false | null;
+        is(types: string[]): string | false | null;
 
         /**
-         * Return response header.
+         * Return response header. If the header is not set, will return an empty
+         * string.
+         *
+         * The `Referrer` header field is special-cased, both `Referrer` and
+         * `Referer` are interchangeable.
          *
          * Examples:
          *
@@ -597,6 +637,9 @@ declare namespace Application {
          *
          *     this.get('content-type');
          *     // => "text/plain"
+         *
+         *     this.get('Something');
+         *     // => ''
          */
         get(field: string): string;
 
@@ -611,9 +654,7 @@ declare namespace Application {
         toJSON(): any;
     }
 
-    interface BaseContext
-        extends ContextDelegatedRequest,
-            ContextDelegatedResponse {
+    interface BaseContext extends ContextDelegatedRequest, ContextDelegatedResponse {
         /**
          * util.inspect() implementation, which
          * just returns the JSON output.
@@ -653,18 +694,13 @@ declare namespace Application {
          *
          * See: https://github.com/jshttp/http-errors
          */
-        throw(message: string, code?: number, properties?: {}): never;
-        throw(status: number): never;
-        throw(...properties: Array<number | string | {}>): never;
+        throw(status: number, ...args: httpErrors.UnknownError[]): never;
+        throw(...args: httpErrors.UnknownError[]): never;
 
         /**
          * Default error handling.
          */
         onerror(err: Error): void;
-        /**
-         * Custom properties.
-         */
-        [key: string]: any;
     }
 
     interface Request extends BaseRequest {
@@ -698,14 +734,25 @@ declare namespace Application {
         /**
          * To bypass Koa's built-in response handling, you may explicitly set `ctx.respond = false;`
          */
-        respond?: boolean;
+        respond?: boolean | undefined;
     }
 
-    type ParameterizedContext<StateT = any, CustomT = {}> = ExtendableContext & {
-        state: StateT;
-    } & CustomT;
+    type ParameterizedContext<StateT = DefaultState, ContextT = DefaultContext, ResponseBodyT = unknown> =
+        & ExtendableContext
+        & { state: StateT }
+        & ContextT
+        & { body: ResponseBodyT; response: { body: ResponseBodyT } };
 
     interface Context extends ParameterizedContext {}
+
+    type Next = () => Promise<any>;
+
+    /**
+     * A re-export of `HttpError` from the `http-error` package.
+     *
+     * This is the error type that is thrown by `ctx.assert()` and `ctx.throw()`.
+     */
+    const HttpError: typeof HttpErrors.HttpError;
 }
 
 export = Application;

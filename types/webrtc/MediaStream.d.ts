@@ -1,34 +1,34 @@
-// Type definitions for WebRTC
-// Project: http://dev.w3.org/2011/webrtc/
-// Definitions by: Ken Smith <https://github.com/smithkl42/>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 // Taken from http://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // version: W3C Editor's Draft 29 June 2015
 
 interface ConstrainBooleanParameters {
-    exact?: boolean;
-    ideal?: boolean;
+    exact?: boolean | undefined;
+    ideal?: boolean | undefined;
 }
 
 interface NumberRange {
-    max?: number;
-    min?: number;
+    max?: number | undefined;
+    min?: number | undefined;
 }
 
 interface ConstrainNumberRange extends NumberRange {
-    exact?: number;
-    ideal?: number;
+    exact?: number | undefined;
+    ideal?: number | undefined;
 }
 
 interface ConstrainStringParameters {
-    exact?: string | string[];
-    ideal?: string | string[];
+    exact?: string | string[] | undefined;
+    ideal?: string | string[] | undefined;
+}
+
+interface ConstrainBooleanOrDOMStringParameters {
+    exact?: boolean | string;
+    ideal?: boolean | string;
 }
 
 interface MediaStreamConstraints {
-    video?: boolean | MediaTrackConstraints;
-    audio?: boolean | MediaTrackConstraints;
+    video?: boolean | MediaTrackConstraints | undefined;
+    audio?: boolean | MediaTrackConstraints | undefined;
 }
 
 declare namespace W3C {
@@ -39,50 +39,51 @@ declare namespace W3C {
     type ConstrainLong = ConstrainNumber;
     type ConstrainDouble = ConstrainNumber;
     type ConstrainString = string | string[] | ConstrainStringParameters;
+    type ConstrainBooleanOrDOMString = boolean | string | ConstrainBooleanOrDOMStringParameters;
 }
 
 interface MediaTrackConstraints extends MediaTrackConstraintSet {
-    advanced?: MediaTrackConstraintSet[];
+    advanced?: MediaTrackConstraintSet[] | undefined;
 }
 
 interface MediaTrackConstraintSet {
-    width?: W3C.ConstrainLong;
-    height?: W3C.ConstrainLong;
-    aspectRatio?: W3C.ConstrainDouble;
-    frameRate?: W3C.ConstrainDouble;
-    facingMode?: W3C.ConstrainString;
-    volume?: W3C.ConstrainDouble;
-    sampleRate?: W3C.ConstrainLong;
-    sampleSize?: W3C.ConstrainLong;
-    echoCancellation?: W3C.ConstrainBoolean;
-    latency?: W3C.ConstrainDouble;
-    deviceId?: W3C.ConstrainString;
-    groupId?: W3C.ConstrainString;
+    width?: W3C.ConstrainLong | undefined;
+    height?: W3C.ConstrainLong | undefined;
+    aspectRatio?: W3C.ConstrainDouble | undefined;
+    frameRate?: W3C.ConstrainDouble | undefined;
+    facingMode?: W3C.ConstrainString | undefined;
+    volume?: W3C.ConstrainDouble | undefined;
+    sampleRate?: W3C.ConstrainLong | undefined;
+    sampleSize?: W3C.ConstrainLong | undefined;
+    echoCancellation?: W3C.ConstrainBooleanOrDOMString | undefined;
+    latency?: W3C.ConstrainDouble | undefined;
+    deviceId?: W3C.ConstrainString | undefined;
+    groupId?: W3C.ConstrainString | undefined;
 }
 
 interface MediaTrackSupportedConstraints {
-    width?: boolean;
-    height?: boolean;
-    aspectRatio?: boolean;
-    frameRate?: boolean;
-    facingMode?: boolean;
-    volume?: boolean;
-    sampleRate?: boolean;
-    sampleSize?: boolean;
-    echoCancellation?: boolean;
-    latency?: boolean;
-    deviceId?: boolean;
-    groupId?: boolean;
+    width?: boolean | undefined;
+    height?: boolean | undefined;
+    aspectRatio?: boolean | undefined;
+    frameRate?: boolean | undefined;
+    facingMode?: boolean | undefined;
+    volume?: boolean | undefined;
+    sampleRate?: boolean | undefined;
+    sampleSize?: boolean | undefined;
+    echoCancellation?: boolean | undefined;
+    latency?: boolean | undefined;
+    deviceId?: boolean | undefined;
+    groupId?: boolean | undefined;
 }
 
 interface MediaStream extends EventTarget {
-    //id: string;
-    //active: boolean;
+    // id: string;
+    // active: boolean;
 
-    //onactive: EventListener;
-    //oninactive: EventListener;
-    //onaddtrack: (event: MediaStreamTrackEvent) => any;
-    //onremovetrack: (event: MediaStreamTrackEvent) => any;
+    // onactive: EventListener;
+    // oninactive: EventListener;
+    // onaddtrack: (event: MediaStreamTrackEvent) => any;
+    // onremovetrack: (event: MediaStreamTrackEvent) => any;
 
     clone(): MediaStream;
     stop(): void;
@@ -98,22 +99,22 @@ interface MediaStream extends EventTarget {
 }
 
 interface MediaStreamTrackEvent extends Event {
-    //track: MediaStreamTrack;
+    // track: MediaStreamTrack;
 }
 
 interface MediaStreamTrack extends EventTarget {
-    //id: string;
-    //kind: string;
-    //label: string;
+    // id: string;
+    // kind: string;
+    // label: string;
     enabled: boolean;
-    //muted: boolean;
-    //remote: boolean;
-    //readyState: MediaStreamTrackState;
+    // muted: boolean;
+    // remote: boolean;
+    // readyState: MediaStreamTrackState;
 
-    //onmute: EventListener;
-    //onunmute: EventListener;
-    //onended: EventListener;
-    //onoverconstrained: EventListener;
+    // onmute: EventListener;
+    // onunmute: EventListener;
+    // onended: EventListener;
+    // onoverconstrained: EventListener;
 
     clone(): MediaStreamTrack;
 
@@ -126,45 +127,47 @@ interface MediaStreamTrack extends EventTarget {
 }
 
 interface MediaTrackCapabilities {
-    //width: number | W3C.LongRange;
-    //height: number | W3C.LongRange;
-    //aspectRatio: number | W3C.DoubleRange;
-    //frameRate: number | W3C.DoubleRange;
-    //facingMode: string;
-    //volume: number | W3C.DoubleRange;
-    //sampleRate: number | W3C.LongRange;
-    //sampleSize: number | W3C.LongRange;
-    //echoCancellation: boolean[];
-    latency?: W3C.DoubleRange;
-    //deviceId: string;
-    //groupId: string;
+    // width: number | W3C.LongRange;
+    // height: number | W3C.LongRange;
+    // aspectRatio: number | W3C.DoubleRange;
+    // frameRate: number | W3C.DoubleRange;
+    // facingMode: string;
+    // volume: number | W3C.DoubleRange;
+    // sampleRate: number | W3C.LongRange;
+    // sampleSize: number | W3C.LongRange;
+    // echoCancellation: boolean[];
+    latency?: W3C.DoubleRange | undefined;
+    // deviceId: string;
+    // groupId: string;
 }
 
 interface MediaTrackSettings {
-    //width: number;
-    //height: number;
-    //aspectRatio: number;
-    //frameRate: number;
-    //facingMode: string;
-    //volume: number;
-    //sampleRate: number;
-    //sampleSize: number;
-    //echoCancellation: boolean;
-    latency?: number;
-    //deviceId: string;
-    //groupId: string;
+    // width: number;
+    // height: number;
+    // aspectRatio: number;
+    // frameRate: number;
+    // facingMode: string;
+    // volume: number;
+    // sampleRate: number;
+    // sampleSize: number;
+    // echoCancellation: boolean;
+    latency?: number | undefined;
+    // deviceId: string;
+    // groupId: string;
 }
 
 interface MediaStreamError {
-    //name: string;
-    //message: string;
-    //constraintName: string;
+    readonly name: string;
+    readonly message: string | null;
+    readonly constraintName: string | null;
 }
 
 interface NavigatorGetUserMedia {
-    (constraints: MediaStreamConstraints,
-     successCallback: (stream: MediaStream) => void,
-     errorCallback: (error: MediaStreamError) => void): void;
+    (
+        constraints: MediaStreamConstraints,
+        successCallback: (stream: MediaStream) => void,
+        errorCallback: (error: MediaStreamError) => void,
+    ): void;
 }
 
 // to use with adapter.js, see: https://github.com/webrtc/adapter
@@ -190,8 +193,8 @@ interface MediaDevices {
 }
 
 interface MediaDeviceInfo {
-    //label: string;
-    //deviceId: string;
-    //kind: string;
-    //groupId: string;
+    // label: string;
+    // deviceId: string;
+    // kind: string;
+    // groupId: string;
 }

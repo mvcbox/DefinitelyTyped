@@ -1,28 +1,16 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6",
             "dom"
         ],
         "noImplicitAny": true,
         "noImplicitThis": true,
-        "strictNullChecks": false,
+        "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "baseUrl": "../../",
         "jsx": "react",
-        "typeRoots": [
-            "../../"
-        ],
         "types": [],
-        "paths": {
-            "react-spinkit": [
-                "react-spinkit/v1"
-            ],
-            "react-spinkit/*": [
-                "react-spinkit/v1/*"
-            ]
-        },
         "noEmit": true,
         "forceConsistentCasingInFileNames": true
     },

@@ -1,28 +1,41 @@
-// Type definitions for Elm 0.12
-// Project: http://elm-lang.org
-// Definitions by: Dénes Harmath <https://github.com/thSoft>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-declare var Elm: Elm;
-
-interface Elm {
-	embed<P>(elmModule: ElmModule<P>, element: Node, initialValues?: Object): ElmComponent<P>;
-	fullscreen<P>(elmModule: ElmModule<P>, initialValues?: Object): ElmComponent<P>;
-	worker<P>(elmModule: ElmModule<P>, initialValues?: Object): ElmComponent<P>;
+export interface ElmModule<
+    P,
+    F,
+    Entrypoints extends string[] =
+        // eslint-disable-next-line @definitelytyped/no-single-element-tuple-type
+        ["Main"],
+> {
+    Elm: ElmInstance<P, F, Entrypoints>;
 }
 
-interface ElmModule<P> {
+export type ElmInstance<
+    P,
+    F,
+    // eslint-disable-next-line @definitelytyped/no-single-element-tuple-type
+    Entrypoints extends string[] = ["Main"],
+> = NestedEntrypoints<Entrypoints, P, F>;
+
+type NestedEntrypoints<Entrypoints extends string[], P, F> = Entrypoints extends [
+    infer First extends string,
+    ...infer Rest extends string[],
+] ? { [K in First]: NestedEntrypoints<Rest, P, F> }
+    : ElmMain<P, F>;
+
+export interface ElmMain<P, F> {
+    init(options?: { node?: Node | undefined; flags: F } | undefined): ElmApp<P>;
 }
 
-interface ElmComponent<P> {
-	ports: P;
+export interface ElmApp<P> {
+    ports: P;
 }
 
-interface PortToElm<V> {
-	send(value: V): void;
+export interface PortToElm<V> {
+    send(value: V): void;
 }
 
-interface PortFromElm<V> {
-	subscribe(handler: (value: V) => void): void;
-	unsubscribe(handler: (value: V) => void): void;
+export interface PortFromElm<V> {
+    subscribe(handler: (value: V) => void): void;
+    unsubscribe(handler: (value: V) => void): void;
 }
+
+export {};

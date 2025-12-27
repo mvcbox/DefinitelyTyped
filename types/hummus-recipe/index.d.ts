@@ -1,9 +1,3 @@
-// Type definitions for hummus-recipe 1.8
-// Project: https://github.com/chunyenHuang/hummusRecipe
-// Definitions by: Erik Berreßem <https://github.com/she11sh0cked>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.1
-
 /// <reference types="node" />
 
 declare namespace Recipe {
@@ -47,146 +41,162 @@ declare namespace Recipe {
         | "locked"
         | "togglenoview";
 
-    type AnnotOptionsIcon =
-        | "Comment"
-        | "Key"
-        | "Note"
-        | "Help"
-        | "NewParagraph"
-        | "Paragraph"
-        | "Insert";
+    type AnnotOptionsIcon = "Comment" | "Key" | "Note" | "Help" | "NewParagraph" | "Paragraph" | "Insert";
 
     interface RecipeOptions {
-        version?: number;
-        author?: string;
-        title?: string;
-        subject?: string;
-        keywords?: string[];
+        version?: number | undefined;
+        author?: string | undefined;
+        title?: string | undefined;
+        subject?: string | undefined;
+        colorspace?: "rgb" | "cmyk" | "grey" | undefined;
+        keywords?: string[] | undefined;
+        password?: string | undefined;
+        userPassword?: string | undefined;
+        ownerPassword?: string | undefined;
+        userProtectionFlag?: string | undefined;
+        fontSrcPath?: string | string[] | undefined;
     }
 
     interface CommentOptions {
-        title?: string;
-        date?: string;
-        open?: boolean;
-        richText?: boolean;
-        flag?: CommentOptionsFlag;
+        title?: string | undefined;
+        date?: string | undefined;
+        open?: boolean | undefined;
+        richText?: boolean | undefined;
+        flag?: CommentOptionsFlag | undefined;
     }
 
     interface AnnotOptions {
-        title?: string;
-        open?: boolean;
-        richText?: boolean;
-        flag?: AnnotOptionsFlag;
-        icon?: AnnotOptionsIcon;
-        width?: number;
-        height?: number;
+        title?: string | undefined;
+        open?: boolean | undefined;
+        richText?: boolean | undefined;
+        flag?: AnnotOptionsFlag | undefined;
+        icon?: AnnotOptionsIcon | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
     }
 
     interface EncryptOptions {
-        password?: string;
-        ownerPassword?: string;
-        userProtectionFlag?: number;
+        password?: string | undefined;
+        ownerPassword?: string | undefined;
+        userProtectionFlag?: number | undefined;
     }
 
     interface ImageOptions {
-        width?: number;
-        height?: number;
-        scale?: number;
-        keepAspectRatio?: boolean;
-        opacity?: number;
-        align?: string;
+        width?: number | undefined;
+        height?: number | undefined;
+        scale?: number | undefined;
+        keepAspectRatio?: boolean | undefined;
+        opacity?: number | undefined;
+        align?: string | undefined;
     }
 
     interface InfoOptions {
-        version?: string;
-        author?: string;
-        title?: string;
-        subject?: string;
-        keywords?: string[];
+        version?: string | undefined;
+        author?: string | undefined;
+        title?: string | undefined;
+        subject?: string | undefined;
+        keywords?: string[] | undefined;
     }
 
     interface OverlayOptions {
-        scale?: number;
-        keepAspectRatio?: boolean;
-        fitWidth?: boolean;
-        fitHeight?: boolean;
+        scale?: number | undefined;
+        keepAspectRatio?: boolean | undefined;
+        fitWidth?: boolean | undefined;
+        fitHeight?: boolean | undefined;
     }
 
     interface TextBoxStyle {
-        lineWidth?: number;
-        stroke?: string | number[];
-        dash?: number[];
-        fill?: string | number[];
-        opacity?: number;
+        lineWidth?: number | undefined;
+        stroke?: string | number[] | undefined;
+        dash?: number[] | undefined;
+        fill?: string | number[] | undefined;
+        opacity?: number | undefined;
     }
 
     interface TextBox {
-        width?: number;
-        height?: number;
-        minHeight?: number;
-        padding?: number | number[];
-        lineHeight?: number;
-        textAlign?: string;
-        style?: TextBoxStyle;
+        width?: number | undefined;
+        height?: number | undefined;
+        minHeight?: number | undefined;
+        padding?: number | number[] | undefined;
+        lineHeight?: number | undefined;
+        textAlign?: string | undefined;
+        style?: TextBoxStyle | undefined;
     }
 
     interface TextOptions {
-        color?: string | number[];
-        opacity?: number;
-        rotation?: number;
-        rotationOrigin?: number[];
-        font?: string;
-        size?: number;
-        align?: string;
-        highlight?: boolean;
-        underline?: boolean;
-        strikeOut?: boolean;
-        textBox?: TextBox;
+        color?: string | number[] | undefined;
+        opacity?: number | undefined;
+        rotation?: number | undefined;
+        rotationOrigin?: number[] | undefined;
+        font?: string | undefined;
+        size?: number | undefined;
+        align?: string | undefined;
+        highlight?: boolean | undefined;
+        underline?: boolean | undefined;
+        strikeOut?: boolean | undefined;
+        textBox?: TextBox | undefined;
     }
 
     interface LineToOptions {
-        color?: string | number[];
-        stroke?: string | number[];
-        fill?: string | number[];
-        lineWidth?: number;
-        opacity?: number;
-        dash?: number[];
+        color?: string | number[] | undefined;
+        stroke?: string | number[] | undefined;
+        fill?: string | number[] | undefined;
+        lineWidth?: number | undefined;
+        opacity?: number | undefined;
+        dash?: number[] | undefined;
     }
 
     interface LineOptions {
-        color?: string | number[];
-        stroke?: string | number[];
-        lineWidth?: number;
-        dash?: number[];
+        color?: string | number[] | undefined;
+        stroke?: string | number[] | undefined;
+        lineWidth?: number | undefined;
+        dash?: number[] | undefined;
     }
 
     interface PolygonOptions {
-        color?: string | number[];
-        stroke?: string | number[];
-        fill?: string | number[];
-        lineWidth?: number;
-        opacity?: number;
-        dash?: number[];
+        color?: string | number[] | undefined;
+        stroke?: string | number[] | undefined;
+        fill?: string | number[] | undefined;
+        lineWidth?: number | undefined;
+        opacity?: number | undefined;
+        dash?: number[] | undefined;
     }
 
     interface CircleOptions {
-        color?: string | number[];
-        stroke?: string | number[];
-        fill?: string | number[];
-        lineWidth?: number;
-        opacity?: number;
-        dash?: number[];
+        color?: string | number[] | undefined;
+        stroke?: string | number[] | undefined;
+        fill?: string | number[] | undefined;
+        lineWidth?: number | undefined;
+        opacity?: number | undefined;
+        dash?: number[] | undefined;
     }
 
     interface RectangleOptions {
-        color?: string | number[];
-        stroke?: string | number[];
-        fill?: string | number[];
-        lineWidth?: number;
-        opacity?: number;
-        dash?: number[];
-        rotation?: number;
-        rotationOrigin?: number[];
+        color?: string | number[] | undefined;
+        stroke?: string | number[] | undefined;
+        fill?: string | number[] | undefined;
+        lineWidth?: number | undefined;
+        opacity?: number | undefined;
+        dash?: number[] | undefined;
+        rotation?: number | undefined;
+        rotationOrigin?: number[] | undefined;
+    }
+
+    interface PageInfo {
+        pageNumber: number;
+        mediaBox: number[];
+        layout: string;
+        rotate: number;
+        width: number;
+        height: number;
+        size: number[];
+        offsetX: number;
+        offsetY: number;
+    }
+
+    interface Metadata {
+        pages: number;
+        [PagesIndex: number]: PageInfo;
     }
 
     type EndPDFCallback1 = () => any;
@@ -199,19 +209,11 @@ declare class Recipe {
 
     constructor(buffer: Buffer, options?: Recipe.RecipeOptions);
 
-    comment(
-        text: string,
-        x: number,
-        y: number,
-        options?: Recipe.CommentOptions
-    ): Recipe;
+    readonly metadata: Recipe.Metadata;
 
-    annot(
-        x: number,
-        y: number,
-        subtype: Recipe.AnnotSubtype,
-        options?: Recipe.AnnotOptions
-    ): Recipe;
+    comment(text: string, x: number, y: number, options?: Recipe.CommentOptions): Recipe;
+
+    annot(x: number, y: number, subtype: Recipe.AnnotSubtype, options?: Recipe.AnnotOptions): Recipe;
 
     appendPage(pdfSrc: string, pages: number | number[]): Recipe;
 
@@ -219,29 +221,15 @@ declare class Recipe {
 
     registerFont(fontName: string, fontSrcPath: string): Recipe;
 
-    image(
-        imgSrc: string,
-        x: number,
-        y: number,
-        options?: Recipe.ImageOptions
-    ): Recipe;
+    image(imgSrc: string, x: number, y: number, options?: Recipe.ImageOptions): Recipe;
 
     info(options?: Recipe.InfoOptions): Recipe;
 
     custom(key?: string, value?: string): Recipe;
 
-    insertPage(
-        afterPageNumber: number,
-        pdfSrc: string,
-        srcPageNumber: number
-    ): Recipe;
+    insertPage(afterPageNumber: number, pdfSrc: string, srcPageNumber: number): Recipe;
 
-    overlay(
-        pdfSrc: string,
-        x: number,
-        y: number,
-        options?: Recipe.OverlayOptions
-    ): Recipe;
+    overlay(pdfSrc: string, x: number, y: number, options?: Recipe.OverlayOptions): Recipe;
 
     createPage(pageWidth: number, pageHeight: number): Recipe;
 
@@ -253,12 +241,7 @@ declare class Recipe {
 
     split(outputDir: string, prefix: string): Recipe;
 
-    text(
-        text: string,
-        x: number,
-        y: number,
-        options?: Recipe.TextOptions
-    ): Recipe;
+    text(text: string, x: number, y: number, options?: Recipe.TextOptions): Recipe;
 
     moveTo(x: number, y: number): Recipe;
 
@@ -268,20 +251,9 @@ declare class Recipe {
 
     polygon(coordinates: number[][], options?: Recipe.PolygonOptions): Recipe;
 
-    circle(
-        x: number,
-        y: number,
-        radius: number,
-        options?: Recipe.CircleOptions
-    ): Recipe;
+    circle(x: number, y: number, radius: number, options?: Recipe.CircleOptions): Recipe;
 
-    rectangle(
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        options?: Recipe.RectangleOptions
-    ): Recipe;
+    rectangle(x: number, y: number, width: number, height: number, options?: Recipe.RectangleOptions): Recipe;
 
     endPDF(callback?: Recipe.EndPDFCallback): Recipe;
 }

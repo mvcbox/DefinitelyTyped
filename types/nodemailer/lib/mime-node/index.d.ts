@@ -1,18 +1,17 @@
 /// <reference types="node" />
 
-import { Readable, ReadableOptions, Transform } from 'stream';
+import { Readable, ReadableOptions, Transform } from "stream";
 
-import Mail = require('../mailer');
-import SMTPConnection = require('../smtp-connection');
+import Mail = require("../mailer");
 
 declare namespace MimeNode {
     interface Addresses {
-        from?: string[];
-        sender?: string[];
-        'reply-to'?: string[];
-        to?: string[];
-        cc?: string[];
-        bcc?: string[];
+        from?: string[] | undefined;
+        sender?: string[] | undefined;
+        "reply-to"?: string[] | undefined;
+        to?: string[] | undefined;
+        cc?: string[] | undefined;
+        bcc?: string[] | undefined;
     }
 
     interface Envelope {
@@ -24,19 +23,44 @@ declare namespace MimeNode {
 
     interface Options {
         /** root node for this tree */
-        rootNode?: MimeNode;
+        rootNode?: MimeNode | undefined;
+
         /** immediate parent for this node */
-        parentNode?: MimeNode;
+        parentNode?: MimeNode | undefined;
+
         /** filename for an attachment node */
-        filename?: string;
+        filename?: string | undefined;
+
+        /** Hostname for default message-id values */
+        hostname?: string | undefined;
+
         /** shared part of the unique multipart boundary */
-        baseBoundary?: string;
+        baseBoundary?: string | undefined;
+
         /** If true, do not exclude Bcc from the generated headers */
-        keepBcc?: boolean;
+        keepBcc?: boolean | undefined;
+
+        /**
+         * If set to 'win' then uses \r\n,
+         * if 'linux' then \n.
+         * If not set (or `raw` is used) then newlines are kept as is.
+         */
+        newline?: string | undefined;
+
         /** either 'Q' (the default) or 'B' */
-        textEncoding?: 'B' | 'Q';
+        textEncoding?: "B" | "Q" | undefined;
+
         /** method to normalize header keys for custom caseing */
         normalizeHeaderKey?(key: string): string;
+
+        /** undocumented */
+        boundaryPrefix?: string | undefined;
+
+        /** Undocumented */
+        disableFileAccess?: boolean | undefined;
+
+        /** Undocumented */
+        disableUrlAccess?: boolean | undefined;
     }
 }
 
@@ -66,7 +90,7 @@ declare class MimeNode {
      * {key: 'value'} as the first argument.
      */
     setHeader(key: string, value: string | string[]): this;
-    setHeader(headers: { [key: string]: string } | Array<{ key: string, value: string }>): this;
+    setHeader(headers: { [key: string]: string } | Array<{ key: string; value: string }>): this;
 
     /**
      * Adds a header value. If the value for selected key exists, the value is appended
@@ -75,7 +99,7 @@ declare class MimeNode {
      * {key: 'value'} as the first argument.
      */
     addHeader(key: string, value: string): this;
-    addHeader(headers: { [key: string]: string } | Array<{ key: string, value: string }>): this;
+    addHeader(headers: { [key: string]: string } | Array<{ key: string; value: string }>): this;
 
     /** Retrieves the first mathcing value of a selected key */
     getHeader(key: string): string;
@@ -87,8 +111,9 @@ declare class MimeNode {
      */
     setContent(content: string | Buffer | Readable): this;
 
-    /** Generate the message and return it with a callback */
+    /** Generate the message and return it with a callback or promise */
     build(callback: (err: Error | null, buf: Buffer) => void): void;
+    build(): Promise<Buffer>;
 
     getTransferEncoding(): string;
 
@@ -131,6 +156,69 @@ declare class MimeNode {
 
     /** Sets pregenerated content that will be used as the output of this node */
     setRaw(raw: string | Buffer | Readable): this;
+
+    /** shared part of the unique multipart boundary */
+    baseBoundary: string;
+
+    /** a multipart boundary value */
+    boundary?: string | false | undefined;
+
+    /** Undocumented */
+    boundaryPrefix: string;
+
+    /* An array for possible child nodes */
+    childNodes: MimeNode[];
+
+    /** body content for current node */
+    content?: string | Buffer | Readable | undefined;
+
+    /** Undocumented */
+    contentType?: string | undefined;
+
+    /**
+     * If date headers is missing and current node is the root, this value is used instead
+     */
+    date: Date;
+
+    /** Undocumented */
+    disableFileAccess: boolean;
+
+    /** Undocumented */
+    disableUrlAccess: boolean;
+
+    /** filename for an attachment node */
+    filename?: string | undefined;
+
+    /** Hostname for default message-id values */
+    hostname?: string | undefined;
+
+    /** If true, do not exclude Bcc from the generated headers */
+    keepBcc: boolean;
+
+    /** Undocumented */
+    multipart?: boolean | undefined;
+
+    /**
+     * If set to 'win' then uses \r\n,
+     * if 'linux' then \n.
+     * If not set (or `raw` is used) then newlines are kept as is.
+     */
+    newline?: string | undefined;
+
+    /** Undocumented */
+    nodeCounter: number;
+
+    /** method to normalize header keys for custom caseing */
+    normalizeHeaderKey?: ((key: string) => string) | undefined;
+
+    /* Immediate parent for this node (or undefined if not set) */
+    parentNode?: MimeNode | undefined;
+
+    /** root node for this tree */
+    rootNode: MimeNode;
+
+    /** either 'Q' (the default) or 'B' */
+    textEncoding: "B" | "Q" | "";
 }
 
 export = MimeNode;

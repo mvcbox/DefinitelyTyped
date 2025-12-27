@@ -1,18 +1,12 @@
-// Type definitions for react-typist 2.0
-// Project: https://github.com/jstejada/react-typist#readme
-// Definitions by: Shawn Choi <https://github.com/shawnkoon>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 3.1
-
 import * as React from "react";
 
-export namespace TreeView {
+export namespace Typist {
     interface CursorProps {
-        show?: boolean;
-        blink?: boolean;
-        element?: string;
-        hideWhenDone?: boolean;
-        hideWhenDoneDelay?: number;
+        show?: boolean | undefined;
+        blink?: boolean | undefined;
+        element?: string | undefined;
+        hideWhenDone?: boolean | undefined;
+        hideWhenDoneDelay?: number | undefined;
     }
 
     interface CurrentTextProps {
@@ -20,10 +14,7 @@ export namespace TreeView {
         lineIdx: number;
         character: string;
         charIdx: number;
-        defDelayGenerator: (
-            mn: number,
-            st: number
-        ) => (...params: any) => number;
+        defDelayGenerator: (mn: number, st: number) => (...params: any) => number;
     }
 
     interface DelayProps {
@@ -32,28 +23,25 @@ export namespace TreeView {
     class Delay extends React.Component<DelayProps> {}
 
     interface BackSpaceProps {
-        count?: number;
-        delay?: number;
+        count?: number | undefined;
+        delay?: number | undefined;
     }
     class Backspace extends React.Component<BackSpaceProps> {}
 }
 
-export interface TreeViewProps {
-    className?: string;
-    avgTypingDelay?: number;
-    stdTypingDelay?: number;
-    startDelay?: number;
-    cursor?: TreeView.CursorProps;
-    onCharacterTyped?: (char: string, charIndex: number) => void;
-    onLineTyped?: (line: string, lineIndex: number) => void;
-    onTypingDone?: () => void;
-    delayGenerator?: (
-        mean: number,
-        std: number,
-        current: TreeView.CurrentTextProps
-    ) => number;
+export interface TypistProps {
+    children?: React.ReactNode;
+    className?: string | undefined;
+    avgTypingDelay?: number | undefined;
+    stdTypingDelay?: number | undefined;
+    startDelay?: number | undefined;
+    cursor?: Typist.CursorProps | undefined;
+    onCharacterTyped?: ((char: string, charIndex: number) => void) | undefined;
+    onLineTyped?: ((line: string, lineIndex: number) => void) | undefined;
+    onTypingDone?: (() => void) | undefined;
+    delayGenerator?: ((mean: number, std: number, current: Typist.CurrentTextProps) => number) | undefined;
 }
 
-export class TreeView extends React.Component<TreeViewProps> {}
+export class Typist extends React.Component<TypistProps> {}
 
-export default TreeView;
+export default Typist;

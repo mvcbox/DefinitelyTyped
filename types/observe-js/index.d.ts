@@ -1,234 +1,225 @@
-// Type definitions for observe-js v0.5.5
-// Project: https://github.com/Polymer/observe-js
-// Definitions by: Oliver Herrmann <https://github.com/herrmanno>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 declare namespace observejs {
+    /*----------------------
+        Observable
+    ----------------------*/
 
-	/*----------------------
-		Observable
-	----------------------*/
+    interface Observable {
+        /**
+         * Begins observation.
+         * @param onChange the function that gets invoked if a change is detected
+         * @param the target of observation
+         */
+        open(onChange: (newValue: any, oldValue: any) => any, receiver?: any): void;
 
-	interface Observable {
-		/**
-		 * Begins observation.
-		 * @param onChange the function that gets invoked if a change is detected
-		 * @param the target of observation
-		 */
-		open(onChange:(newValue:any, oldValue:any)=>any, receiver?:any):void
+        /**
+         * Report any changes now (does nothing if there are no changes to report).
+         */
+        deliver(): void;
 
-		/**
-		 * Report any changes now (does nothing if there are no changes to report).
-		 */
-		deliver(): void
+        /**
+         * If there are changes to report, ignore them. Returns the current value of the observation.
+         */
+        discardChanges(): void;
 
-		/**
-		 * If there are changes to report, ignore them. Returns the current value of the observation.
-		 */
-		discardChanges():void
+        /**
+         * Ends observation. Frees resources and drops references to observed objects.
+         */
+        close(): void;
+    }
 
-		/**
-		 * Ends observation. Frees resources and drops references to observed objects.
-		 */
-		close():void
-	}
+    /*----------------------
+        PathObserver
+    ----------------------*/
 
+    interface PathObserver_static {
+        /**
+         * Constructor
+         * @param receiver the target for observation
+         * @param path specifies the paht to observe. If path === '' the receiver itself gets observed.
+         * @param defaultValue the defaultValue
+         */
+        new(receiver: any, path: string, defaultValue?: any): PathObserver_instance;
+    }
 
-	/*----------------------
-		PathObserver
-	----------------------*/
+    interface PathObserver_instance extends Observable {
+        /**
+         * sets the observed value without notifying about the change.
+         * @param value the value to set
+         */
+        setValue(value: any): void;
+    }
 
-	interface PathObserver_static {
-		/**
-		 * Constructor
-		 * @param receiver the target for observation
-		 * @param path specifies the paht to observe. If path === '' the receiver itself gets observed.
-		 * @param defaultValue the defaultValue
-		 */
-		new(receiver:any, path:string, defaultValue?:any): PathObserver_instance
-	}
+    /**
+     * Observes a "value-at-a-path" from a given object:
+     */
+    var PathObserver: PathObserver_static;
 
-	interface PathObserver_instance extends Observable {
-		/**
-		 * sets the observed value without notifying about the change.
-		 * @param value the value to set
-		 */
-		setValue(value:any): void
-	}
+    /*----------------------
+        ArrayObserver
+    ----------------------*/
 
-	/**
-	 * Observes a "value-at-a-path" from a given object:
-	 */
-	var PathObserver: PathObserver_static
+    interface splice {
+        /**
+         * the index position that the change occured
+         */
+        index: number;
 
+        /**
+         * an array of values representing the sequence of removed elements
+         */
+        removed: any[];
 
-	/*----------------------
-		ArrayObserver
-	----------------------*/
+        /**
+         * the number of element which were inserted
+         */
+        addedCount: number;
+    }
 
-	interface splice {
+    interface ArrayObserver_static {
+        /**
+         * Constructor
+         * @param receiver the target for observation
+         */
+        new(receiver: any[]): ArrayObserver_instance;
 
-		/**
-		 * the index position that the change occured
-		 */
-		index:number
+        /**
+         * transforms a copy of an old state of an array into a copy of its current state.
+         * @param previous array of old state
+         * @param current array of current state
+         * @param splices  splices to apply
+         */
+        applySplices(previous: any[], current: any[], splices: splice[]): void;
+    }
 
-		/**
-		 * an array of values representing the sequence of removed elements
-		 */
-		removed: Array<any>
+    interface ArrayObserver_instance extends Observable {
+        open(onChange: (splices: splice[], oldSplices: splice[]) => any): void;
+    }
 
-		/**
-		 * the number of element which were inserted
-		 */
-		addedCount:number
-	}
+    /**
+     * ArrayObserver observes the index-positions of an Array and reports changes as the minimal set of "splices" which would have had the same effect.
+     */
+    var ArrayObserver: ArrayObserver_static;
 
-	interface ArrayObserver_static {
+    /*----------------------
+        ObjectObserver
+    ----------------------*/
 
-		/**
-		 * Constructor
-		 * @param receiver the target for observation
-		 */
-		new(receiver:Array<any>): ArrayObserver_instance
+    interface Properties {
+        [key: string]: any;
+    }
 
-		/**
-		 * transforms a copy of an old state of an array into a copy of its current state.
-		 * @param previous array of old state
-		 * @param current array of current state
-		 * @param splices  splices to apply
-		 */
-		applySplices(previous:Array<any>, current:Array<any>, splices:Array<splice>):void
-	}
+    interface ObjectObserver_static {
+        /**
+         * Constructor
+         * @param receiver the target for observation
+         */
+        new(receiver: any): ObjectObserver_instance;
+    }
 
-	interface ArrayObserver_instance extends Observable {
-		open(onChange: (splices: Array<splice>, oldSplices: Array<splice>) => any): void
-	}
+    interface ObjectObserver_instance extends Observable {
+        open(
+            onChange: (
+                added: Properties,
+                removed: Properties,
+                changed: Properties,
+                getOldValueFn: (property: string) => any,
+            ) => any,
+        ): void;
+    }
 
-	/**
-	 * ArrayObserver observes the index-positions of an Array and reports changes as the minimal set of "splices" which would have had the same effect.
-	 */
-	var ArrayObserver: ArrayObserver_static
+    /**
+     * Observes the set of own-properties of an object and their values
+     */
+    var ObjectObserver: ObjectObserver_static;
 
+    /*----------------------
+        CompounObserver
+    ----------------------*/
 
-	/*----------------------
-		ObjectObserver
-	----------------------*/
+    interface CompoundObserver_static {
+        /**
+         * Constructor
+         */
+        new(): CompoundObserver_instance;
+    }
 
-	interface Properties {
-		[key:string]:any
-	}
+    interface CompoundObserver_instance extends Observable {
+        open(onChange: (newValues: any[], oldValue: any[]) => any): void;
 
-	interface ObjectObserver_static {
+        /**
+         * Adds the receivers property at the specified path to the list of observables.
+         * @param receiver the target for observation
+         * @param path specifies the paht to observe. If path === '' the receiver itself gets observed.
+         */
+        addPath(receiver: any, path: string): void;
 
-		/**
-		 * Constructor
-		 * @param receiver the target for observation
-		 */
-		new(receiver:any): ObjectObserver_instance
-	}
+        /**
+         * Adds an Observer to the list of observables.
+         */
+        addObserver(observer: Observable): void;
+    }
 
-	interface ObjectObserver_instance extends Observable {
-		open(onChange:(added:Properties, removed:Properties, changed:Properties, getOldValueFn:(property:string)=>any)=>any):void
-	}
+    /**
+     * CompoundObserver allows simultaneous observation of multiple paths and/or Observables.
+     */
+    var CompoundObserver: CompoundObserver_static;
 
-	/**
-	 * Observes the set of own-properties of an object and their values
-	 */
-	var ObjectObserver: ObjectObserver_static
+    /*----------------------
+        ObserverTransform
+    ----------------------*/
 
+    interface ObserverTransform_static {
+        /**
+         * Constructor
+         * @param observer the observer to transform
+         * @param getValue function that proxys getting a value
+         * @param setValue function that proxys setting a value
+         */
+        new(
+            observer: Observable,
+            getValue: (value: any) => any,
+            setValue: (value: any) => any,
+        ): ObserverTransform_instance;
 
-	/*----------------------
-		CompounObserver
-	----------------------*/
+        /**
+         * Constructor
+         * @param observer the observer to transform
+         * @param valueFn function that gets invoked with all observed values. May return a single new value.
+         */
+        new(observer: Observable, valueFn: (values: any[]) => any): ObserverTransform_instance;
+    }
 
-	interface CompoundObserver_static {
+    interface ObserverTransform_instance extends Observable {
+        /**
+         * sets the observed value without notifying about the change.
+         * @param value the value to set
+         */
+        setValue(value: any): void;
+    }
 
-		/**
-		 * Constructor
-		 */
-		new(): CompoundObserver_instance
-	}
+    /**
+     * CompoundObserver allows simultaneous observation of multiple paths and/or Observables.
+     */
+    var ObserverTransform: ObserverTransform_static;
 
-	interface CompoundObserver_instance extends Observable {
-		open(onChange:(newValues:Array<any>, oldValue:Array<any>)=>any):void
+    /*----------------------
+        Path
+    ----------------------*/
 
-		/**
-		 * Adds the receivers property at the specified path to the list of observables.
-		 * @param receiver the target for observation
-		 * @param path specifies the paht to observe. If path === '' the receiver itself gets observed.
-		 */
-		addPath(receiver:any, path:string):void
+    interface Path {
+        /**
+         * Returns the current value of the path from the provided object. If eval() is available,
+         * a compiled getter will be used for better performance. Like PathObserver above, undefined
+         * is returned unless you provide an overriding defaultValue.
+         */
+        getValueFrom(object: any, defaultValue: any): any;
 
-		/**
-		 * Adds an Observer to the list of observables.
-		 */
-		addObserver(observer:Observable):void
-
-	}
-
-	/**
-	 * CompoundObserver allows simultaneous observation of multiple paths and/or Observables.
-	 */
-	var CompoundObserver: CompoundObserver_static
-
-
-
-	/*----------------------
-		ObserverTransform
-	----------------------*/
-
-	interface ObserverTransform_static {
-
-		/**
-		 * Constructor
-		 * @param observer the observer to transform
-		 * @param getValue function that proxys getting a value
-		 * @param setValue function that proxys setting a value
-		 */
-		new(observer:Observable, getValue:(value:any)=>any, setValue:(value:any)=>any): ObserverTransform_instance
-
-		/**
-		 * Constructor
-		 * @param observer the observer to transform
-		 * @param valueFn function that gets invoked with all observed values. May return a single new value.
-		 */
-		new(observer:Observable, valueFn:(values:Array<any>)=>any): ObserverTransform_instance
-	}
-
-	interface ObserverTransform_instance extends Observable {
-		/**
-		 * sets the observed value without notifying about the change.
-		 * @param value the value to set
-		 */
-		setValue(value:any): void
-	}
-
-	/**
-	 * CompoundObserver allows simultaneous observation of multiple paths and/or Observables.
-	 */
-	var ObserverTransform: ObserverTransform_static
-
-
-	/*----------------------
-		Path
-	----------------------*/
-
-	interface Path {
-
-		/**
-		 * Returns the current value of the path from the provided object. If eval() is available,
-  		 * a compiled getter will be used for better performance. Like PathObserver above, undefined
-  		 * is returned unless you provide an overriding defaultValue.
-		 */
-		getValueFrom(object:any, defaultValue:any): any
-
-		/**
-		 * Attempts to set the value of the path from the provided object. Returns true IFF the path
-  		 * was reachable and set.
-		 */
-		getValueFrom(object:any, newValue:any): any
-	}
+        /**
+         * Attempts to set the value of the path from the provided object. Returns true IFF the path
+         * was reachable and set.
+         */
+        getValueFrom(object: any, newValue: any): any;
+    }
 }
 
 declare var PathObserver: typeof observejs.PathObserver;
@@ -238,11 +229,4 @@ declare var CompoundObserver: typeof observejs.CompoundObserver;
 declare var ObserverTransform: typeof observejs.ObserverTransform;
 declare var Path: observejs.Path;
 
-export {
-	PathObserver,
-	ArrayObserver,
-	ObjectObserver,
-	CompoundObserver,
-	ObserverTransform,
-	Path
-};
+export { ArrayObserver, CompoundObserver, ObjectObserver, ObserverTransform, Path, PathObserver };

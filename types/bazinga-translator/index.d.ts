@@ -1,99 +1,79 @@
-// Type definitions for Translator
-// Project: https://github.com/willdurand/BazingaJsTranslationBundle
-// Definitions by: Alex <https://github.com/alexndlm>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+declare namespace Translator {
+    interface BazingaTranslator {
+        /**
+         * The current locale.
+         */
+        locale: string;
 
-interface BazingaTranslator {
-    /**
-     * The current locale.
-     *
-     * @type {String}
-     */
-    locale: string;
+        /**
+         * Fallback locale.
+         */
+        fallback: string;
 
-    /**
-     * Fallback locale.
-     *
-     * @type {String}
-     */
-    fallback: string;
+        /**
+         * Placeholder prefix.
+         */
+        placeHolderPrefix: string;
 
-    /**
-     * Placeholder prefix.
-     *
-     * @type {String}
-     */
-    placeHolderPrefix: string;
+        /**
+         * Placeholder suffix.
+         */
+        placeHolderSuffix: string;
 
-    /**
-     * Placeholder suffix.
-     *
-     * @type {String}
-     */
-    placeHolderSuffix: string;
+        /**
+         * Default domain.
+         */
+        defaultDomain: string;
 
-    /**
-     * Default domain.
-     *
-     * @type {String}
-     */
-    defaultDomain: string;
+        /**
+         * Plural separator.
+         */
+        pluralSeparator: string;
 
-    /**
-     * Plural separator.
-     *
-     * @type {String}
-     */
-    pluralSeparator: string;
+        /**
+         * Adds a translation entry.
+         *
+         * @param id         The message id
+         * @param message    The message to register for the given id
+         * @param domain   The domain for the message or null to use the default
+         * @param locale   The locale or null to use the default
+         */
+        add(id: string, message: string, domain?: string, locale?: string): BazingaTranslator;
 
-    /**
-     * Adds a translation entry.
-     *
-     * @param {String} id         The message id
-     * @param {String} message    The message to register for the given id
-     * @param {String} [domain]   The domain for the message or null to use the default
-     * @param {String} [locale]   The locale or null to use the default
-     *
-     * @return {Object}           Translator
-     */
-    add(id: string, message: string, domain: string, locale: string): BazingaTranslator;
+        /**
+         * Translates the given message.
+         *
+         * @param id               The message id
+         * @param parameters     An array of parameters for the message
+         * @param domain         The domain for the message or null to guess it
+         * @param locale         The locale or null to use the default
+         */
+        trans(id: string, parameters?: any, domain?: string, locale?: string): string;
 
+        /**
+         * Translates the given choice message by choosing a translation according to a number.
+         *
+         * @param id               The message id
+         * @param number           The number to use to find the indice of the message
+         * @param parameters     An array of parameters for the message
+         * @param domain         The domain for the message or null to guess it
+         * @param locale         The locale or null to use the default
+         */
+        transChoice(id: string, number: number, parameters?: any, domain?: string, locale?: string): string;
 
-    /**
-     * Translates the given message.
-     *
-     * @param {String} id               The message id
-     * @param {Object} [parameters]     An array of parameters for the message
-     * @param {String} [domain]         The domain for the message or null to guess it
-     * @param {String} [locale]         The locale or null to use the default
-     *
-     * @return {String}                 The translated string
-     */
-    trans(id: string, parameters: any, domain: string, locale?: string): string;
+        /**
+         * Loads translations from JSON.
+         *
+         * @param data     A JSON string or object literal
+         */
+        fromJSON(data: string): BazingaTranslator;
 
-    /**
-     * Translates the given choice message by choosing a translation according to a number.
-     *
-     * @param {String} id               The message id
-     * @param {Number} number           The number to use to find the indice of the message
-     * @param {Object} [parameters]     An array of parameters for the message
-     * @param {String} [domain]         The domain for the message or null to guess it
-     * @param {String} [locale]         The locale or null to use the default
-     *
-     * @return {String}                 The translated string
-     */
-    transChoice(id: string, number: number, parameters: any, domain: string, locale?: string): string,
-
-    /**
-     * Loads translations from JSON.
-     *
-     * @param {String} data     A JSON string or object literal
-     *
-     * @return {Object}         Translator
-     */
-    fromJSON(data: string): BazingaTranslator;
-
-    reset(): void;
+        reset(): void;
+    }
 }
 
-declare const Translator: BazingaTranslator;
+declare const Translator: Translator.BazingaTranslator;
+
+export as namespace Translator;
+
+export = Translator;

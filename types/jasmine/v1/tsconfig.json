@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6",
             "dom"
@@ -8,17 +8,8 @@
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": false,
-        "strictFunctionTypes": false,
-        "baseUrl": "../../",
-        "typeRoots": [
-            "../../"
-        ],
+        "strictFunctionTypes": true,
         "types": [],
-        "paths": {
-            "jasmine": [
-                "jasmine/v1"
-            ]
-        },
         "noEmit": true,
         "forceConsistentCasingInFileNames": true
     },

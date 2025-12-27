@@ -1,9 +1,3 @@
-// Type definitions for koa-compress v2.x
-// Project: https://github.com/koajs/compress
-// Definitions by: Jerry Chin <https://github.com/hellopao>
-// Definitions: https://github.com/hellopao/DefinitelyTyped
-// TypeScript Version: 2.3
-
 /* =================== USAGE ===================
 
     import compress = require("koa-compress");
@@ -16,7 +10,7 @@
 /// <reference types="node" />
 /// <reference types="koa" />
 
-import * as Koa from "koa";
+import Koa = require("koa");
 import * as zlib from "zlib";
 
 /**
@@ -24,18 +18,39 @@ import * as zlib from "zlib";
  */
 declare function koaCompress(options?: koaCompress.CompressOptions): Koa.Middleware;
 
-export = koaCompress;
-
 declare namespace koaCompress {
-    export interface CompressOptions extends zlib.ZlibOptions {
+    export interface CompressOptions {
         /**
          * An optional function that checks the response content type to decide whether to compress. By default, it uses compressible.
          */
-        filter?: (content_type: string) => boolean;
+        filter?: ((mimeType: string) => boolean) | undefined;
 
         /**
          * Minimum response size in bytes to compress. Default 1024 bytes or 1kb.
          */
-        threshold?: number
+        threshold?: number | string | undefined;
+
+        /**
+         * An optional string, which specifies what encoders to use for requests
+         * without Accept-Encoding. Default: 'idenity'.
+         */
+        defaultEncoding?: string | undefined;
+
+        /**
+         * Options for brotli compression.
+         */
+        br?: zlib.BrotliOptions | false | undefined;
+
+        /**
+         * Options for gzip compression.
+         */
+        gzip?: zlib.ZlibOptions | false | undefined;
+
+        /**
+         * Options for deflate compression.
+         */
+        deflate?: zlib.ZlibOptions | false | undefined;
     }
 }
+
+export = koaCompress;

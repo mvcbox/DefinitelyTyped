@@ -1,15 +1,15 @@
-import ReCAPTCHA from 'react-google-recaptcha';
-import * as React from 'react';
+import * as React from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
-const basicRecapchta = <ReCAPTCHA sitekey="xxx" onChange={a => a}/>;
-const invisibleRecaptcha: React.SFC = () => {
+const basicRecapchta = <ReCAPTCHA sitekey="xxx" onChange={a => a} />;
+const invisibleRecaptcha: React.FC = () => {
     const recaptchaRef = React.createRef<ReCAPTCHA>();
 
     return (
-	    <ReCAPTCHA
-  	        ref={recaptchaRef}
-	        sitekey="xxx"
-	        size="invisible"
-	    />
+        <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey="xxx"
+            size="invisible"
+        />
     );
 };

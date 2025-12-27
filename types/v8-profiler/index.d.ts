@@ -1,8 +1,3 @@
-// Type definitions for v8-profiler
-// Project: https://github.com/node-inspector/v8-profiler
-// Definitions by: York Yao <https://github.com/plantain-00/>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 /* =================== USAGE ===================
     import * as profiler from "v8-profiler";
     profiler.startProfiling();
@@ -17,13 +12,13 @@ declare module "v8-profiler" {
         type Profiler = {
             /**
              * returns new HEAP Snapshot instance.
-             * name is optional argument, by default snapshot name will be constructed from his uid.
+             * name is optional argument, by default snapshot name will be constructed from its uid.
              */
             takeSnapshot: (name?: string) => Snapshot;
             deleteAllSnapshots: () => void;
             /**
              * start CPU profiling.
-             * name is optional argument, by default profile name will be constructed from his uid.
+             * name is optional argument, by default profile name will be constructed from its uid.
              * recsamples is true by default.
              */
             startProfiling: (name?: string, recsamples?: boolean) => void;
@@ -92,7 +87,7 @@ declare module "v8-profiler" {
              * callback(error, data) receives serialized profile as second argument. (Serialization is equal to JSON.stringify result).
              */
             export(): fs.ReadStream;
-        }
+        };
     }
 
     var V8Profiler: V8Profiler.Profiler;

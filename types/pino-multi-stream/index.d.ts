@@ -1,24 +1,33 @@
-// Type definitions for pino-multi-stream 3.1
-// Project: https://github.com/pinojs/pino-multi-stream#readme
-// Definitions by: Jake Ginnivan <https://github.com/JakeGinnivan>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
 import {
-    LoggerOptions as PinoLoggerOptions,
+    DestinationStream as PinoDestinationStream,
+    LevelWithSilent as PinoLevel,
     Logger as PinoLogger,
-    Level as PinoLevel,
-    stdSerializers as pinoStdSerializers
-} from 'pino';
-import stream = require('stream');
+    LoggerOptions as PinoLoggerOptions,
+    stdSerializers as pinoStdSerializers,
+} from "pino";
+import stream = require("stream");
 
 declare namespace pinoms {
-    type Streams = Array<{ stream: NodeJS.WritableStream; level?: Level }>;
+    type Streams = Array<{ stream: PinoDestinationStream | NodeJS.WritableStream; level?: Level | undefined }>;
     interface LoggerOptions extends PinoLoggerOptions {
-        streams?: Streams;
+        streams?: Streams | undefined;
     }
+    interface PrettyStreamOptions extends Pick<PinoLoggerOptions, "prettyPrint"> {
+        /**
+         * Allows to optionally define which prettifier module to use
+         */
+        // TODO: use type definitions from 'pino-pretty' when available.
+        prettifier?: any;
+        dest?: PinoDestinationStream | NodeJS.WritableStream | undefined;
+    }
+    interface MultiStreamOptions {
+        dedupe?: boolean | undefined;
+    }
+
     const stdSerializers: typeof pinoStdSerializers;
 
-    function multistream(streams: Streams): stream.Writable;
+    function multistream(streams: Streams, opts?: MultiStreamOptions): stream.Writable;
+    function prettyStream(opts?: PrettyStreamOptions): PinoDestinationStream;
     type Level = PinoLevel;
     type Logger = PinoLogger;
 }

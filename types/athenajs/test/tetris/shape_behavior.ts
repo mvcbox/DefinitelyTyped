@@ -1,10 +1,9 @@
-import { Behavior, InputManager as IM, AudioManager as AM, Sprite, Drawable } from 'athenajs';
-import Shape from './shape';
+import { AudioManager as AM, Behavior, Drawable, InputManager as IM, Sprite } from "athenajs";
+import Shape from "./shape";
 
 /**
  * Simple Behavior for the tetris shape that moves the shape on cursor key press
  * and when timer is reached
- *
  *
  * @see {Behavior}
  */
@@ -46,16 +45,15 @@ class ShapeBehavior extends Behavior {
 
     /**
      * When the player keeps a key down, we wait for a long delay before
-     * quickly moving the picece: we don't want to miss interpret his move.
+     * quickly moving the piece: we don't want to mis-interpret their move.
      *
-     * If he quickly releases the key and quickly presses it, we have to
+     * If they quickly release the key and quickly press it, we have to
      * react though
-     *
      */
     ready(state: number, timestamp: number): boolean {
         // if the player pressed a different key
         // we react immediately but have to wait a long_delay
-        // before repeating the key if he keeps pressing it
+        // before repeating the key if they keep pressing it
         if (this.state !== state) {
             this.ts = timestamp;
             this.state = state;
@@ -76,14 +74,13 @@ class ShapeBehavior extends Behavior {
 
     /**
      * Checks tetris timer
-     *
      */
     timer(timestamp: number): boolean {
         const sprite = this.sprite;
         if (!this.startTime) {
             this.startTime = timestamp;
         } else {
-            if (timestamp - this.startTime > sprite.data['speed']) {
+            if (timestamp - this.startTime > sprite.data["speed"]) {
                 // timer reached
                 this.startTime = timestamp;
                 return true;
@@ -95,7 +92,7 @@ class ShapeBehavior extends Behavior {
     checkKeyDelay(key: number, timestamp: number, x: number, y: number): void {
         const sprite = this.sprite as Shape;
         if (this.ready(key, timestamp)) {
-            sprite.snapTile(x, y) && AM.play('move');
+            sprite.snapTile(x, y) && AM.play("move");
         }
     }
 
@@ -121,13 +118,13 @@ class ShapeBehavior extends Behavior {
         }
 
         // Then checks cursor keys
-        if (IM.isKeyDown('DOWN')) {
+        if (IM.isKeyDown("DOWN")) {
             this.checkKeyDelay(1, timestamp, 0, 1);
-        } else if (IM.isKeyDown('LEFT')) {
+        } else if (IM.isKeyDown("LEFT")) {
             this.checkKeyDelay(2, timestamp, -1, 0);
-        } else if (IM.isKeyDown('RIGHT')) {
+        } else if (IM.isKeyDown("RIGHT")) {
             this.checkKeyDelay(3, timestamp, 1, 0);
-        } else if ((IM.isKeyDown('UP') || IM.isKeyDown('SPACE')) && (timestamp - this.lastRotation > 150)) {
+        } else if ((IM.isKeyDown("UP") || IM.isKeyDown("SPACE")) && (timestamp - this.lastRotation > 150)) {
             this.lastRotation = timestamp;
             sprite.nextRotation();
         } else if (this.state) {

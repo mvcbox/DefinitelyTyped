@@ -1,9 +1,3 @@
-// Type definitions for Locks 0.2
-// Project: https://github.com/Wizcorp/locks
-// Definitions by: Joshua Graham <https://github.com/flippynips>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
-
 /** Solitary access lock */
 export class Mutex {
     /** Construct a new mutex lock. */
@@ -13,7 +7,7 @@ export class Mutex {
     /** Take the lock. */
     lock(callback: () => void): void;
     /** Wait the specified number of milliseconds to take the lock. If error is set, the lock wasn't taken. */
-    timedlock(ttl: number, callback: (error: Error) => void): void;
+    timedLock(ttl: number, callback: (error: Error) => void): void;
     /** Try taking the lock. If false, the lock wasn't taken. */
     tryLock(): boolean;
     /** Release the current lock. */
@@ -67,3 +61,11 @@ export class CondVariable {
     /** Set the conditional variable value. */
     set(value: any): void;
 }
+
+export function createCondVariable(initialValue: any): CondVariable;
+
+export function createSemaphore(initialValue: number): Semaphore;
+
+export function createMutex(): Mutex;
+
+export function createReadWriteLock(): ReadWriteLock;

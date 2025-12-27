@@ -1,15 +1,17 @@
-import Ember from 'ember';
+import Ember from "ember";
 
 const da = Ember.DataAdapter.create();
 
 const filters = da.getFilters();
-filters.includes({ name: 'foo', desc: 'bar'}); // $ExpectType boolean
-filters.includes({}); // $ExpectError
+filters.includes({ name: "foo", desc: "bar" }); // $ExpectType boolean
+// @ts-expect-error
+filters.includes({});
 
 filters[0].name; // $ExpectType string
 filters[0].desc; // $ExpectType string
 
-da.watchModelTypes(// $ExpectType () => void
+// $ExpectType () => void
+da.watchModelTypes(
     function added(wrappedTypes) {
         wrappedTypes;
         wrappedTypes[0].release; // $ExpectType () => void
@@ -25,11 +27,14 @@ da.watchModelTypes(// $ExpectType () => void
         wrappedTypes[0].type.columns[0].name; // $ExpectType string
         wrappedTypes[0].type.count; // $ExpectType number
         wrappedTypes[0].type.name; // $ExpectType string
-    }
+    },
 );
-da.watchModelTypes(() => void); // $ExpectError
+// @ts-expect-error
+da.watchModelTypes(() => {});
 
-da.watchRecords('house', // $ExpectType () => void
+// $ExpectType () => void
+da.watchRecords(
+    "house",
     function added(records) {
         records[0].object; // $ExpectType object
         records[0].columnValues; // $ExpectType object
@@ -39,15 +44,16 @@ da.watchRecords('house', // $ExpectType () => void
         records[0].columnValues; // $ExpectType object
     },
     function removed(idx, count) {
-        idx;    // $ExpectType number
-        count;  // $ExpectType number
-    }
+        idx; // $ExpectType number
+        count; // $ExpectType number
+    },
 );
-da.watchRecords(() => void); // $ExpectError
+// @ts-expect-error
+da.watchRecords(() => {});
 
 da.acceptsModelName; // $ExpectType boolean
 da.containerDebugAdapter; // $ExpectType ContainerDebugAdapter
 
 const ca: Ember.ContainerDebugAdapter = da.containerDebugAdapter;
-ca.canCatalogEntriesByType('controller'); // $ExpectType boolean
-ca.catalogEntriesByType('controller'); // $ExpectType string[]
+ca.canCatalogEntriesByType("controller"); // $ExpectType boolean
+ca.catalogEntriesByType("controller"); // $ExpectType string[]

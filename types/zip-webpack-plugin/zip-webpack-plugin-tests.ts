@@ -1,6 +1,8 @@
-import * as ZipPlugin from "zip-webpack-plugin";
+import ZipPlugin from "zip-webpack-plugin";
 
 new ZipPlugin();
+
+new ZipPlugin({});
 
 const options: ZipPlugin.Options = {
     include: "include.string",
@@ -24,5 +26,5 @@ new ZipPlugin({
     },
     zipOptions: {
         forceZip64Format: true,
-    }
+    },
 });

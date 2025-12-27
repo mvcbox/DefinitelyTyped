@@ -1,4 +1,8 @@
-import * as LinkHeader from 'http-link-header';
+import LinkHeader = require("http-link-header");
+
+function isLinkHeader(l: LinkHeader): null {
+    return null;
+}
 
 function isBool(bool: boolean): null {
     return null;
@@ -13,23 +17,38 @@ function isString(str: string): null {
 }
 
 const link = LinkHeader.parse(
-    '<example.com>; rel="example"; title="Example Website", ' +
-    '<example-twice.com>; rel="example"; title="Example Website Twice", ' +
-    '<example-01.com>; rel="alternate"; title="Alternate Example Domain"'
+    "<example.com>; rel=\"example\"; title=\"Example Website\", "
+        + "<example-twice.com>; rel=\"example\"; title=\"Example Website Twice\", "
+        + "<example-01.com>; rel=\"alternate\"; title=\"Alternate Example Domain\"",
 );
+isReferenceArray(link.refs);
 
-const has = link.has('rel', 'alternate');
+const offsetLink = LinkHeader.parse(" <example.com>; rel=\"example\"", 1);
+
+const has = link.has("rel", "alternate");
 isBool(has);
 
-const get = link.get('title', 'Example Website');
+const get = link.get("title", "Example Website");
 isReferenceArray(get);
 
-const rel = link.rel('alternate');
-rel[0]['title'] !== 'bar';
+const rel = link.rel("alternate");
+rel[0]["title"] !== "bar";
 isReferenceArray(rel);
 
-const set = link.set({ rel: 'next', uri: 'http://example.com/next' });
-isReferenceArray(set);
+isLinkHeader(link.set({ rel: "next", uri: "http://example.com/next" }));
+isLinkHeader(link.setUnique({ rel: "next", uri: "http://example.com/next" }));
 
 const str = link.toString();
 isString(str);
+
+const constructedLink = new LinkHeader();
+
+LinkHeader.isCompatibleEncoding("utf-8"); // $ExpectType boolean
+LinkHeader.isSingleOccurenceAttr("src"); // $ExpectType boolean
+LinkHeader.isTokenAttr("rel"); // $ExpectType boolean
+LinkHeader.escapeQuotes("\"Quote text\""); // $ExpectType string
+LinkHeader.formatExtendedAttribute("title", {
+    value: Buffer.from("Unicode value"),
+    encoding: "utf-8",
+    language: "en",
+});

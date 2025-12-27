@@ -1,9 +1,3 @@
-// Type definitions for google-apps-script
-// Project: https://developers.google.com/apps-script/
-// Definitions by: motemen <https://github.com/motemen>, grant <https://github.com/grant>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
-
 // Base Types
 /// <reference path="google-apps-script.base.d.ts"/>
 /// <reference path="google-apps-script.cache.d.ts"/>
@@ -35,13 +29,13 @@
 /// <reference path="google-apps-script.optimization.d.ts"/>
 /// <reference path="google-apps-script.properties.d.ts"/>
 /// <reference path="google-apps-script.script.d.ts"/>
-/// <reference path="google-apps-script.ui.d.ts"/>
 /// <reference path="google-apps-script.url-fetch.d.ts"/>
 /// <reference path="google-apps-script.utilities.d.ts"/>
 /// <reference path="google-apps-script.xml-service.d.ts"/>
 
 // Events
 /// <reference path="google-apps-script-events.d.ts"/>
+/// <reference path="addons/google-apps-script.addon-event-objects.d.ts" />
 
 // API Types (Advanced Google Services)
 /// <reference path="apis/adsense_v1_4.d.ts"/>
@@ -56,8 +50,8 @@
 /// <reference path="apis/directory_v1.d.ts"/>
 /// <reference path="apis/docs_v1.d.ts"/>
 /// <reference path="apis/drive_v2.d.ts"/>
+/// <reference path="apis/drive_v3.d.ts"/>
 /// <reference path="apis/driveactivity_v2.d.ts"/>
-/// <reference path="apis/fusiontables_v2.d.ts"/>
 /// <reference path="apis/gmail_v1.d.ts"/>
 /// <reference path="apis/groupsmigration_v1.d.ts"/>
 /// <reference path="apis/groupssettings_v1.d.ts"/>
@@ -70,7 +64,6 @@
 /// <reference path="apis/slides_v1.d.ts"/>
 /// <reference path="apis/tagmanager_v2.d.ts"/>
 /// <reference path="apis/tasks_v1.d.ts"/>
-/// <reference path="apis/urlshortener_v1.d.ts"/>
 /// <reference path="apis/youtube_v3.d.ts"/>
 /// <reference path="apis/youtubeanalytics_v2.d.ts"/>
 /// <reference path="apis/youtubepartner_v1.d.ts"/>

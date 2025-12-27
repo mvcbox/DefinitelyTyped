@@ -1,15 +1,25 @@
 export interface Base<TType extends string> {
     type: TType;
+    loc?: {
+        start: {
+            line: number;
+            column: number;
+        };
+        end: {
+            line: number;
+            column: number;
+        };
+    } | undefined;
 }
 
 export interface LabelStatement extends Base<"LabelStatement"> {
-    label: string;
+    label: Identifier;
 }
 
 export type BreakStatement = Base<"BreakStatement">;
 
 export interface GotoStatement extends Base<"GotoStatement"> {
-    label: string;
+    label: Identifier;
 }
 
 export interface ReturnStatement extends Base<"ReturnStatement"> {
@@ -17,7 +27,7 @@ export interface ReturnStatement extends Base<"ReturnStatement"> {
 }
 
 export interface IfStatement extends Base<"IfStatement"> {
-    clauses: IfClause[];
+    clauses: Array<IfClause | ElseifClause | ElseClause>;
 }
 
 export interface IfClause extends Base<"IfClause"> {
@@ -63,9 +73,9 @@ export interface CallStatement extends Base<"CallStatement"> {
 }
 
 export interface FunctionDeclaration extends Base<"FunctionDeclaration"> {
-    identifier: Identifier | null;
+    identifier: Identifier | MemberExpression | null;
     isLocal: boolean;
-    parameters: Identifier[];
+    parameters: Array<Identifier | VarargLiteral>;
     body: Statement[];
 }
 
@@ -85,7 +95,7 @@ export interface ForGenericStatement extends Base<"ForGenericStatement"> {
 
 export interface Chunk extends Base<"Chunk"> {
     body: Statement[];
-    comments: string[];
+    comments?: Comment[] | undefined;
 }
 
 export interface Identifier extends Base<"Identifier"> {
@@ -132,16 +142,35 @@ export interface TableValue extends Base<"TableValue"> {
 }
 
 export interface TableConstructorExpression extends Base<"TableConstructorExpression"> {
-    fields: Array<TableKey | TableKeyString>;
+    fields: Array<TableKey | TableKeyString | TableValue>;
 }
 
 export interface UnaryExpression extends Base<"UnaryExpression"> {
-    operator: "#" | "not";
+    operator: "not" | "-" | "~" | "#";
     argument: Expression;
 }
 
 export interface BinaryExpression extends Base<"BinaryExpression"> {
-    operator: "+" | "-" | "*" | "/" | "%" | "^" | "==" | "~=" | "<=" | ">=" | "<" | ">" | "..";
+    operator:
+        | "+"
+        | "-"
+        | "*"
+        | "%"
+        | "^"
+        | "/"
+        | "//"
+        | "&"
+        | "|"
+        | "~"
+        | "<<"
+        | ">>"
+        | ".."
+        | "~="
+        | "=="
+        | "<"
+        | "<="
+        | ">"
+        | ">=";
     left: Expression;
     right: Expression;
 }
@@ -153,7 +182,7 @@ export interface LogicalExpression extends Base<"LogicalExpression"> {
 }
 
 export interface MemberExpression extends Base<"MemberExpression"> {
-    indexer: string;
+    indexer: "." | ":";
     identifier: Identifier;
     base: Expression;
 }
@@ -170,7 +199,7 @@ export interface CallExpression extends Base<"CallExpression"> {
 
 export interface TableCallExpression extends Base<"TableCallExpression"> {
     base: Expression;
-    arguments: Expression[];
+    arguments: Expression;
 }
 
 export interface StringCallExpression extends Base<"StringCallExpression"> {
@@ -184,47 +213,47 @@ export interface Comment extends Base<"Comment"> {
 }
 
 export type Expression =
-    FunctionDeclaration |
-    Identifier |
-    StringLiteral |
-    NumericLiteral |
-    BooleanLiteral |
-    NilLiteral |
-    VarargLiteral |
-    TableConstructorExpression |
-    BinaryExpression |
-    LogicalExpression |
-    UnaryExpression |
-    MemberExpression |
-    IndexExpression |
-    CallExpression |
-    TableCallExpression |
-    StringCallExpression;
+    | FunctionDeclaration
+    | Identifier
+    | StringLiteral
+    | NumericLiteral
+    | BooleanLiteral
+    | NilLiteral
+    | VarargLiteral
+    | TableConstructorExpression
+    | BinaryExpression
+    | LogicalExpression
+    | UnaryExpression
+    | MemberExpression
+    | IndexExpression
+    | CallExpression
+    | TableCallExpression
+    | StringCallExpression;
 
 export type Statement =
-    LabelStatement |
-    BreakStatement |
-    GotoStatement |
-    ReturnStatement |
-    IfStatement |
-    WhileStatement |
-    DoStatement |
-    RepeatStatement |
-    LocalStatement |
-    AssignmentStatement |
-    CallStatement |
-    FunctionDeclaration |
-    ForNumericStatement |
-    ForGenericStatement;
+    | LabelStatement
+    | BreakStatement
+    | GotoStatement
+    | ReturnStatement
+    | IfStatement
+    | WhileStatement
+    | DoStatement
+    | RepeatStatement
+    | LocalStatement
+    | AssignmentStatement
+    | CallStatement
+    | FunctionDeclaration
+    | ForNumericStatement
+    | ForGenericStatement;
 
 export type Node =
-    Statement |
-    Expression |
-    IfClause |
-    ElseifClause |
-    ElseClause |
-    Chunk |
-    TableKey |
-    TableKeyString |
-    TableValue |
-    Comment;
+    | Statement
+    | Expression
+    | IfClause
+    | ElseifClause
+    | ElseClause
+    | Chunk
+    | TableKey
+    | TableKeyString
+    | TableValue
+    | Comment;

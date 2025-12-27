@@ -1,4 +1,4 @@
-import * as p5 from "p5";
+import p5 from "p5";
 
 function s(
   sketch: p5
@@ -26,9 +26,13 @@ function s(
       50,
       50
     );
+    sketch.clear();
+    sketch.clear(1, 0.5, 0, 0);
   };
 }
 
 const myp5 = new p5(
   s
 );
+
+myp5.createGraphics(10, 10).ellipse(5, 5, 5);

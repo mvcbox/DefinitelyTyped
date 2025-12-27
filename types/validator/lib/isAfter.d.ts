@@ -1,3 +1,3 @@
-import * as validator from "validator";
-declare const isAfter: typeof validator.isAfter;
-export = isAfter;
+import validator from "../";
+export type IsAfterOptions = validator.IsAfterOptions;
+export default validator.isAfter;

@@ -1,5 +1,5 @@
-import fs = require('fs-extra-promise');
-import stream = require('stream');
+import fs = require("fs-extra-promise");
+import stream = require("stream");
 
 let stats: fs.Stats;
 let str: string;
@@ -19,14 +19,14 @@ let strOrBuf: string | Buffer;
 let buffer: Buffer;
 declare const modeNum: number;
 declare const modeStr: string;
-declare const encoding: string;
+declare const encoding: BufferEncoding;
 declare const symlinkType: "file" | "dir" | "junction";
 declare const flags: string;
 declare const srcpath: string;
 declare const dstpath: string;
 declare const oldPath: string;
 declare const newPath: string;
-declare const cache: { [path: string]: string; };
+declare const cache: { [path: string]: string };
 declare const offset: number;
 declare const length: number;
 declare const position: number;
@@ -182,8 +182,8 @@ fs.appendFileSync(filename, data, writeOpts);
 
 fs.watchFile(filename, watchListener);
 fs.watchFile(filename, {
-	persistent: bool,
-	interval: num
+    persistent: bool,
+    interval: num,
 }, watchListener);
 fs.unwatchFile(filename);
 watcher = fs.watch(filename, { persistent: bool }, (event: string, filename: string) => {
@@ -194,15 +194,15 @@ bool = fs.existsSync(path);
 
 readStream = fs.createReadStream(path);
 readStream = fs.createReadStream(path, {
-	flags: str,
-	encoding: str,
-	fd: num,
-	mode: num
+    flags: str,
+    encoding: str as BufferEncoding,
+    fd: num,
+    mode: num,
 });
 writeStream = fs.createWriteStream(path);
 writeStream = fs.createWriteStream(path, {
-	flags: str,
-	encoding: str
+    flags: str,
+    encoding: str as BufferEncoding,
 });
 
 function isDirectoryCallback(err: Error, isDirectory: boolean) {}
@@ -210,3 +210,6 @@ fs.isDirectory(path, isDirectoryCallback);
 fs.isDirectory(path);
 isDirectory = fs.isDirectorySync(path);
 fs.isDirectoryAsync(path);
+
+fs.mkdtempAsync(str, str);
+fs.mkdtempAsync(str, { encoding: str });

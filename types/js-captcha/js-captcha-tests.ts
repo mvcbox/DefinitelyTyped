@@ -1,31 +1,35 @@
-import jCaptcha from "js-captcha/dist/js/jCaptcha";
+import jCaptcha from "js-captcha";
 
 const myCaptcha1 = new jCaptcha({
-  el: "jCaptcha1",
+    el: "jCaptcha1",
 
-  requiredValue: "*",
+    requiredValue: "*",
 
-  resetOnError:   true,
-  focusOnError:   true,
-  clearOnSubmit:  true,
+    resetOnError: true,
+    focusOnError: true,
+    clearOnSubmit: true,
 
-  canvasWidth:      50,
-  canvasHeight:     15,
-  canvasFontSize:   "15px",
-  canvasFontFamily: "Arial",
-  canvasFillStyle:  "#ddd",
+    canvasClass: "jCaptchaCanvas",
+    canvasStyle: {
+        width: 100,
+        height: 15,
+        textBaseline: "top",
+        font: "15px Arial",
+        textAlign: "left",
+        fillStyle: "#ddd",
+    },
 
-  callback: (response: "success" | "error", input: NodeListOf<Element>) => {
-    if (response === "success") {
-      // Do something
-    }
+    callback: (response, captcha, numberOfTries) => {
+        if (response === "success") {
+            // Do something
+        }
 
-    if (response === "error") {
-      // Do something
-    }
-  },
+        if (response === "error") {
+            // Do something
+        }
+    },
 });
 
-const myCaptcha2 = new jCaptcha({});
-
-const myCaptcha3 = new jCaptcha();
+const myCaptcha2 = new jCaptcha({
+    canvasStyle: {},
+});

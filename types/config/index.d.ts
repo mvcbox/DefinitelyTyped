@@ -1,24 +1,20 @@
-// Type definitions for node-config
-// Project: https://github.com/lorenwest/node-config
-// Definitions by: Roman Korneev <https://github.com/RWander>
-//                 Forrest Bice <https://github.com/forrestbice>
-//                 James Donald <https://github.com/jndonald3>
-//                 Alberto Vasquez <https://github.com/albertovasquez>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-
+import { ConfigPaths, ConfigPathValues, HasBeenAugmented } from "./utils";
 
 declare var c: c.IConfig;
 
 declare namespace c {
-
     // see https://github.com/lorenwest/node-config/wiki/Using-Config-Utilities
     interface IUtil {
         // Extend an object (and any object it contains) with one or more objects (and objects contained in them).
         extendDeep(mergeInto: any, mergeFrom: any, depth?: number): any;
+        extendDeep(mergeInto: any, mergeFrom1: any, mergeFrom2: any, depth?: number): any;
+        extendDeep(mergeInto: any, ...mergeFrom: any): any;
 
         // Return a deep copy of the specified object.
         cloneDeep(copyFrom: any, depth?: number): any;
+
+        // Set objects given a path as a string list
+        setPath(object: object, path: string[], value?: any): void;
 
         // Return true if two objects have equal contents.
         equalsDeep(object1: any, object2: any, dept?: number): boolean;
@@ -36,31 +32,56 @@ declare namespace c {
         getEnv(varName: string): string;
 
         // Return the config for the project based on directory param if not directory then return default one (config).
-        loadFileConfigs(configDir: string): any;
+        loadFileConfigs(configDir?: string): any;
 
         // Return the sources for the configurations
         getConfigSources(): IConfigSource[];
-        
+
         // Returns a new deep copy of the current config object, or any part of the config if provided.
         toObject(config?: any): any;
 
         /**
-         * This allows module developers to attach their configurations onto
-         * the 6 years agoInitial 0.4 checkin default configuration object so
-         * they can be configured by the consumers of the module.
+         * This allows module developers to attach their configurations onto the default configuration object
+         * so they can be configured by the consumers of the module.
          */
-        setModuleDefaults(moduleName:string, defaults:any): any;
+        setModuleDefaults(moduleName: string, defaults: any): any;
     }
 
+    /**
+     * By augmenting this interface with your own config, you can greatly improve the IntelliSense for the `get` method:
+     * - Dot notation paths for the `setting` parameter
+     * - Correctly typed return values
+     *
+     * @example
+     * declare module 'config' {
+     *   interface IConfig extends MyConfig {}
+     * }
+     *
+     * @example
+     * declare module 'config' {
+     *   interface IConfig {
+     *     myConfig: {
+     *       myString: string;
+     *       myNumber: number;
+     *     };
+     *   }
+     * }
+     *
+     * @example
+     * const knownToBeStringTyped = config.get('myConfig.myString');
+     */
     interface IConfig {
-        get<T>(setting: string): T;
+        get: HasBeenAugmented<IConfig> extends true
+            ? <T extends ConfigPaths<IConfig>>(setting: T) => ConfigPathValues<IConfig, T>
+            : <T>(setting: string) => T;
+        has(setting: ConfigPaths<IConfig>): boolean;
         has(setting: string): boolean;
         util: IUtil;
     }
 
     interface IConfigSource {
         name: string;
-        original?: string;
+        original?: string | undefined;
         parsed: any;
     }
 }

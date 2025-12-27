@@ -1,5 +1,4 @@
-import Onionoo = require('onionoo');
-import KeyvRedis = require('@keyv/redis');
+import Onionoo = require("onionoo");
 
 const onionoo = new Onionoo();
 onionoo; // $ExpectType Instance & Endpoints
@@ -7,11 +6,11 @@ onionoo; // $ExpectType Instance & Endpoints
 const query = {
     limit: 10,
     running: true,
-    order: '-consensus_weight',
+    order: "-consensus_weight",
 };
 
 onionoo.summary(query).then(response => {
-    response.body; // $ExpectType Response<RelaySummary, BridgeSummary>
+    response.body; // $ExpectType Response<RelaySummary, BridgeSummary> || Summary
 
     const body = response.body;
 
@@ -21,18 +20,24 @@ onionoo.summary(query).then(response => {
     body.bridges_published; // $ExpectType string
     body.bridges; // $ExpectType BridgeSummary[]
 });
-onionoo.details(query); // $ExpectType GotPromise<Response<Relay, Bridge>>
-onionoo.bandwidth(query); // $ExpectType GotPromise<Response<NodeBandwidth, NodeBandwidth>>
-onionoo.weights(query); // $ExpectType GotPromise<Response<RelayWeights, undefined>>
-onionoo.clients(query); // $ExpectType GotPromise<Response<undefined, BridgeClients>>
-onionoo.uptime(query); // $ExpectType GotPromise<Response<RelayUptime, BridgeUptime>>
+onionoo.details(query); // $ExpectType GotPromise<Response<Relay, Bridge>> || GotPromise<Details>
+onionoo.bandwidth(query); // $ExpectType GotPromise<Response<NodeBandwidth, NodeBandwidth>> || GotPromise<Bandwidth>
+onionoo.weights(query); // $ExpectType GotPromise<Response<RelayWeights, undefined>> || GotPromise<Weights>
+onionoo.clients(query); // $ExpectType GotPromise<Response<undefined, BridgeClients>> || GotPromise<Clients>
+onionoo.uptime(query); // $ExpectType GotPromise<Response<RelayUptime, BridgeUptime>> || GotPromise<Uptime>
 
 // $ExpectType Instance & Partial<Endpoints>
 new Onionoo({
-    baseUrl: 'https://onionoo.torproject.org',
-    endpoints: ['summary', 'details', 'bandwidth', 'weights', 'clients', 'uptime'],
+    baseUrl: "https://onionoo.torproject.org",
+    endpoints: ["summary", "details", "bandwidth", "weights", "clients", "uptime"],
     cache: false,
 });
 
 new Onionoo({ cache: new Map() });
-new Onionoo({ cache: new KeyvRedis('redis://user:pass@localhost:6379') });
+
+declare const customCache: {
+    set(key: string, value: any, ttl?: number): void;
+    get(key: string): any;
+    delete(key: string): void;
+};
+new Onionoo({ cache: customCache });

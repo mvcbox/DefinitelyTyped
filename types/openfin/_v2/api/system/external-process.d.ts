@@ -1,17 +1,18 @@
 export interface ExternalProcessRequestType {
-    path?: string;
-    alias?: string;
-    arguments?: string;
-    listener?: LaunchExternalProcessListener;
-    lifetime?: string;
-    certificate?: CertificationInfo;
+    path?: string | undefined;
+    alias?: string | undefined;
+    arguments?: string | undefined;
+    listener?: LaunchExternalProcessListener | undefined;
+    lifetime?: string | undefined;
+    certificate?: CertificationInfo | undefined;
+    uuid?: string | undefined;
 }
 export interface CertificationInfo {
-    serial?: string;
-    subject?: string;
-    publickey?: string;
-    thumbprint?: string;
-    trusted?: boolean;
+    serial?: string | undefined;
+    subject?: string | undefined;
+    publickey?: string | undefined;
+    thumbprint?: string | undefined;
+    trusted?: boolean | undefined;
 }
 export interface ExitCode {
     topic: string;
@@ -32,8 +33,9 @@ export interface ExternalConnection {
 }
 export interface ExternalProcessInfo {
     pid: number;
-    listener?: LaunchExternalProcessListener;
+    listener?: LaunchExternalProcessListener | undefined;
 }
 export interface ServiceConfiguration {
+    config: object;
     name: string;
 }

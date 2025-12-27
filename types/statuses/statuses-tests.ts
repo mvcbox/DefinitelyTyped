@@ -1,23 +1,24 @@
-import status = require('statuses');
+import status = require("statuses");
 
-status.STATUS_CODES[404]; // $ExpectType string
+declare let input: "418" | string;
+status(input); // $ExpectType string | number
 
-let code: number | undefined;
+status(403); // $ExpectType string
+status("403"); // $ExpectType string
+status(306); // $ExpectType string
 
-code = status(403); // => 403
-code = status('403'); // => 403
-code = status('forbidden'); // => 403
-code = status('Forbidden'); // => 403
-code = status(306); // throws, as it's not supported by node.js
+status("forbidden"); // $ExpectType number
+status("Forbidden"); // $ExpectType number
 
 let codes: number[];
 codes = status.codes;
 
 let msg: string | undefined;
-msg = status[404]; // => 'Not Found'
+msg = status.message[404]; // => 'Not Found'
 
-code = status['not found']; // => 404
-code = status['Not Found']; // => 404
+let code: number | undefined;
+code = status.code["not found"]; // => 404
+code = status.code["Not Found"]; // => 404
 
 let isRedirect: boolean | undefined;
 isRedirect = status.redirect[200]; // => undefined
@@ -31,3 +32,5 @@ isEmpty = status.empty[304]; // => true
 let isRetry: boolean | undefined;
 isRetry = status.retry[501]; // => undefined
 isRetry = status.retry[503]; // => true
+
+type R = status.Result<any>;

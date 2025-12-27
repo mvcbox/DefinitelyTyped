@@ -1,8 +1,3 @@
-// Type definitions for BaiduMap v3.0
-// Project: http://lbsyun.baidu.com/index.php?title=jspopular3.0
-// Definitions by: Codemonk <http://www.youxianxueche.com/>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 /* *****************************************************************************
 Copyright [Codemonk] [Codemonk@live.cn]
 
@@ -31,29 +26,29 @@ SOFTWARE.
 /// <reference path="./baidumap.base.d.ts" />
 
 declare namespace BMap {
-	type ContextMenuIcon = string;
-	interface MenuItemOptions {
-		width?: number;
-		id?: string;
-		iconUrl?: string;
-	}
-	class MenuItem {
-		constructor(text: string, callback: (point: Point) => void, opts?: MenuItemOptions);
-		setText(text: string): void;
-		setIcon(iconUrl: string): void;
-		enable(): void;
-		disable(): void;
-	}
-	class ContextMenu {
-		constructor();
-		addItem(item: MenuItem): void;
-		getItem(index: number): MenuItem;
-		removeItem(item: MenuItem): void;
-		addSeparator(): void;
-		removeSeparator(index: number): void;
-		onopen: (event: { type: string, target: any, point: Point, pixel: Pixel }) => void;
-		onclose: (event: { type: string, target: any, point: Point, pixel: Pixel }) => void;
-	}
+    type ContextMenuIcon = string;
+    interface MenuItemOptions {
+        width?: number | undefined;
+        id?: string | undefined;
+        iconUrl?: string | undefined;
+    }
+    class MenuItem {
+        constructor(text: string, callback: (point: Point) => void, opts?: MenuItemOptions);
+        setText(text: string): void;
+        setIcon(iconUrl: string): void;
+        enable(): void;
+        disable(): void;
+    }
+    class ContextMenu {
+        constructor();
+        addItem(item: MenuItem): void;
+        getItem(index: number): MenuItem;
+        removeItem(item: MenuItem): void;
+        addSeparator(): void;
+        removeSeparator(index: number): void;
+        onopen: (event: { type: string; target: any; point: Point; pixel: Pixel }) => void;
+        onclose: (event: { type: string; target: any; point: Point; pixel: Pixel }) => void;
+    }
 }
 declare const BMAP_CONTEXT_MENU_ICON_ZOOMIN: string;
 declare const BMAP_CONTEXT_MENU_ICON_ZOOMOUT: string;

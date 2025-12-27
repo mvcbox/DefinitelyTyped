@@ -1,22 +1,16 @@
-// Type definitions for color 3.0
-// Project: https://github.com/qix-/color#readme
-// Definitions by: Junyoung Clare Jang <https://github.com/Airlun>, James W. Lane <https://github.com/jameswlane>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
-
-import convert = require('color-convert');
+import convert = require("color-convert");
 
 type ColorParam = Color | string | ArrayLike<number> | number | { [key: string]: any };
 
-interface Color {
+interface Color<T extends ColorParam = ColorParam> {
     toString(): string;
-    toJSON(): Color;
+    toJSON(): Color<T>;
     string(places?: number): string;
     percentString(places?: number): string;
     array(): number[];
-    object(): { alpha?: number } & { [key: string]: number };
+    object(): { alpha?: number | undefined } & { [key: string]: number };
     unitArray(): number[];
-    unitObject(): { r: number, g: number, b: number, alpha?: number };
+    unitObject(): { r: number; g: number; b: number; alpha?: number | undefined };
     round(places?: number): Color;
     alpha(): number;
     alpha(val: number): Color;
@@ -65,13 +59,15 @@ interface Color {
     b(): number;
     b(val: number): Color;
     keyword(): string;
-    keyword(val: string): Color;
+    keyword<V extends string>(val: V): Color<V>;
     hex(): string;
-    hex(val: string): Color;
+    hex<V extends string>(val: V): Color<V>;
+    hexa(): string;
+    hexa<V extends string>(val: V): Color<V>;
     rgbNumber(): number;
     luminosity(): number;
     contrast(color2: Color): number;
-    level(color2: Color): 'AAA' | 'AA' | '';
+    level(color2: Color): "AAA" | "AA" | "";
     isDark(): boolean;
     isLight(): boolean;
     negate(): Color;
@@ -102,8 +98,8 @@ interface Color {
 }
 
 interface ColorConstructor {
-    (obj?: ColorParam, model?: keyof (typeof convert)): Color;
-    new(obj?: ColorParam, model?: keyof (typeof convert)): Color;
+    <T extends ColorParam>(obj?: T, model?: keyof (typeof convert)): Color<T>;
+    new<T extends ColorParam>(obj?: T, model?: keyof (typeof convert)): Color<T>;
     rgb(...val: number[]): Color;
     rgb(color: ColorParam): Color;
     hsl(...val: number[]): Color;

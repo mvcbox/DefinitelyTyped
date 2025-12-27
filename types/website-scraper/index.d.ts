@@ -1,57 +1,61 @@
-// Type definitions for website-scraper v1.2.x
-// Project: https://github.com/s0ph1e/node-website-scraper
-// Definitions by: Christian Rackerseder <https://github.com/screendriver>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
-
 /// <reference types="request" />
 
-import * as request from 'request';
+import request = require("request");
 
 declare namespace websiteScraper {
     interface Url {
         url: string;
         filename: string;
     }
+
     interface SubDirectory {
         directory: string;
         extensions: string[];
     }
+
     interface Source {
         selector: string;
-        attr: string;
+        attr?: string | undefined;
     }
+
     interface RequestOptions {
-        headers: request.Headers
+        headers: request.Headers;
     }
+
     interface Options {
         urls: Array<string | Url>;
         directory: string;
-        urlFilter?: (url: string) => boolean;
-        filenameGenerator?: string;
-        defaultFilename?: string;
-        prettifyUrls?: boolean;
-        sources?: Source[];
-        subdirectories?: SubDirectory[] | null;
-        request?: RequestOptions;
-        recursive?: boolean;
-        maxDepth?: number;
-        ignoreErrors?: boolean;
+        urlFilter?: ((url: string) => boolean) | undefined;
+        filenameGenerator?: string | undefined;
+        defaultFilename?: string | undefined;
+        prettifyUrls?: boolean | undefined;
+        sources?: Source[] | undefined;
+        subdirectories?: SubDirectory[] | null | undefined;
+        request?: RequestOptions | undefined;
+        recursive?: boolean | undefined;
+        maxDepth?: number | undefined;
+        ignoreErrors?: boolean | undefined;
+        maxRecursiveDepth?: number | undefined;
+        requestConcurrency?: number | undefined;
+        plugins?: object[] | undefined;
     }
+
     interface Resource {
         url: string;
         filename: string;
         assets: Resource[];
     }
+
     interface Callback {
         (error: any | null, result: Resource[] | null): void;
     }
-    interface scrape {
+
+    interface Scrape {
         (options: Options, callback: Callback): void;
         (options: Options): Promise<Resource[]>;
     }
 }
 
-declare var websiteScraper: websiteScraper.scrape;
+declare const websiteScraper: websiteScraper.Scrape;
 
 export = websiteScraper;

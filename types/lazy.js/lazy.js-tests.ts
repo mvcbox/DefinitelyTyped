@@ -1,8 +1,7 @@
-
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 interface Foo {
+    key: string;
     foo(): string;
 }
 interface Bar {
@@ -11,35 +10,41 @@ interface Bar {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-var foo: Foo;
-var bar: Bar;
+declare var foo: Foo;
+declare var bar: Bar;
 
-var fooArr: Foo[];
-var barArr: Bar[];
+declare var fooArr: Foo[];
+declare var barArr: Bar[];
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-var fooSequence: LazyJS.Sequence<Foo>;
-var barSequence: LazyJS.Sequence<Bar>;
-var fooArraySeq: LazyJS.ArrayLikeSequence<Foo>;
-var barArraySeq: LazyJS.ArrayLikeSequence<Bar>;
-var fooObjectSeq: LazyJS.ObjectLikeSequence<Foo>;
-var anyObjectSeq: LazyJS.ObjectLikeSequence<any>;
-var fooAsyncSeq: LazyJS.AsyncSequence<Foo>;
+declare var fooSequence: LazyJS.Sequence<Foo>;
+declare var fooTupleSequence: LazyJS.Sequence<readonly [Foo, Foo, Foo, Foo, Foo]>;
+declare var fooArrSequence: LazyJS.Sequence<Foo[]>;
+declare var barSequence: LazyJS.Sequence<Bar>;
+declare var fooArraySeq: LazyJS.ArrayLikeSequence<Foo>;
+declare var barArraySeq: LazyJS.ArrayLikeSequence<Bar>;
+declare var numObjectSeq: LazyJS.ObjectLikeSequence<number>;
+declare var fooObjectSeq: LazyJS.ObjectLikeSequence<Foo>;
+declare var fooBarObjectSeq: LazyJS.ObjectLikeSequence<Foo | Bar>;
+declare var anyObjectSeq: LazyJS.ObjectLikeSequence<any>;
+declare var fooAsyncSeq: LazyJS.AsyncSequence<Foo>;
 
-var strSequence: LazyJS.Sequence<string>;
-var anySequence: LazyJS.Sequence<any>;
-var stringSeq: LazyJS.StringLikeSequence;
+declare var strSequence: LazyJS.Sequence<string>;
+declare var unknownSequence: LazyJS.Sequence<unknown>;
+declare var stringSeq: LazyJS.StringLikeSequence;
 
-var obj: Object;
-var bool: boolean;
-var num: number;
-var str: string;
+declare var obj: Object;
+declare var bool: boolean;
+declare var num: number;
+declare var const5: 5;
+declare var str: string;
 var x: any = null;
-var arr: any[];
-var exp: RegExp;
-var strArr: string[];
-var numArr: string[];
+declare var arr: any[];
+declare var exp: RegExp;
+declare var strArr: string[];
+declare var numArr: string[];
+declare var fooByNumber: Record<number, Foo>;
 
 function fnCallback(): void {
 }
@@ -85,8 +90,10 @@ function fnGeneratorCallback(index: number): Foo {
 // Lazy
 
 fooArraySeq = Lazy(fooArr);
-fooObjectSeq = Lazy<Foo>({a: foo, b: foo});
-anyObjectSeq = Lazy<any>({a: num, b: str});
+fooObjectSeq = Lazy<Foo>({ a: foo, b: foo });
+anyObjectSeq = Lazy<any>({ a: num, b: str });
+// $ExpectType ObjectLikeSequence<Foo>
+Lazy(fooByNumber);
 stringSeq = Lazy(str);
 
 // Strict
@@ -97,35 +104,41 @@ fooArraySeq = Strict([foo, foo]).pop();
 // Sequence
 
 fooAsyncSeq = fooSequence.async(num);
-fooSequence = fooSequence.chunk(num);
+fooArrSequence = fooSequence.chunk(num);
+fooTupleSequence = fooSequence.chunk(const5);
+unknownSequence = fooSequence.chunk(0);
 fooSequence = fooSequence.compact();
 fooSequence = fooSequence.concat(arr);
 fooSequence = fooSequence.consecutive(num);
 bool = fooSequence.contains(foo);
-fooSequence = fooSequence.countBy(str);
-fooObjectSeq = fooSequence.countBy(fnGetKeyCallback);
+numObjectSeq = fooSequence.countBy("key");
+numObjectSeq = fooSequence.countBy(fnGetKeyCallback);
 fooSequence = fooSequence.dropWhile(fnTestCallback);
 fooSequence = fooSequence.each(fnValueCallback);
 bool = fooSequence.every(fnTestCallback);
 fooSequence = fooSequence.filter(fnTestCallback);
-foo = fooSequence.find(fnTestCallback);
+// $ExpectType Foo | undefined
+fooSequence.find(fnTestCallback);
 foo = fooSequence.findWhere(obj);
 
 x = fooSequence.first();
 fooSequence = fooSequence.first(num);
 
 fooSequence = fooSequence.flatten();
-fooObjectSeq = fooSequence.groupBy(fnGetKeyCallback);
+// $ExpectType ObjectLikeSequence<Foo[]>
+fooSequence.groupBy(fnGetKeyCallback);
 num = fooSequence.indexOf(x);
 fooSequence = fooSequence.initial();
 fooSequence = fooSequence.initial(num);
 fooSequence = fooSequence.intersection(arr);
-fooSequence = fooSequence.invoke(str);
+// $ExpectType Sequence<unknown>
+fooSequence.invoke(str);
 bool = fooSequence.isEmpty();
 str = fooSequence.join();
 str = fooSequence.join(str);
 
-foo = fooSequence.last();
+// $ExpectType Foo | undefined
+fooSequence.last();
 fooSequence = fooSequence.last(num);
 
 num = fooSequence.lastIndexOf(foo);
@@ -134,9 +147,12 @@ foo = fooSequence.max();
 foo = fooSequence.max(fnNumberCallback);
 foo = fooSequence.min();
 foo = fooSequence.min(fnNumberCallback);
-anySequence = fooSequence.pluck(str);
-bar = fooSequence.reduce(fnMemoCallback);
+strSequence = fooSequence.pluck("key");
+// $ExpectType Foo | Bar | undefined
+fooSequence.reduce(() => bar);
 bar = fooSequence.reduce(fnMemoCallback, bar);
+// $ExpectType Foo | Bar | undefined
+fooSequence.reduceRight(() => bar);
 bar = fooSequence.reduceRight(fnMemoCallback, bar);
 fooSequence = fooSequence.reject(fnTestCallback);
 fooSequence = fooSequence.rest(num);
@@ -152,8 +168,8 @@ fooSequence = fooSequence.sortBy(str, bool);
 fooSequence = fooSequence.sortBy(fnNumberCallback);
 fooSequence = fooSequence.sortBy(fnNumberCallback, bool);
 num = fooSequence.sortedIndex(foo);
-foo = fooSequence.sum();
-foo = fooSequence.sum(fnNumberCallback);
+num = fooSequence.sum();
+num = fooSequence.sum(fnNumberCallback);
 fooSequence = fooSequence.takeWhile(fnTestCallback);
 fooSequence = fooSequence.union(fooArr);
 fooSequence = fooSequence.uniq();
@@ -170,7 +186,8 @@ obj = fooSequence.toObject();
 fooArraySeq = fooArraySeq.concat(fooArr);
 x = fooArraySeq.first();
 fooArraySeq = fooArraySeq.first(num);
-foo = fooArraySeq.get(num);
+// $ExpectType Foo | undefined
+fooArraySeq.get(num);
 num = fooArraySeq.length();
 barArraySeq = fooArraySeq.map(fnMapCallback);
 fooArraySeq = fooArraySeq.pop();
@@ -183,13 +200,16 @@ fooArraySeq = fooArraySeq.slice(num, num);
 
 // ObjectLikeSequence
 
-fooObjectSeq = fooObjectSeq.defaults(obj);
-fooSequence = fooObjectSeq.functions();
+fooObjectSeq = fooObjectSeq.defaults(foo);
+fooBarObjectSeq = fooObjectSeq.defaults(bar);
+// $ExpectType Sequence<keyof Foo>
+fooObjectSeq.functions();
 x = fooObjectSeq.get(str);
 fooObjectSeq = fooObjectSeq.invert();
 strSequence = fooObjectSeq.keys();
 fooObjectSeq = fooObjectSeq.omit(strArr);
-fooSequence = fooObjectSeq.pairs();
+// $ExpectType Sequence<[string, Foo]>
+fooObjectSeq.pairs();
 fooObjectSeq = fooObjectSeq.pick(strArr);
 arr = fooObjectSeq.toArray();
 obj = fooObjectSeq.toObject();
@@ -225,3 +245,8 @@ stringSeq = stringSeq.substring(num);
 stringSeq = stringSeq.substring(num, num);
 stringSeq = stringSeq.toLowerCase();
 stringSeq = stringSeq.toUpperCase();
+
+// flatten
+declare var fooSeqSeqSequence: LazyJS.Sequence<LazyJS.Sequence<LazyJS.Sequence<Foo>>>;
+fooSequence = fooSeqSeqSequence.flatten();
+fooSequence = fooSeqSeqSequence.flatten(true).flatten(true);

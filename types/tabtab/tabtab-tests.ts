@@ -1,14 +1,20 @@
-/// <reference types="node" />
+import { completionItem, install, log, parseEnv, TabtabEnv, uninstall } from "tabtab";
+import minimist = require("minimist");
 
-import { install, log, TabtabEnv, uninstall, parseEnv } from "tabtab";
+// $ExpectType CompletionItem
+completionItem({ name: "foo" });
 
-const opts = require("minimist")(process.argv.slice(2), {
+// $ExpectType CompletionItem
+completionItem("bar");
+
+const opts = minimist(process.argv.slice(2), {
     string: ["foo", "bar"],
-    boolean: ["help", "version", "loglevel"]
+    boolean: ["help", "version", "loglevel"],
 });
 
 const args = opts._;
 
+// tslint:disable: no-void-expression
 const completion = (env: TabtabEnv) => {
     if (!env.complete) return;
 
@@ -37,11 +43,12 @@ const completion = (env: TabtabEnv) => {
         "someCommand:someCommand is some kind of command with a description",
         {
             name: "someOtherCommand:hey",
-            description: 'You must add a description for items with ":" in them'
+            description: "You must add a description for items with \":\" in them",
         },
-        "anotherOne"
+        "anotherOne",
     ]);
 };
+// tslint:enable: no-void-expression
 
 const run = (): Promise<void> => {
     const cmd = args[0];
@@ -54,14 +61,14 @@ const run = (): Promise<void> => {
     if (cmd === "install-completion") {
         return install({
             name: "tabtab-test",
-            completer: "tabtab-test"
+            completer: "tabtab-test",
         });
     }
 
     if (cmd === "uninstall-completion") {
         // Here we uninstall for the program `tabtab-test` (this file).
         return uninstall({
-            name: "tabtab-test"
+            name: "tabtab-test",
         });
     }
 
@@ -78,6 +85,4 @@ const run = (): Promise<void> => {
     return new Promise<void>((_, rej) => rej());
 };
 
-run().catch(e => {
-    console.error(e);
-});
+run().catch(e => console.error(e));

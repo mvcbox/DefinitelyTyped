@@ -1,10 +1,4 @@
-// Type definitions for textarea-caret 3.0
-// Project: https://github.com/component/textarea-caret-position
-// Definitions by: Brendan Forster <https://github.com/shiftkey>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.6
-
-export = textarea_caret;
+export = getCaretCoordinates;
 
 interface Caret {
     top: number;
@@ -13,7 +7,9 @@ interface Caret {
 }
 
 interface Options {
-    debug?: boolean;
+    debug?: boolean | undefined;
 }
 
-declare function textarea_caret(element: HTMLElement, position: number, options?: Options): Caret;
+declare function getCaretCoordinates(element: HTMLElement, position: number, options?: Options): Caret;
+
+export as namespace getCaretCoordinates;

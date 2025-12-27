@@ -1,16 +1,17 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
-import { Connection } from './connection';
-import { Record } from './record';
-import { Channel } from './channel';
-import { Topic } from './topic';
+import { Channel } from "./channel";
+import { Connection } from "./connection";
+import { Record } from "./record";
+import { Topic } from "./topic";
 
 export interface StreamingMessage {
     event: {
-        type: object
-        createdDate: any;
+        type: string;
+        createdDate: string;
+        replayId?: number | undefined;
     };
-    sobject: Record
+    sobject: Record;
 }
 
 export class Streaming extends EventEmitter {
@@ -18,6 +19,16 @@ export class Streaming extends EventEmitter {
 
     channel(channelId: string): Channel;
     subscribe(name: string, listener: StreamingMessage): any; // Faye Subscription
-    topic(namne: string): Topic;
+    topic(name: string): Topic;
     unsubscribe(name: string, listener: StreamingMessage): Streaming;
+    createClient(extensions?: any[]): any; // Faye Client
+}
+
+export namespace StreamingExtension {
+    export class Replay {
+        constructor(channel: string, replayId: number);
+    }
+    export class AuthFailure {
+        constructor(failureCallback: () => any);
+    }
 }

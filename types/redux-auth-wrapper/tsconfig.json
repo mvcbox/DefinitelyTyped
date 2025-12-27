@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6",
             "dom"
@@ -9,22 +9,12 @@
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
         "types": [],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true,
         "jsx": "react"
     },
     "files": [
-        "history3/redirect.d.ts",
-        "history3/locationHelper.d.ts",
-        "history4/redirect.d.ts",
-        "history4/locationHelper.d.ts",
-        "authWrapper.d.ts",
-        "connectedAuthWrapper.d.ts",
         "index.d.ts",
         "redux-auth-wrapper-tests.tsx"
     ]

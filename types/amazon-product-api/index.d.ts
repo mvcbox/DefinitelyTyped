@@ -1,14 +1,7 @@
-// Type definitions for amazon-product-api
-// Project: https://github.com/t3chnoboy/amazon-product-api
-// Definitions by: Matti Lehtinen <https://github.com/MattiLehtinen>, Alex Leon <https://github.com/alien35>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-
-
 interface ICredentials {
-    awsId: string,
-    awsSecret: string,
-    awsTag: string
+    awsId: string;
+    awsSecret: string;
+    awsTag: string;
 }
 
 interface IAmazonProductQueryCallback {
@@ -16,36 +9,48 @@ interface IAmazonProductQueryCallback {
 }
 
 interface IItemSearchOptions {
-    condition?: string;
-    keywords?: string;
-    responseGroup?: string;
-    searchIndex?: string;
-    itemPage?: number;
-    sort?: string;
+    condition?: string | undefined;
+    keywords?: string | undefined;
+    responseGroup?: string | undefined;
+    searchIndex?: string | undefined;
+    itemPage?: number | undefined;
+    sort?: string | undefined;
 }
 
 interface IItemLookupOptions {
-    condition?: string;
-    idType?: string;
-    includeReviewsSummary?: boolean;
-    itemId?: string | string[];
-    responseGroup?: string;
-    searchIndex?: string;
-    truncateReviewsAt?: number;
-    variationPage?: string;
-    domain?: string;
-    request?: Function;
+    condition?: string | undefined;
+    idType?: string | undefined;
+    includeReviewsSummary?: boolean | undefined;
+    itemId?: string | string[] | undefined;
+    responseGroup?: string | undefined;
+    searchIndex?: string | undefined;
+    truncateReviewsAt?: number | undefined;
+    variationPage?: string | undefined;
+    domain?: string | undefined;
+    request?: Function | undefined;
 }
 
 interface IBrowseNodeLookupOptions {
-    browseNodeId?: string;
-    responseGroup?: string;
+    browseNodeId?: string | undefined;
+    responseGroup?: string | undefined;
+}
+
+interface ISimilarityLookupOptions {
+    similarityType?: string | undefined;
+    responseGroup?: string | undefined;
 }
 
 interface IAmazonProductClient {
-    itemSearch(query: IItemSearchOptions, callback?: IAmazonProductQueryCallback): Promise<Object[]>;
-    itemLookup(query: IItemLookupOptions, callback?: IAmazonProductQueryCallback): Promise<Object[]>;
-    browseNodeLookup(query: IBrowseNodeLookupOptions, callback?: IAmazonProductQueryCallback): Promise<Object[]>;
+    itemSearch(query: IItemSearchOptions, callback?: IAmazonProductQueryCallback): Promise<Object[]> | undefined;
+    itemLookup(query: IItemLookupOptions, callback?: IAmazonProductQueryCallback): Promise<Object[]> | undefined;
+    browseNodeLookup(
+        query: IBrowseNodeLookupOptions,
+        callback?: IAmazonProductQueryCallback,
+    ): Promise<Object[]> | undefined;
+    similarityLookup(
+        query: ISimilarityLookupOptions,
+        callback?: IAmazonProductQueryCallback,
+    ): Promise<Object[]> | undefined;
 }
 
 export declare function createClient(credentials: ICredentials): IAmazonProductClient;

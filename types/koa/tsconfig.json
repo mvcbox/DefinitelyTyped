@@ -1,21 +1,21 @@
 {
     "files": [
         "index.d.ts",
-        "koa-tests.ts"
+        "test/index.ts",
+        "test/constructor.ts",
+        "test/default.ts",
+        "test/settings.ts",
+        "test/typed-response-body.ts"
     ],
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6"
         ],
         "noImplicitAny": true,
         "noImplicitThis": true,
-        "strictNullChecks": false,
+        "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
         "types": [],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true

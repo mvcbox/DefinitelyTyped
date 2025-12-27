@@ -1,23 +1,21 @@
 {
-	"compilerOptions": {
-        "module": "commonjs",
+    "compilerOptions": {
+        "module": "node16",
         "lib": [
             "es6",
-            "dom"
+            "dom",
+            "ES2020.String"
         ],
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
         "types": [],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true
     },
     "files": [
-        "index.d.ts"
+        "index.d.ts",
+        "forge-viewer-tests.ts"
     ]
 }

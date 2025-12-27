@@ -2,53 +2,119 @@ import confetti = require("canvas-confetti");
 
 confetti.Promise = null;
 
+declare const matrix: DOMMatrix;
+declare const bitmap: ImageBitmap;
+
 confetti();
-
+confetti({});
 confetti({
-    particleCount: 150
-});
-
-confetti({
-    spread: 180
-});
-
-confetti({
-    particleCount: 100,
-    startVelocity: 30,
-    spread: 360,
+    angle: 90,
+    colors: ["#bada55"],
+    decay: 0.9,
+    disableForReducedMotion: true,
+    drift: 0,
+    flat: true,
+    gravity: 1,
     origin: {
         x: Math.random(),
-        // since they fall down, start a bit higher than random
-        y: Math.random() - 0.2
-    }
+        y: Math.random() - 0.2,
+    },
+    particleCount: 150,
+    scalar: 1,
+    shapes: [
+        {
+            type: "path",
+            path: "string",
+            matrix,
+        },
+        {
+            type: "bitmap",
+            bitmap,
+            matrix,
+        },
+        "square",
+        "circle",
+        "star",
+    ],
+    spread: 180,
+    startVelocity: 30,
+    ticks: 200,
+    zIndex: 100,
 });
 
-confetti({
-    particleCount: 100,
-    spread: 70,
+declare const canvas: HTMLCanvasElement;
+
+let customConfetti = confetti.create();
+customConfetti = confetti.create(canvas);
+customConfetti = confetti.create(canvas, {});
+customConfetti = confetti.create(canvas, {
+    disableForReducedMotion: true,
+    resize: true,
+    useWorker: true,
+});
+
+customConfetti();
+customConfetti({});
+customConfetti({
+    angle: 90,
+    colors: ["#bada55"],
+    decay: 0.9,
+    disableForReducedMotion: true,
+    drift: 0,
+    flat: true,
+    gravity: 1,
     origin: {
-        y: 0.6
-    }
+        x: Math.random(),
+        y: Math.random() - 0.2,
+    },
+    particleCount: 150,
+    scalar: 1,
+    shapes: [
+        {
+            type: "path",
+            path: "string",
+            matrix,
+        },
+        {
+            type: "bitmap",
+            bitmap,
+            matrix,
+        },
+        "square",
+        "circle",
+        "star",
+    ],
+    spread: 180,
+    startVelocity: 30,
+    ticks: 200,
+    zIndex: 100,
 });
 
-function r(min: number, max: number) {
-    return Math.random() * (max - min) + min;
-}
+confetti.reset();
 
-confetti({
-    angle: r(55, 125),
-    spread: r(50, 70),
-    particleCount: r(50, 100),
-    origin: {
-        y: 0.6
-    }
+customConfetti.reset();
+
+confetti()!.then(param => {
+    param; // $ExpectType undefined
 });
 
-const canvas = document.createElement('canvas');
-const myConfetti = confetti.create(canvas);
+declare const path: string;
 
-myConfetti();
+// @ts-ignore - Need an argument
+confetti.shapeFromPath();
+confetti.shapeFromPath(path);
 
-myConfetti({
-    particleCount: 150
-});
+// @ts-ignore - `pathData.path` is required
+confetti.shapeFromPath({});
+confetti.shapeFromPath({ path });
+confetti.shapeFromPath({ path, matrix });
+
+declare const text: string;
+// @ts-ignore - Need an argument
+confetti.shapeFromText();
+confetti.shapeFromText(text);
+
+// @ts-ignore - `textData.text` is required
+confetti.shapeFromText({});
+confetti.shapeFromText({ text });
+confetti.shapeFromText({ text, scalar: 1, color: "hotpink", fontFamily: "Arial" });

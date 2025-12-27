@@ -1,14 +1,24 @@
-// Type definitions for svg-parser 1.0
-// Project: https://gitlab.com/Rich-Harris/svg-parser#README
-// Definitions by: mrmlnc <https://github.com/mrmlnc>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.1
-
-export interface Node {
-    name: string;
-    attributes: Record<string, string | number>;
-    children: Node[];
-    metadata?: string;
+export interface TextNode {
+    type: "text";
+    value?: string | boolean | number | undefined;
 }
 
-export function parse(content: string): Node;
+export interface ElementNode {
+    type: "element";
+    tagName?: string | undefined;
+    properties?: Record<string, string | number> | undefined;
+    children: Array<Node | string>;
+    value?: string | undefined;
+    metadata?: string | undefined;
+}
+
+export type Node = TextNode | ElementNode;
+
+export interface RootNode {
+    type: "root";
+    children: [Node];
+}
+
+export function parse(source: string): RootNode;
+
+export as namespace svgParser;

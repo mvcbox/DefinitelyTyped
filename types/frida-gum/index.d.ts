@@ -1,9 +1,3 @@
-// Type definitions for non-npm package frida-gum 13.1
-// Project: https://github.com/frida/frida
-// Definitions by: Ole André Vadla Ravnås <https://github.com/oleavr>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.4
-
 /**
  * Returns a hexdump of the provided ArrayBuffer or NativePointerValue target.
  *
@@ -14,24 +8,30 @@ declare function hexdump(target: ArrayBuffer | NativePointerValue, options?: Hex
 
 interface HexdumpOptions {
     /**
+     * Specifies base address of data being dumped. Defaults to the address of
+     * the `target` argument, if it has an address, and 0 otherwise.
+     */
+    address?: NativePointer;
+
+    /**
      * Specifies byte offset of where to start dumping. Defaults to 0.
      */
-    offset?: number;
+    offset?: number | undefined;
 
     /**
      * Limits how many bytes to dump.
      */
-    length?: number;
+    length?: number | undefined;
 
     /**
      * Whether a header should be included. Defaults to true.
      */
-    header?: boolean;
+    header?: boolean | undefined;
 
     /**
      * Whether ANSI colors should be used. Defaults to false.
      */
-    ansi?: boolean;
+    ansi?: boolean | undefined;
 }
 
 /**
@@ -69,7 +69,9 @@ declare function recv(callback: MessageCallback): MessageRecvOperation;
  */
 declare function recv(type: string, callback: MessageCallback): MessageRecvOperation;
 
-interface MessageCallback { (message: any, data: ArrayBuffer | null): void; }
+interface MessageCallback {
+    (message: any, data: ArrayBuffer | null): void;
+}
 
 interface MessageRecvOperation {
     /**
@@ -140,15 +142,6 @@ type ImmediateId = number;
 
 type ScheduledCallback = (...params: any[]) => void;
 
-/**
- * Forces garbage collection.
- *
- * Useful for testing `WeakRef.bind()` logic, but also sometimes needed when
- * using the Duktape runtime and its default GC heuristics proving a bit too
- * lazy.
- */
-declare function gc(): void;
-
 declare namespace rpc {
     /**
      * Empty object that you can either replace or insert into to expose an RPC-style API to your application.
@@ -176,11 +169,6 @@ declare namespace Frida {
      * the hosting process.
      */
     const heapSize: number;
-
-    /**
-     * Source map for the GumJS runtime.
-     */
-    const sourceMap: SourceMap;
 }
 
 declare namespace Script {
@@ -190,14 +178,46 @@ declare namespace Script {
     const runtime: ScriptRuntime;
 
     /**
-     * File name of the current script.
+     * Evaluates the given JavaScript `source` in the global scope. Useful for
+     * agents that want to support loading user-provided scripts inside their
+     * own script. The two benefits over simply using `eval()` is that the
+     * script filename can be provided, and source maps are supported — both
+     * inline and through `Script.registerSourceMap()`.
+     *
+     * @param name Name used in future stack traces, e.g. `/plugins/tty.js`.
+     * @param source JavaScript source code to be evaluated.
+     * @returns The resulting value of the evaluated code.
      */
-    const fileName: string;
+    function evaluate(name: string, source: string): any;
 
     /**
-     * Source map of the current script.
+     * Compiles and evaluates the given JavaScript `source` as an ES module.
+     * Useful for agents that want to support loading user-provided scripts
+     * inside their own script. This API offers the same benefits over `eval()`
+     * as `Script.evaluate()`, in addition to encapsulating the user-provided
+     * code in its own ES module. This means values may be exported, and
+     * subsequently imported by other modules. The parent script may also export
+     * values that can be imported from the loaded child script. This requires
+     * that the parent uses the new ES module bundle format used by newer
+     * versions of frida-compile.
+     *
+     * @param name UNIX-style virtual filesystem name visible to other modules,
+     *             e.g. `/plugins/screenshot.js`.
+     * @param source JavaScript source code.
+     * @returns The module's namespace object.
      */
-    const sourceMap: SourceMap;
+    function load(name: string, source: string): Promise<{ [name: string | symbol]: any }>;
+
+    /**
+     * Registers a source map for the specified script `name`. Should ideally
+     * be called before the given script gets loaded, so stack traces created
+     * during load can make use of the source map.
+     *
+     * @param name Name of the script that the source map is for, e.g.
+     *             `/plugins/screenshot.js`.
+     * @param json Source map contents as JSON.
+     */
+    function registerSourceMap(name: string, json: string): void;
 
     /**
      * Runs `func` on the next tick, i.e. when the current native thread exits
@@ -210,7 +230,7 @@ declare namespace Script {
      * This is reference-counted, so there must be one matching `unpin()`
      * happening at a later point.
      *
-     * Typically used in the callback of `WeakRef.bind()` when you need to
+     * Typically used in the callback of `Script.bindWeak()` when you need to
      * schedule cleanup on another thread.
      */
     function pin(): void;
@@ -219,6 +239,30 @@ declare namespace Script {
      * Reverses a previous `pin()` so the current script may be unloaded.
      */
     function unpin(): void;
+
+    /**
+     * Starts monitoring the lifetime of `target`. Calls `callback` as soon as
+     * value has been garbage-collected, or the script is about to get
+     * unloaded.
+     *
+     * Useful when you're building a language-binding where you need to free
+     * native resources when a JS value is no longer needed.
+     *
+     * Be careful so `callback` is not a closure that accidentally captures
+     * `target` and keeps it alive beyond its intended lifetime.
+     *
+     * @param target Heap-allocated JavaScript value to monitor lifetime of.
+     * @param callback Function to call when `target` gets GCed.
+     */
+    function bindWeak(target: any, callback: WeakRefCallback): WeakRefId;
+
+    /**
+     * Stops monitoring the value passed to `Script.bindWeak()` and calls the
+     * callback immediately.
+     *
+     * @param id ID returned by a previous call to `Script.bindWeak()`.
+     */
+    function unbindWeak(id: WeakRefId): void;
 
     /**
      * Installs or uninstalls a handler that is used to resolve attempts to
@@ -233,7 +277,15 @@ declare namespace Script {
     function setGlobalAccessHandler(handler: GlobalAccessHandler | null): void;
 }
 
-type ScriptRuntime = "DUK" | "V8";
+type ScriptRuntime = "QJS" | "V8";
+
+type WeakRefCallback = () => void;
+
+/**
+ * Opaque ID returned by `Script.bindWeak()`. Pass it to `Script.unbindWeak()`
+ * to stop monitoring the target value.
+ */
+type WeakRefId = number;
 
 interface GlobalAccessHandler {
     /**
@@ -285,6 +337,26 @@ declare namespace Process {
     const codeSigningPolicy: CodeSigningPolicy;
 
     /**
+     * The module representing the main executable of the process.
+     */
+    const mainModule: Module;
+
+    /**
+     * Gets the filesystem path to the current working directory.
+     */
+    function getCurrentDir(): string;
+
+    /**
+     * Gets the filesystem path to the current user's home directory.
+     */
+    function getHomeDir(): string;
+
+    /**
+     * Gets the filesystem path to the directory to use for temporary files.
+     */
+    function getTmpDir(): string;
+
+    /**
      * Determines whether a debugger is currently attached.
      */
     function isDebuggerAttached(): boolean;
@@ -298,6 +370,29 @@ declare namespace Process {
      * Enumerates all threads.
      */
     function enumerateThreads(): ThreadDetails[];
+
+    /**
+     * Starts observing threads, calling the provided callbacks as threads are
+     * added, removed, and renamed. Calls `onAdded` with all existing threads
+     * right away, so the initial state vs. updates can be managed easily
+     * without worrying about race conditions.
+     * All callbacks are optional, but at least one of them must be provided.
+     */
+    function attachThreadObserver(callbacks: ThreadObserverCallbacks): ThreadObserver;
+
+    /**
+     * Runs the JavaScript function `callback` on the thread specified by `id`.
+     * Must be used with extreme caution due to the thread potentially being
+     * interrupted in non-reentrant code. For example, you could be interrupting
+     * it while it's in the middle of some delicate code, holding a specific
+     * non-recursive lock, which you then try to implicitly acquire again when
+     * you call some function.
+     *
+     * @param id ID of the thread to run on.
+     * @param callback Function to run.
+     * @returns A Promise that resolves to the value returned by `callback`.
+     */
+    function runOnThread<T>(id: ThreadId, callback: () => T): Promise<T>;
 
     /**
      * Looks up a module by address. Returns null if not found.
@@ -323,6 +418,15 @@ declare namespace Process {
      * Enumerates modules loaded right now.
      */
     function enumerateModules(): Module[];
+
+    /**
+     * Starts observing modules, calling the provided callbacks as modules are
+     * added and removed. Calls `onAdded` with all existing modules right away,
+     * so the initial state vs. updates can be managed easily without worrying
+     * about race conditions.
+     * Both callbacks are optional, but at least one of them must be provided.
+     */
+    function attachModuleObserver(callbacks: ModuleObserverCallbacks): ModuleObserver;
 
     /**
      * Looks up a memory range by address. Returns null if not found.
@@ -372,6 +476,11 @@ declare class Module {
     name: string;
 
     /**
+     * Module version, if available.
+     */
+    version: string | null;
+
+    /**
      * Base address.
      */
     base: NativePointer;
@@ -385,6 +494,16 @@ declare class Module {
      * Full filesystem path.
      */
     path: string;
+
+    /**
+     * Ensures that the module initializers have been run. This is important
+     * during early instrumentation, i.e. code run early in the process
+     * lifetime, to be able to safely interact with APIs.
+     *
+     * One such use-case is interacting with Objective-C classes provided by
+     * a given module.
+     */
+    ensureInitialized(): void;
 
     /**
      * Enumerates imports of module.
@@ -402,29 +521,57 @@ declare class Module {
     enumerateSymbols(): ModuleSymbolDetails[];
 
     /**
-     * Enumerates memory ranges of module with the `name` as seen in `Process#enumerateModules()`.
+     * Enumerates memory ranges of module.
      *
      * @param protection Minimum protection of ranges to include.
      */
     enumerateRanges(protection: PageProtection): RangeDetails[];
 
     /**
-     * Looks up the absolute address of the export named `exportName`.
+     * Enumerates sections of module.
+     */
+    enumerateSections(): ModuleSectionDetails[];
+
+    /**
+     * Enumerates dependencies of module.
+     */
+    enumerateDependencies(): ModuleDependencyDetails[];
+
+    /**
+     * Looks up the absolute address of the export named `name`.
      *
      * Returns null if the export doesn't exist.
      *
-     * @param exportName Export name to find the address of.
+     * @param name Export name to find the address of.
      */
-    findExportByName(exportName: string): NativePointer | null;
+    findExportByName(name: string): NativePointer | null;
 
     /**
-     * Looks up the absolute address of the export named `exportName`.
+     * Looks up the absolute address of the export named `name`.
      *
      * Throws an exception if the export doesn't exist.
      *
-     * @param exportName Export name to find the address of.
+     * @param name Export name to find the address of.
      */
-    getExportByName(exportName: string): NativePointer;
+    getExportByName(name: string): NativePointer;
+
+    /**
+     * Looks up the absolute address of the symbol named `name`.
+     *
+     * Returns null if the symbol doesn't exist.
+     *
+     * @param name Symbol name to find the address of.
+     */
+    findSymbolByName(name: string): NativePointer | null;
+
+    /**
+     * Looks up the absolute address of the symbol named `name`.
+     *
+     * Throws an exception if the symbol doesn't exist.
+     *
+     * @param name Symbol name to find the address of.
+     */
+    getSymbolByName(name: string): NativePointer;
 
     /**
      * Loads the specified module.
@@ -432,48 +579,69 @@ declare class Module {
     static load(name: string): Module;
 
     /**
-     * Ensures that initializers of the specified module have been run. This is important during early instrumentation,
-     * i.e. code run early in the process lifetime, to be able to safely interact with APIs.
+     * Looks up the absolute address of the global export named `name`.
+     * This can be a costly search and should be avoided.
      *
-     * One such use-case is interacting with ObjC classes provided by a given module.
+     * Returns null if the export doesn't exist.
+     *
+     * @param name Export name to find the address of.
      */
-    static ensureInitialized(name: string): void;
+    static findGlobalExportByName(name: string): NativePointer | null;
 
     /**
-     * Looks up the base address of the `name` module. Returns null if the module isn’t loaded.
+     * Looks up the absolute address of the global export named `name`.
+     * This can be a costly search and should be avoided.
      *
-     * @param name Module name or path.
+     * Throws an exception if the export doesn't exist.
+     *
+     * @param name Export name to find the address of.
      */
-    static findBaseAddress(name: string): NativePointer | null;
+    static getGlobalExportByName(name: string): NativePointer;
+}
+
+declare class ThreadObserver {
+    /**
+     * Detaches observer previously attached through `Process#attachThreadObserver()`.
+     */
+    detach(): void;
+}
+
+interface ThreadObserverCallbacks {
+    /**
+     * Called synchronously when a Thread has been added.
+     */
+    onAdded?(thread: StableThreadDetails): void;
 
     /**
-     * Looks up the base address of the `name` module. Throws an exception if the module isn’t loaded.
-     *
-     * @param name Module name or path.
+     * Called synchronously when a Thread has been removed.
      */
-    static getBaseAddress(name: string): NativePointer;
+    onRemoved?(thread: StableThreadDetails): void;
 
     /**
-     * Looks up the absolute address of the export named `exportName` in `moduleName`. If the module isn’t known you may
-     * pass null instead of its name, but this can be a costly search and should be avoided.
-     *
-     * Returns null if the module or export doesn't exist.
-     *
-     * @param moduleName Module name or path.
-     * @param exportName Export name to find the address of.
+     * Called synchronously when a Thread has been renamed.
      */
-    static findExportByName(moduleName: string | null, exportName: string): NativePointer | null;
+    onRenamed?(thread: StableThreadDetails, previousName: string | null): void;
+}
+
+type StableThreadDetails = Omit<ThreadDetails, "state" | "context">;
+
+declare class ModuleObserver {
+    /**
+     * Detaches observer previously attached through `Process#attachModuleObserver()`.
+     */
+    detach(): void;
+}
+
+interface ModuleObserverCallbacks {
+    /**
+     * Called synchronously when a Module has been added.
+     */
+    onAdded?(module: Module): void;
 
     /**
-     * Looks up the absolute address of the export named `exportName` in `moduleName`. If the module isn’t known you may
-     * pass null instead of its name, but this can be a costly search and should be avoided.
-     *
-     * Throws an exception if the module or export doesn't exist.
-     *
-     * @param moduleName Module name or path.
-     * @param exportName Export name to find the address of.
+     * Called synchronously when a Module has been removed.
      */
-    static getExportByName(moduleName: string | null, exportName: string): NativePointer;
+    onRemoved?(module: Module): void;
 }
 
 declare class ModuleMap {
@@ -566,25 +734,28 @@ declare namespace Memory {
      *
      * @param address Starting address to scan from.
      * @param size Number of bytes to scan.
-     * @param pattern Match pattern of the form “13 37 ?? ff” to match 0x13 followed by 0x37 followed by any byte
-     *                followed by 0xff. For more advanced matching it is also possible to specify an r2-style mask.
-     *                The mask is bitwise AND-ed against both the needle and the haystack. To specify the mask append
-     *                a `:` character after the needle, followed by the mask using the same syntax.
-     *                For example: “13 37 13 37 : 1f ff ff f1”.
-     *                For convenience it is also possible to specify nibble-level wildcards, like “?3 37 13 ?7”,
-     *                which gets translated into masks behind the scenes.
+     * @param pattern Match pattern, see `MatchPattern` for details.
      * @param callbacks Object with callbacks.
      */
-    function scan(address: NativePointerValue, size: number | UInt64, pattern: string, callbacks: MemoryScanCallbacks): void;
+    function scan(
+        address: NativePointerValue,
+        size: number | UInt64,
+        pattern: string | MatchPattern,
+        callbacks: MemoryScanCallbacks,
+    ): Promise<void>;
 
     /**
      * Synchronous version of `scan()`.
      *
      * @param address Starting address to scan from.
      * @param size Number of bytes to scan.
-     * @param pattern Match pattern, see `Memory.scan()` for details.
+     * @param pattern Match pattern, see `MatchPattern` for details.
      */
-    function scanSync(address: NativePointerValue, size: number | UInt64, pattern: string): MemoryScanMatch[];
+    function scanSync(
+        address: NativePointerValue,
+        size: number | UInt64,
+        pattern: string | MatchPattern,
+    ): MemoryScanMatch[];
 
     /**
      * Allocates `size` bytes of memory on Frida's private heap, or, if `size` is a multiple of Process#pageSize,
@@ -593,8 +764,9 @@ declare namespace Memory {
      * is being used by code outside the JavaScript runtime.
      *
      * @param size Number of bytes to allocate.
+     * @param options Options to customize the memory allocation.
      */
-    function alloc(size: number | UInt64): NativePointer;
+    function alloc(size: number | UInt64, options?: MemoryAllocOptions): NativePointer;
 
     /**
      * Allocates, encodes and writes out `str` as a UTF-8 string on Frida's private heap.
@@ -638,13 +810,21 @@ declare namespace Memory {
     function dup(address: NativePointerValue, size: number | UInt64): NativePointer;
 
     /**
-     * Changes the page protection on a region of memory.
+     * Changes the page protection of a region of memory.
      *
      * @param address Starting address.
      * @param size Number of bytes. Must be a multiple of Process#pageSize.
      * @param protection Desired page protection.
      */
     function protect(address: NativePointerValue, size: number | UInt64, protection: PageProtection): boolean;
+
+    /**
+     * Determines the current protection of a page in memory.
+     *
+     * @param address Address inside page to determine the protection of.
+     * @returns The current page protection.
+     */
+    function queryProtection(address: NativePointerValue): PageProtection;
 
     /**
      * Safely modifies `size` bytes at `address`. The supplied function `apply` gets called with a writable pointer
@@ -658,6 +838,18 @@ declare namespace Memory {
      * @param apply Function that applies the desired changes.
      */
     function patchCode(address: NativePointerValue, size: number | UInt64, apply: MemoryPatchApplyCallback): void;
+}
+
+interface MemoryRange {
+    /**
+     * Base address.
+     */
+    base: NativePointer;
+
+    /**
+     * Size in bytes.
+     */
+    size: number;
 }
 
 /**
@@ -706,6 +898,11 @@ interface MemoryAccessCallbacks {
 
 interface MemoryAccessDetails {
     /**
+     * The ID of the thread performing the access.
+     */
+    threadId: ThreadId;
+
+    /**
      * The kind of operation that triggered the access.
      */
     operation: MemoryOperation;
@@ -741,6 +938,11 @@ interface MemoryAccessDetails {
      * Overall number of pages that were initially monitored.
      */
     pagesTotal: number;
+
+    /**
+     * CPU registers. You may also update register values by assigning to these keys.
+     */
+    context: CpuContext;
 }
 
 declare namespace Thread {
@@ -793,15 +995,15 @@ type Architecture =
     | "x64"
     | "arm"
     | "arm64"
-    | "mips"
-    ;
+    | "mips";
 
 type Platform =
     | "windows"
     | "darwin"
     | "linux"
+    | "freebsd"
     | "qnx"
-    ;
+    | "barebone";
 
 type CodeSigningPolicy = "optional" | "required";
 
@@ -817,14 +1019,23 @@ type ThreadState =
     | "stopped"
     | "waiting"
     | "uninterruptible"
-    | "halted"
-    ;
+    | "halted";
+
+type HardwareBreakpointId = number;
+type HardwareWatchpointId = number;
+
+type HardwareWatchpointConditions = "r" | "w" | "rw";
 
 interface ThreadDetails {
     /**
      * OS-specific ID.
      */
     id: ThreadId;
+
+    /**
+     * Name, if available.
+     */
+    name?: string;
 
     /**
      * Snapshot of state.
@@ -835,6 +1046,60 @@ interface ThreadDetails {
      * Snapshot of CPU registers.
      */
     context: CpuContext;
+
+    /**
+     * Where the thread started its execution, if applicable and available.
+     */
+    entrypoint?: ThreadEntrypoint;
+
+    /**
+     * Set a hardware breakpoint.
+     *
+     * @param id ID of the breakpoint.
+     * @param address The address of the breakpoint.
+     */
+    setHardwareBreakpoint(id: HardwareBreakpointId, address: NativePointerValue): void;
+
+    /**
+     * Unset a hardware breakpoint.
+     *
+     * @param id ID of the breakpoint.
+     */
+    unsetHardwareBreakpoint(id: HardwareBreakpointId): void;
+
+    /**
+     * Set a harware watchpoint.
+     *
+     * @param id ID of the watchpoint.
+     * @param address The address of the region to be watched.
+     * @param size The size of the region to be watched.
+     * @param conditions The conditions to be watched for.
+     */
+    setHardwareWatchpoint(
+        id: HardwareWatchpointId,
+        address: NativePointerValue,
+        size: number | UInt64,
+        conditions: HardwareWatchpointConditions,
+    ): void;
+
+    /**
+     * Unset a hardware watchpoint.
+     *
+     * @param id ID of the watchpoint.
+     */
+    unsetHardwareWatchpoint(id: HardwareWatchpointId): void;
+}
+
+interface ThreadEntrypoint {
+    /**
+     * The thread's start routine.
+     */
+    routine: NativePointer;
+
+    /**
+     * Parameter passed to `routine`, if available.
+     */
+    parameter?: NativePointer;
 }
 
 interface KernelModuleDetails {
@@ -858,7 +1123,7 @@ interface ModuleImportDetails {
     /**
      * The kind of import, if available.
      */
-    type?: ModuleImportType;
+    type?: ModuleImportType | undefined;
 
     /**
      * Imported symbol name.
@@ -868,17 +1133,17 @@ interface ModuleImportDetails {
     /**
      * Module name, if available.
      */
-    module?: string;
+    module?: string | undefined;
 
     /**
      * Absolute address, if available.
      */
-    address?: NativePointer;
+    address?: NativePointer | undefined;
 
     /**
      * Memory location where the import is stored, if available.
      */
-    slot?: NativePointer;
+    slot?: NativePointer | undefined;
 }
 
 interface ModuleExportDetails {
@@ -912,7 +1177,7 @@ interface ModuleSymbolDetails {
     /**
      * Which section this symbol resides in, if available.
      */
-    section?: ModuleSymbolSectionDetails;
+    section?: ModuleSymbolSectionDetails | undefined;
 
     /**
      * Symbol name.
@@ -923,6 +1188,46 @@ interface ModuleSymbolDetails {
      * Absolute address.
      */
     address: NativePointer;
+
+    /**
+     * Size in bytes, if available.
+     */
+    size?: number | undefined;
+}
+
+interface ModuleSectionDetails {
+    /**
+     * Section index, segment name (if applicable) and section name – same
+     * format as r2’s section IDs.
+     */
+    id: string;
+
+    /**
+     * Section name.
+     */
+    name: string;
+
+    /**
+     * Absolute address.
+     */
+    address: NativePointer;
+
+    /**
+     * Size in bytes.
+     */
+    size: number;
+}
+
+interface ModuleDependencyDetails {
+    /**
+     * Module name.
+     */
+    name: string;
+
+    /**
+     * Dependency type.
+     */
+    type: ModuleDependencyType;
 }
 
 type ModuleImportType = "function" | "variable";
@@ -933,24 +1238,28 @@ type ModuleSymbolType =
     // Common
     | "unknown"
     | "section"
-
     // Mach-O
     | "undefined"
     | "absolute"
     | "prebound-undefined"
     | "indirect"
-
     // ELF
     | "object"
     | "function"
     | "file"
     | "common"
-    | "tls"
-    ;
+    | "tls";
+
+type ModuleDependencyType =
+    | "regular"
+    | "weak"
+    | "reexport"
+    | "upward";
 
 interface ModuleSymbolSectionDetails {
     /**
-     * Section index, segment name (if applicable) and section name – same format as r2’s section IDs.
+     * Section index, segment name (if applicable) and section name – same
+     * format as r2’s section IDs.
      */
     id: string;
 
@@ -979,7 +1288,7 @@ interface RangeDetails {
     /**
      * File mapping details, if available.
      */
-    file?: FileMapping;
+    file?: FileMapping | undefined;
 }
 
 interface KernelRangeDetails {
@@ -1050,6 +1359,7 @@ interface EnumerateRangesSpecifier {
     coalesce: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 type ExceptionHandlerCallback = (exception: ExceptionDetails) => boolean | void;
 
 interface ExceptionDetails {
@@ -1066,7 +1376,7 @@ interface ExceptionDetails {
     /**
      * Memory operation details, if relevant.
      */
-    memory?: ExceptionMemoryDetails;
+    memory?: ExceptionMemoryDetails | undefined;
 
     /**
      * CPU registers. You may also update register values by assigning to these keys.
@@ -1092,8 +1402,7 @@ type ExceptionType =
     | "arithmetic"
     | "breakpoint"
     | "single-step"
-    | "system"
-    ;
+    | "system";
 
 interface ExceptionMemoryDetails {
     /**
@@ -1110,6 +1419,7 @@ interface ExceptionMemoryDetails {
 type MemoryOperation = "read" | "write" | "execute";
 
 interface EnumerateCallbacks<T> {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     onMatch: (item: T) => void | EnumerateAction;
     onComplete: () => void;
 }
@@ -1123,6 +1433,7 @@ interface MemoryScanCallbacks {
      * @param address Memory address where a match was found.
      * @param size Size of this match.
      */
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     onMatch: (address: NativePointer, size: number) => void | EnumerateAction;
 
     /**
@@ -1130,12 +1441,12 @@ interface MemoryScanCallbacks {
      *
      * @param reason Why the memory access failed.
      */
-    onError?: (reason: string) => void;
+    onError?: ((reason: string) => void) | undefined;
 
     /**
      * Called when the memory range has been fully scanned.
      */
-    onComplete: () => void;
+    onComplete?: () => void;
 }
 
 interface MemoryScanMatch {
@@ -1157,6 +1468,7 @@ interface KernelMemoryScanCallbacks {
      * @param address Memory address where a match was found.
      * @param size Size of this match.
      */
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     onMatch: (address: UInt64, size: number) => void | EnumerateAction;
 
     /**
@@ -1164,12 +1476,12 @@ interface KernelMemoryScanCallbacks {
      *
      * @param reason Why the memory access failed.
      */
-    onError?: (reason: string) => void;
+    onError?: ((reason: string) => void) | undefined;
 
     /**
      * Called when the memory range has been fully scanned.
      */
-    onComplete: () => void;
+    onComplete?: () => void;
 }
 
 interface KernelMemoryScanMatch {
@@ -1182,6 +1494,20 @@ interface KernelMemoryScanMatch {
      * Size of this match.
      */
     size: number;
+}
+
+type MemoryAllocOptions = Record<any, never> | MemoryAllocNearOptions;
+
+interface MemoryAllocNearOptions {
+    /**
+     * Memory address to try allocating near.
+     */
+    near: NativePointer;
+
+    /**
+     * Maximum distance to the given memory address, in bytes.
+     */
+    maxDistance: number;
 }
 
 type MemoryPatchApplyCallback = (code: NativePointer) => void;
@@ -1303,12 +1629,12 @@ declare class UInt64 {
     xor(v: UInt64 | number | string): UInt64;
 
     /**
-     * Makes a new UInt64 whose value is `this` << `v`.
+     * Makes a new UInt64 whose value is `this` >> `v`.
      */
     shr(v: UInt64 | number | string): UInt64;
 
     /**
-     * Makes a new UInt64 whose value is `this` >> `v`.
+     * Makes a new UInt64 whose value is `this` << `v`.
      */
     shl(v: UInt64 | number | string): UInt64;
 
@@ -1404,6 +1730,35 @@ declare class NativePointer {
     not(): NativePointer;
 
     /**
+     * Makes a new NativePointer by taking the bits of `this` and adding
+     * pointer authentication bits, creating a signed pointer. This is a
+     * no-op if the current process does not support pointer
+     * authentication, returning `this` instead of a new value.
+     *
+     * @param key The key to use. Defaults to `ia`.
+     * @param data The data to use. Defaults to `0`.
+     */
+    sign(key?: PointerAuthenticationKey, data?: NativePointerValue | UInt64 | Int64 | number | string): NativePointer;
+
+    /**
+     * Makes a new NativePointer by taking the bits of `this` and
+     * removing its pointer authentication bits, creating a raw pointer.
+     * This is a no-op if the current process does not support pointer
+     * authentication, returning `this` instead of a new value.
+     *
+     * @param key The key that was used to sign `this`. Defaults to `ia`.
+     */
+    strip(key?: PointerAuthenticationKey): NativePointer;
+
+    /**
+     * Makes a new NativePointer by taking `this` and blending it with
+     * a constant, which may in turn be passed to `sign()` as `data`.
+     *
+     * @param smallInteger Value to blend with.
+     */
+    blend(smallInteger: number): NativePointer;
+
+    /**
      * Returns a boolean indicating whether `v` is equal to `this`; i.e. it contains the same memory address.
      */
     equals(v: NativePointerValue | UInt64 | Int64 | number | string): boolean;
@@ -1417,6 +1772,11 @@ declare class NativePointer {
      * Converts to a signed 32-bit integer.
      */
     toInt32(): number;
+
+    /**
+     * Converts to an unsigned 32-bit integer.
+     */
+    toUInt32(): number;
 
     /**
      * Converts to a “0x”-prefixed hexadecimal string, unless a `radix`
@@ -1456,6 +1816,7 @@ declare class NativePointer {
     readUtf8String(size?: number): string | null;
     readUtf16String(length?: number): string | null;
     readAnsiString(size?: number): string | null;
+    readVolatile(length: number): ArrayBuffer | null;
 
     writePointer(value: NativePointerValue): NativePointer;
     writeS8(value: number | Int64): NativePointer;
@@ -1478,10 +1839,36 @@ declare class NativePointer {
     writeUtf8String(value: string): NativePointer;
     writeUtf16String(value: string): NativePointer;
     writeAnsiString(value: string): NativePointer;
+    writeVolatile(value: ArrayBuffer | number[]): NativePointer;
 }
+
+type PointerAuthenticationKey = "ia" | "ib" | "da" | "db";
 
 interface ObjectWrapper {
     handle: NativePointer;
+}
+
+interface ArrayBufferConstructor {
+    /**
+     * Creates an ArrayBuffer backed by an existing memory region. Unlike
+     * the NativePointer `read*()` and `write*()` APIs, no validation is
+     * performed on access, meaning a bad pointer will crash the process.
+     *
+     * @param address Base address of the region. Passing `NULL` will result
+     *                in an empty buffer.
+     * @param size Size of the region. Passing `0` will result in an empty
+     *             buffer.
+     */
+    wrap(address: NativePointerValue, size: number): ArrayBuffer;
+}
+
+interface ArrayBuffer {
+    /**
+     * Gets a pointer to the base address of the ArrayBuffer's backing store.
+     * It is the caller's responsibility to keep the buffer alive while the
+     * backing store is still being used.
+     */
+    unwrap(): NativePointer;
 }
 
 type NativePointerValue = NativePointer | ObjectWrapper;
@@ -1489,50 +1876,212 @@ type NativePointerValue = NativePointer | ObjectWrapper;
 declare const NativeFunction: NativeFunctionConstructor;
 
 interface NativeFunctionConstructor {
-    new(address: NativePointerValue, retType: NativeType, argTypes: NativeType[], abiOrOptions?: NativeABI | NativeFunctionOptions): NativeFunction;
-    readonly prototype: NativeFunction;
+    new<RetType extends NativeFunctionReturnType, ArgTypes extends NativeFunctionArgumentType[] | []>(
+        address: NativePointerValue,
+        retType: RetType,
+        argTypes: ArgTypes,
+        abiOrOptions?: NativeABI | NativeFunctionOptions,
+    ): NativeFunction<
+        GetNativeFunctionReturnValue<RetType>,
+        ResolveVariadic<Extract<GetNativeFunctionArgumentValue<ArgTypes>, unknown[]>>
+    >;
+    readonly prototype: NativeFunction<void, []>;
 }
 
-interface NativeFunction extends NativePointer {
-    (...args: NativeArgumentValue[]): NativeReturnValue;
-    apply(thisArg: NativePointerValue | null | undefined, args: NativeArgumentValue[]): NativeReturnValue;
-    call(thisArg?: NativePointerValue | null, ...args: NativeArgumentValue[]): NativeReturnValue;
+interface NativeFunction<RetType extends NativeFunctionReturnValue, ArgTypes extends NativeFunctionArgumentValue[] | []>
+    extends NativePointer
+{
+    (...args: ArgTypes): RetType;
+    apply(thisArg: NativePointerValue | null | undefined, args: ArgTypes): RetType;
+    call(thisArg?: NativePointerValue | null, ...args: ArgTypes): RetType;
 }
 
 declare const SystemFunction: SystemFunctionConstructor;
 
 interface SystemFunctionConstructor {
-    new(address: NativePointerValue, retType: NativeType, argTypes: NativeType[], abiOrOptions?: NativeABI | NativeFunctionOptions): SystemFunction;
-    readonly prototype: SystemFunction;
+    new<RetType extends NativeFunctionReturnType, ArgTypes extends NativeFunctionArgumentType[] | []>(
+        address: NativePointerValue,
+        retType: RetType,
+        argTypes: ArgTypes,
+        abiOrOptions?: NativeABI | NativeFunctionOptions,
+    ): SystemFunction<
+        GetNativeFunctionReturnValue<RetType>,
+        ResolveVariadic<Extract<GetNativeFunctionArgumentValue<ArgTypes>, unknown[]>>
+    >;
+    readonly prototype: SystemFunction<void, []>;
 }
 
-interface SystemFunction extends NativePointer {
-    (...args: NativeArgumentValue[]): SystemFunctionResult;
-    apply(thisArg: NativePointerValue | null | undefined, args: NativeArgumentValue[]): SystemFunctionResult;
-    call(thisArg?: NativePointerValue | null, ...args: NativeArgumentValue[]): SystemFunctionResult;
+interface SystemFunction<RetType extends NativeFunctionReturnValue, ArgTypes extends NativeFunctionArgumentValue[] | []>
+    extends NativePointer
+{
+    (...args: ArgTypes): SystemFunctionResult<RetType>;
+    apply(thisArg: NativePointerValue | null | undefined, args: ArgTypes): SystemFunctionResult<RetType>;
+    call(thisArg?: NativePointerValue | null, ...args: ArgTypes): SystemFunctionResult<RetType>;
 }
 
-type SystemFunctionResult = WindowsSystemFunctionResult | UnixSystemFunctionResult;
+type SystemFunctionResult<Value extends NativeFunctionReturnValue> =
+    | WindowsSystemFunctionResult<Value>
+    | UnixSystemFunctionResult<Value>;
 
-interface WindowsSystemFunctionResult {
-    value: NativeReturnValue;
+interface WindowsSystemFunctionResult<Value extends NativeFunctionReturnValue> {
+    value: Value;
     lastError: number;
 }
 
-interface UnixSystemFunctionResult {
-    value: NativeReturnValue;
+interface UnixSystemFunctionResult<Value extends NativeFunctionReturnValue> {
+    value: Value;
     errno: number;
 }
 
-declare class NativeCallback extends NativePointer {
-    constructor(func: AnyFunction, retType: NativeType, argTypes: NativeType[]);
+declare class NativeCallback<
+    RetType extends NativeCallbackReturnType,
+    ArgTypes extends NativeCallbackArgumentType[] | [],
+> extends NativePointer {
+    constructor(
+        func: NativeCallbackImplementation<
+            GetNativeCallbackReturnValue<RetType>,
+            Extract<GetNativeCallbackArgumentValue<ArgTypes>, unknown[]>
+        >,
+        retType: RetType,
+        argTypes: ArgTypes,
+        abi?: NativeABI,
+    );
 }
 
-type NativeArgumentValue = NativePointerValue | UInt64 | Int64 | number | boolean | any[];
+type NativeCallbackImplementation<
+    RetType extends NativeCallbackReturnValue,
+    ArgTypes extends NativeCallbackArgumentValue[] | [],
+> = (this: CallbackContext | InvocationContext, ...args: ArgTypes) => RetType;
 
-type NativeReturnValue = NativePointer | UInt64 | Int64 | number | boolean | any[];
+interface CallbackContext {
+    /**
+     * Return address.
+     */
+    returnAddress: NativePointer;
 
-type NativeType = string | any[];
+    /**
+     * CPU registers, but unlike `InvocationContext` this is read-only and only
+     * contains the bare minimum needed for `Thread.backtrace()` - all others
+     * are zeroed out.
+     */
+    context: CpuContext;
+}
+
+type Variadic = "...";
+
+type ResolveVariadic<List extends any[]> = List extends [Variadic, ...infer Tail] ? [...Array<Tail[0]>]
+    : List extends [infer Head, ...infer Tail] ? [Head, ...ResolveVariadic<Tail>]
+    : [];
+
+type RecursiveValuesOf<T> = T[keyof T] | Array<RecursiveValuesOf<T>>;
+
+type RecursiveKeysOf<T> = keyof T | Array<RecursiveKeysOf<T>> | [];
+
+type GetValue<Map, Value, Type, T extends Type> = Type[] extends T ? Value
+    : T extends keyof Map ? Map[T]
+    : { [P in keyof T]: T[P] extends Type ? GetValue<Map, Value, Type, T[P]> : never };
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type BaseNativeTypeMap = {
+    int: number;
+    uint: number;
+    long: number;
+    ulong: number;
+    char: number;
+    uchar: number;
+    float: number;
+    double: number;
+    int8: number;
+    uint8: number;
+    int16: number;
+    uint16: number;
+    int32: number;
+    uint32: number;
+    bool: number;
+};
+
+type NativeFunctionArgumentTypeMap = BaseNativeTypeMap & {
+    void: undefined;
+    pointer: NativePointerValue;
+    size_t: number | UInt64;
+    ssize_t: number | Int64;
+    int64: number | Int64;
+    uint64: number | UInt64;
+    "...": Variadic;
+};
+
+type NativeFunctionArgumentValue = RecursiveValuesOf<NativeFunctionArgumentTypeMap>;
+
+type NativeFunctionArgumentType = RecursiveKeysOf<NativeFunctionArgumentTypeMap>;
+
+type GetNativeFunctionArgumentValue<T extends NativeFunctionArgumentType> = GetValue<
+    NativeFunctionArgumentTypeMap,
+    NativeFunctionArgumentValue,
+    NativeFunctionArgumentType,
+    T
+>;
+
+type NativeFunctionReturnTypeMap = BaseNativeTypeMap & {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    void: void;
+    pointer: NativePointer;
+    size_t: UInt64;
+    ssize_t: Int64;
+    int64: Int64;
+    uint64: UInt64;
+};
+
+type NativeFunctionReturnValue = RecursiveValuesOf<NativeFunctionReturnTypeMap>;
+
+type NativeFunctionReturnType = RecursiveKeysOf<NativeFunctionReturnTypeMap>;
+
+type GetNativeFunctionReturnValue<T extends NativeFunctionReturnType> = GetValue<
+    NativeFunctionReturnTypeMap,
+    NativeFunctionReturnValue,
+    NativeFunctionReturnType,
+    T
+>;
+
+type NativeCallbackArgumentTypeMap = BaseNativeTypeMap & {
+    void: undefined;
+    pointer: NativePointer;
+    size_t: UInt64;
+    ssize_t: Int64;
+    int64: Int64;
+    uint64: UInt64;
+};
+
+type NativeCallbackArgumentValue = RecursiveValuesOf<NativeCallbackArgumentTypeMap>;
+
+type NativeCallbackArgumentType = RecursiveKeysOf<NativeCallbackArgumentTypeMap>;
+
+type GetNativeCallbackArgumentValue<T extends NativeCallbackArgumentType> = GetValue<
+    NativeCallbackArgumentTypeMap,
+    NativeCallbackArgumentValue,
+    NativeCallbackArgumentType,
+    T
+>;
+
+type NativeCallbackReturnTypeMap = BaseNativeTypeMap & {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    void: void;
+    pointer: NativePointerValue;
+    size_t: number | UInt64;
+    ssize_t: number | Int64;
+    int64: number | Int64;
+    uint64: number | UInt64;
+};
+
+type NativeCallbackReturnValue = RecursiveValuesOf<NativeCallbackReturnTypeMap>;
+
+type NativeCallbackReturnType = RecursiveKeysOf<NativeCallbackReturnTypeMap>;
+
+type GetNativeCallbackReturnValue<T extends NativeCallbackReturnType> = GetValue<
+    NativeCallbackReturnTypeMap,
+    NativeCallbackReturnValue,
+    NativeCallbackReturnType,
+    T
+>;
 
 type NativeABI =
     | "default"
@@ -1543,20 +2092,30 @@ type NativeABI =
     | "mscdecl"
     | "win64"
     | "unix64"
-    | "vfp"
-    ;
+    | "vfp";
 
 interface NativeFunctionOptions {
-    abi?: NativeABI;
-    scheduling?: SchedulingBehavior;
-    exceptions?: ExceptionsBehavior;
+    abi?: NativeABI | undefined;
+    scheduling?: SchedulingBehavior | undefined;
+    exceptions?: ExceptionsBehavior | undefined;
+    traps?: CodeTraps | undefined;
 }
 
 type SchedulingBehavior = "cooperative" | "exclusive";
 
 type ExceptionsBehavior = "steal" | "propagate";
 
-type CpuContext = PortableCpuContext | Ia32CpuContext | X64CpuContext | ArmCpuContext | Arm64CpuContext | MipsCpuContext;
+type CodeTraps = "default" | "none" | "all";
+
+type MemoryAccess = "open" | "exclusive";
+
+type CpuContext =
+    | PortableCpuContext
+    | Ia32CpuContext
+    | X64CpuContext
+    | ArmCpuContext
+    | Arm64CpuContext
+    | MipsCpuContext;
 
 interface PortableCpuContext {
     pc: NativePointer;
@@ -1599,6 +2158,8 @@ interface X64CpuContext extends PortableCpuContext {
 }
 
 interface ArmCpuContext extends PortableCpuContext {
+    cpsr: number;
+
     r0: NativePointer;
     r1: NativePointer;
     r2: NativePointer;
@@ -1615,9 +2176,94 @@ interface ArmCpuContext extends PortableCpuContext {
     r12: NativePointer;
 
     lr: NativePointer;
+
+    q0: ArrayBuffer;
+    q1: ArrayBuffer;
+    q2: ArrayBuffer;
+    q3: ArrayBuffer;
+    q4: ArrayBuffer;
+    q5: ArrayBuffer;
+    q6: ArrayBuffer;
+    q7: ArrayBuffer;
+    q8: ArrayBuffer;
+    q9: ArrayBuffer;
+    q10: ArrayBuffer;
+    q11: ArrayBuffer;
+    q12: ArrayBuffer;
+    q13: ArrayBuffer;
+    q14: ArrayBuffer;
+    q15: ArrayBuffer;
+
+    d0: number;
+    d1: number;
+    d2: number;
+    d3: number;
+    d4: number;
+    d5: number;
+    d6: number;
+    d7: number;
+    d8: number;
+    d9: number;
+    d10: number;
+    d11: number;
+    d12: number;
+    d13: number;
+    d14: number;
+    d15: number;
+    d16: number;
+    d17: number;
+    d18: number;
+    d19: number;
+    d20: number;
+    d21: number;
+    d22: number;
+    d23: number;
+    d24: number;
+    d25: number;
+    d26: number;
+    d27: number;
+    d28: number;
+    d29: number;
+    d30: number;
+    d31: number;
+
+    s0: number;
+    s1: number;
+    s2: number;
+    s3: number;
+    s4: number;
+    s5: number;
+    s6: number;
+    s7: number;
+    s8: number;
+    s9: number;
+    s10: number;
+    s11: number;
+    s12: number;
+    s13: number;
+    s14: number;
+    s15: number;
+    s16: number;
+    s17: number;
+    s18: number;
+    s19: number;
+    s20: number;
+    s21: number;
+    s22: number;
+    s23: number;
+    s24: number;
+    s25: number;
+    s26: number;
+    s27: number;
+    s28: number;
+    s29: number;
+    s30: number;
+    s31: number;
 }
 
 interface Arm64CpuContext extends PortableCpuContext {
+    nzcv: number;
+
     x0: NativePointer;
     x1: NativePointer;
     x2: NativePointer;
@@ -1650,6 +2296,105 @@ interface Arm64CpuContext extends PortableCpuContext {
 
     fp: NativePointer;
     lr: NativePointer;
+
+    q0: ArrayBuffer;
+    q1: ArrayBuffer;
+    q2: ArrayBuffer;
+    q3: ArrayBuffer;
+    q4: ArrayBuffer;
+    q5: ArrayBuffer;
+    q6: ArrayBuffer;
+    q7: ArrayBuffer;
+    q8: ArrayBuffer;
+    q9: ArrayBuffer;
+    q10: ArrayBuffer;
+    q11: ArrayBuffer;
+    q12: ArrayBuffer;
+    q13: ArrayBuffer;
+    q14: ArrayBuffer;
+    q15: ArrayBuffer;
+    q16: ArrayBuffer;
+    q17: ArrayBuffer;
+    q18: ArrayBuffer;
+    q19: ArrayBuffer;
+    q20: ArrayBuffer;
+    q21: ArrayBuffer;
+    q22: ArrayBuffer;
+    q23: ArrayBuffer;
+    q24: ArrayBuffer;
+    q25: ArrayBuffer;
+    q26: ArrayBuffer;
+    q27: ArrayBuffer;
+    q28: ArrayBuffer;
+    q29: ArrayBuffer;
+    q30: ArrayBuffer;
+    q31: ArrayBuffer;
+
+    d0: number;
+    d1: number;
+    d2: number;
+    d3: number;
+    d4: number;
+    d5: number;
+    d6: number;
+    d7: number;
+    d8: number;
+    d9: number;
+    d10: number;
+    d11: number;
+    d12: number;
+    d13: number;
+    d14: number;
+    d15: number;
+    d16: number;
+    d17: number;
+    d18: number;
+    d19: number;
+    d20: number;
+    d21: number;
+    d22: number;
+    d23: number;
+    d24: number;
+    d25: number;
+    d26: number;
+    d27: number;
+    d28: number;
+    d29: number;
+    d30: number;
+    d31: number;
+
+    s0: number;
+    s1: number;
+    s2: number;
+    s3: number;
+    s4: number;
+    s5: number;
+    s6: number;
+    s7: number;
+    s8: number;
+    s9: number;
+    s10: number;
+    s11: number;
+    s12: number;
+    s13: number;
+    s14: number;
+    s15: number;
+    s16: number;
+    s17: number;
+    s18: number;
+    s19: number;
+    s20: number;
+    s21: number;
+    s22: number;
+    s23: number;
+    s24: number;
+    s25: number;
+    s26: number;
+    s27: number;
+    s28: number;
+    s29: number;
+    s30: number;
+    s31: number;
 }
 
 interface MipsCpuContext extends PortableCpuContext {
@@ -1694,58 +2439,68 @@ interface MipsCpuContext extends PortableCpuContext {
     k1: NativePointer;
 }
 
+// tslint:disable:no-unnecessary-class
+declare class MatchPattern {
+    /**
+     * Compiles a match pattern for use with e.g. `Memory.scan()`.
+     *
+     * @param pattern Match pattern of the form “13 37 ?? ff” to match 0x13 followed by 0x37 followed by any byte
+     *                followed by 0xff, or “/Some\s*Pattern/” for matching a regular expression.
+     *
+     *                For more advanced matching it is also possible to specify an r2-style mask.
+     *                The mask is bitwise AND-ed against both the needle and the haystack. To specify the mask append
+     *                a `:` character after the needle, followed by the mask using the same syntax.
+     *                For example: “13 37 13 37 : 1f ff ff f1”.
+     *                For convenience it is also possible to specify nibble-level wildcards, like “?3 37 13 ?7”,
+     *                which gets translated into masks behind the scenes.
+     */
+    constructor(pattern: string);
+}
+
 /**
- * Helper used internally for source map parsing in order to provide helpful
- * JavaScript stack-traces.
+ * Worker script with its own JavaScript heap, lock, etc.
+ *
+ * This is useful to move heavy processing to a background thread, allowing
+ * hooks to be handled in a timely manner.
  */
-declare class SourceMap {
+declare class Worker {
     /**
-     * Constructs a source map from JSON.
-     *
-     * @param json String containing the source map encoded as JSON.
+     * Magic proxy object for calling `rpc.exports` defined by the worker.
      */
-    constructor(json: string);
+    exports: WorkerExports;
 
     /**
-     * Attempts to map a generated source position back to the original.
+     * Creates a worker script.
      *
-     * @param generatedPosition Position in generated code.
+     * @param url URL of the worker's entrypoint module. Typically retrieved by
+     *            having the module export its `import.meta.url`, and importing
+     *            that from the module that creates the worker.
+     * @param options Options to customize the worker.
      */
-    resolve(generatedPosition: GeneratedSourcePosition): OriginalSourcePosition | null;
+    constructor(url: string, options?: WorkerOptions);
+
+    /**
+     * Terminates the worker.
+     */
+    terminate(): void;
+
+    /**
+     * Posts a message to the worker.
+     *
+     * Use `recv()` to receive it inside the worker.
+     */
+    post(message: any, data?: ArrayBuffer | number[] | null): void;
 }
 
-interface GeneratedSourcePosition {
+interface WorkerOptions {
     /**
-     * Line number.
+     * Function to call when the worker emits a message using `send()`.
      */
-    line: number;
-
-    /**
-     * Column number, if available.
-     */
-    column?: number;
+    onMessage?: MessageCallback;
 }
 
-interface OriginalSourcePosition {
-    /**
-     * Source file name.
-     */
-    source: string;
-
-    /**
-     * Line number.
-     */
-    line: number;
-
-    /**
-     * Column number.
-     */
-    column: number;
-
-    /**
-     * Identifier, if available.
-     */
-    name: string | null;
+interface WorkerExports {
+    [name: string]: (...args: any[]) => Promise<any>;
 }
 
 /**
@@ -1870,7 +2625,7 @@ declare abstract class OutputStream {
     close(): Promise<void>;
 
     /**
-     * Tries to write `data` to the stream. Returns how how many bytes of `data` were written to the stream.
+     * Tries to write `data` to the stream. Returns how many bytes of `data` were written to the stream.
      */
     write(data: ArrayBuffer | number[]): Promise<number>;
 
@@ -1880,6 +2635,13 @@ declare abstract class OutputStream {
      * before the error occurred.
      */
     writeAll(data: ArrayBuffer | number[]): Promise<void>;
+
+    /**
+     * Tries to write `size` bytes to the stream, reading them from `address`. Returns how many bytes were written
+     * to the stream. Premature error or end of stream results in an `Error` object with a `partialSize` property
+     * specifying how many bytes of `data` were written to the stream before the error occurred.
+     */
+    writeMemoryRegion(address: NativePointerValue, size: number): Promise<number>;
 }
 
 /**
@@ -1947,7 +2709,7 @@ interface UnixStreamOptions {
      * Whether the file descriptor should be closed when the stream is closed,
      * either through `close()` or future garbage-collection.
      */
-    autoClose?: boolean;
+    autoClose?: boolean | undefined;
 }
 
 interface WindowsStreamOptions {
@@ -1955,14 +2717,13 @@ interface WindowsStreamOptions {
      * Whether the Windows `HANDLE` should be closed when the stream is closed,
      * either through `close()` or future garbage-collection.
      */
-    autoClose?: boolean;
+    autoClose?: boolean | undefined;
 }
 
 type AddressFamily =
     | "unix"
     | "ipv4"
-    | "ipv6"
-    ;
+    | "ipv6";
 
 type SocketType =
     | "tcp"
@@ -1970,15 +2731,13 @@ type SocketType =
     | "tcp6"
     | "udp6"
     | "unix:stream"
-    | "unix:dgram"
-    ;
+    | "unix:dgram";
 
 type UnixSocketType =
     | "anonymous"
     | "path"
     | "abstract"
-    | "abstract-padded"
-    ;
+    | "abstract-padded";
 
 type SocketListenOptions = TcpListenOptions | UnixListenOptions;
 
@@ -1986,17 +2745,17 @@ interface TcpListenOptions extends BaseListenOptions {
     /**
      * Address family. Omit to listen on both ipv4 and ipv6 – if supported by the OS.
      */
-    family?: "ipv4" | "ipv6";
+    family?: "ipv4" | "ipv6" | undefined;
 
     /**
      * Host or IP address to listen on. Omit to listen on all interfaces.
      */
-    host?: string;
+    host?: string | undefined;
 
     /**
      * Port to listen on. Omit to listen on a randomly selected port.
      */
-    port?: number;
+    port?: number | undefined;
 }
 
 interface UnixListenOptions extends BaseListenOptions {
@@ -2008,7 +2767,7 @@ interface UnixListenOptions extends BaseListenOptions {
     /**
      * Type of UNIX socket to listen on. Defaults to UnixSocketType.Path.
      */
-    type?: UnixSocketType;
+    type?: UnixSocketType | undefined;
 
     /**
      * UNIX socket path to listen on.
@@ -2020,7 +2779,7 @@ interface BaseListenOptions {
     /**
      * Listen backlog. Defaults to 10.
      */
-    backlog?: number;
+    backlog?: number | undefined;
 }
 
 type SocketConnectOptions = TcpConnectOptions | UnixConnectOptions;
@@ -2029,12 +2788,12 @@ interface TcpConnectOptions {
     /**
      * Address family. Omit to determine based on the host specified.
      */
-    family?: "ipv4" | "ipv6";
+    family?: "ipv4" | "ipv6" | undefined;
 
     /**
      * Host or IP address to connect to. Defaults to `localhost`.
      */
-    host?: string;
+    host?: string | undefined;
 
     /**
      * IP port to connect to.
@@ -2044,7 +2803,7 @@ interface TcpConnectOptions {
     /**
      * Whether to create a TLS connection. Defaults to `false`.
      */
-    tls?: boolean;
+    tls?: boolean | undefined;
 }
 
 interface UnixConnectOptions {
@@ -2056,7 +2815,7 @@ interface UnixConnectOptions {
     /**
      * Type of UNIX socket to connect to. Defaults to UnixSocketType.Path.
      */
-    type?: UnixSocketType;
+    type?: UnixSocketType | undefined;
 
     /**
      * Path to UNIX socket to connect to.
@@ -2066,7 +2825,7 @@ interface UnixConnectOptions {
     /**
      * Whether to create a TLS connection. Defaults to `false`.
      */
-    tls?: boolean;
+    tls?: boolean | undefined;
 }
 
 type SocketEndpointAddress = TcpEndpointAddress | UnixEndpointAddress;
@@ -2095,6 +2854,60 @@ interface UnixEndpointAddress {
  */
 declare class File {
     /**
+     * Passed to `seek()` to specify that the offset is relative to the start
+     * of the file.
+     */
+    static SEEK_SET: number;
+
+    /**
+     * Passed to `seek()` to specify that the offset is relative to the current
+     * file position.
+     */
+    static SEEK_CUR: number;
+
+    /**
+     * Passed to `seek()` to specify that the offset is relative to the end of
+     * the file.
+     */
+    static SEEK_END: number;
+
+    /**
+     * Opens the binary file at `filePath`, reads all of its content into an
+     * ArrayBuffer, and then closes the file.
+     *
+     * @param filePath The file to read from.
+     */
+    static readAllBytes(filePath: string): ArrayBuffer;
+
+    /**
+     * Opens the UTF-8 encoded text file at `filePath`, reads all of its text
+     * into a string, and then closes the file.
+     *
+     * @param filePath The file to read from.
+     */
+    static readAllText(filePath: string): string;
+
+    /**
+     * Creates a new file at `filePath`, writes the specified bytes to it, and
+     * then closes the file. The target file is overwritten in case it already
+     * exists.
+     *
+     * @param filePath The file to write to.
+     * @param bytes The bytes to write to the file.
+     */
+    static writeAllBytes(filePath: string, bytes: ArrayBuffer | number[]): void;
+
+    /**
+     * Creates a new file at `filePath`, writes the specified text to it
+     * encoded as UTF-8, and then closes the file. The target file is
+     * overwritten in case it already exists.
+     *
+     * @param filePath The file to write to.
+     * @param text The string to write to the file.
+     */
+    static writeAllText(filePath: string, text: string): void;
+
+    /**
      * Opens or creates the file at `filePath` with `mode` specifying how
      * it should be opened. For example `"wb"` to open the file for writing
      * in binary mode. This is the same format as `fopen()` from the C
@@ -2106,11 +2919,53 @@ declare class File {
     constructor(filePath: string, mode: string);
 
     /**
+     * Returns the current file position, in bytes.
+     */
+    tell(): number;
+
+    /**
+     * Changes the current file position to the specified `offset`, in bytes.
+     * Returns the resulting offset.
+     *
+     * @param offset The byte offset to seek to.
+     * @param whence What the offset is relative to (default: `File.SEEK_SET`).
+     */
+    seek(offset: number, whence?: number): number;
+
+    /**
+     * Reads up to `n` bytes from the file, or the rest of the file if
+     * unspecified. Returns an empty buffer when the end of the file is
+     * reached.
+     *
+     * @param n The maximum number of bytes to read.
+     */
+    readBytes(n?: number): ArrayBuffer;
+
+    /**
+     * Reads up to `n` bytes from the file into a string. If `n` is omitted,
+     * the rest of the file is read. Returns an empty string when the end of the
+     * file is reached.
+     *
+     * Ensures that the data is valid UTF-8 and throws an error otherwise.
+     *
+     * @param n The maximum number of bytes to read.
+     */
+    readText(n?: number): string;
+
+    /**
+     * Reads one line of text from the file, with the newline included. Returns
+     * an empty string when the end of the file is reached.
+     *
+     * Ensures that the data is valid UTF-8 and throws an error otherwise.
+     */
+    readLine(): string;
+
+    /**
      * Synchronously writes `data` to the file.
      *
      * @param data Data to write.
      */
-    write(data: string | ArrayBuffer): void;
+    write(data: string | ArrayBuffer | number[]): void;
 
     /**
      * Flushes any buffered data to the underlying file.
@@ -2124,6 +2979,66 @@ declare class File {
      */
     close(): void;
 }
+
+/**
+ * Provides access to checksumming algorithms.
+ */
+declare class Checksum {
+    /**
+     * Computes the checksum of the specified `data`. Returns the checksum as an
+     * all-lowercase hexadecimal string. The length of the digest depends on the
+     * type of checksum.
+     *
+     * @param type The desired type of checksum.
+     * @param data The data to compute the checksum of.
+     */
+    static compute(type: ChecksumType, data: string | ArrayBuffer | number[]): string;
+
+    /**
+     * Creates an instance used to compute a checksum for a stream of data.
+     * Starts out in "open" state where data is fed in through one or more calls
+     * to `update()`. Once done, `getString()` or `getDigest()` is called to
+     * obtain the computed checksum. This also moves the instance to "closed"
+     * state, which means `update()` may no longer be called. (Create a new
+     * instance to compute a checksum for subsequent data.)
+     *
+     * @param type The type of checksum to compute.
+     */
+    constructor(type: ChecksumType);
+
+    /**
+     * Feeds `data` into the checksum instance. The checksum must still be open,
+     * i.e. `getString()` or `getDigest()` must not have been called yet.
+     *
+     * @param data The data used to compute the checksum.
+     */
+    update(data: string | ArrayBuffer | number[]): Checksum;
+
+    /**
+     * Gets the digest as an all-lowercase hexadecimal string. The length of the
+     * digest depends on the type of checksum.
+     *
+     * Once this method has been called the checksum can no longer be updated
+     * with `update()`.
+     */
+    getString(): string;
+
+    /**
+     * Gets the digest as a raw binary vector. The size of the digest depends
+     * on the type of checksum.
+     *
+     * Once this method has been called the checksum can no longer be updated
+     * with `update()`.
+     */
+    getDigest(): ArrayBuffer;
+}
+
+type ChecksumType =
+    | "md5"
+    | "sha1"
+    | "sha256"
+    | "sha384"
+    | "sha512";
 
 /**
  * Provides read/write access to a SQLite database. Useful for persistence
@@ -2191,14 +3106,13 @@ declare class SqliteDatabase {
 }
 
 interface SqliteOpenOptions {
-    flags?: SqliteOpenFlag[];
+    flags?: SqliteOpenFlag[] | undefined;
 }
 
 type SqliteOpenFlag =
     | "readonly"
     | "readwrite"
-    | "create"
-    ;
+    | "create";
 
 /**
  * Pre-compiled SQL statement.
@@ -2266,8 +3180,17 @@ declare namespace Interceptor {
      * Intercepts calls to function/instruction at `target`. It is important
      * to specify a `InstructionProbeCallback` if `target` is not the first
      * instruction of a function.
+     *
+     * @param target Address of function/instruction to intercept.
+     * @param callbacksOrProbe Callbacks or instruction-level probe callback.
+     * @param data User data exposed to `NativeInvocationListenerCallbacks`
+     *             through the `GumInvocationContext *`.
      */
-    function attach(target: NativePointerValue, callbacksOrProbe: InvocationListenerCallbacks | InstructionProbeCallback): InvocationListener;
+    function attach(
+        target: NativePointerValue,
+        callbacksOrProbe: InvocationListenerCallbacks | InstructionProbeCallback,
+        data?: NativePointerValue,
+    ): InvocationListener;
 
     /**
      * Detaches all previously attached listeners.
@@ -2276,13 +3199,53 @@ declare namespace Interceptor {
 
     /**
      * Replaces function at `target` with implementation at `replacement`.
+     *
+     * May be implemented using e.g. `NativeCallback` or `CModule`.
+     *
+     * You may call the original implementation by calling `target` from within
+     * your implementation. Interceptor uses thread-local state to determine
+     * that it should call the original in that case.
+     *
+     * @param target Address of function to replace.
+     * @param replacement Replacement implementation.
+     * @param data User data exposed to native replacement through the
+     *             `GumInvocationContext *`, obtained using
+     *             `gum_interceptor_get_current_invocation()`.
      */
-    function replace(target: NativePointerValue, replacement: NativePointerValue): void;
+    function replace(target: NativePointerValue, replacement: NativePointerValue, data?: NativePointerValue): void;
+
+    /**
+     * Replaces function at `target` with implementation at `replacement`.
+     *
+     * May be implemented using e.g. `NativeCallback` or `CModule`.
+     *
+     * Target is modified to vector directly to your replacement, which means
+     * there is less overhead compared to `Interceptor.replace()`. This also
+     * means that you need to use the returned pointer if you want to call the
+     * original implementation.
+     *
+     * @param target Address of function to replace.
+     * @param replacement Replacement implementation.
+     * @returns Address of trampoline that lets you call the original function.
+     */
+    function replaceFast(target: NativePointerValue, replacement: NativePointerValue): NativePointer;
 
     /**
      * Reverts the previously replaced function at `target`.
      */
     function revert(target: NativePointerValue): void;
+
+    /**
+     * Ensure any pending changes have been committed to memory.
+     */
+    function flush(): void;
+
+    /**
+     * The kind of breakpoints to use for non-inline hooks.
+     *
+     * Only available in the Barebone backend.
+     */
+    let breakpointKind: "soft" | "hard";
 }
 
 declare class InvocationListener {
@@ -2295,9 +3258,38 @@ declare class InvocationListener {
 /**
  * Callbacks to invoke synchronously before and after a function call.
  */
-interface InvocationListenerCallbacks {
-    onEnter?: (this: InvocationContext, args: InvocationArguments) => void;
-    onLeave?: (this: InvocationContext, retval: InvocationReturnValue) => void;
+type InvocationListenerCallbacks = ScriptInvocationListenerCallbacks | NativeInvocationListenerCallbacks;
+
+interface ScriptInvocationListenerCallbacks {
+    /**
+     * Called synchronously when a thread is about to enter the target function.
+     */
+    onEnter?: ((this: InvocationContext, args: InvocationArguments) => void) | undefined;
+
+    /**
+     * Called synchronously when a thread is about to leave the target function.
+     */
+    onLeave?: ((this: InvocationContext, retval: InvocationReturnValue) => void) | undefined;
+}
+
+interface NativeInvocationListenerCallbacks {
+    /**
+     * Called synchronously when a thread is about to enter the target function.
+     *
+     * Typically implemented using `CModule`.
+     *
+     * Signature: `void onEnter (GumInvocationContext * ic)`
+     */
+    onEnter?: NativePointer | undefined;
+
+    /**
+     * Called synchronously when a thread is about to leave the target function.
+     *
+     * Typically implemented using `CModule`.
+     *
+     * Signature: `void onLeave (GumInvocationContext * ic)`
+     */
+    onLeave?: NativePointer | undefined;
 }
 
 /**
@@ -2368,6 +3360,19 @@ interface UnixInvocationContext extends PortableInvocationContext {
  */
 declare namespace Stalker {
     /**
+     * Marks a memory range as excluded. This means Stalker will not follow
+     * execution when encountering a call to an instruction in such a range.
+     * You will thus be able to observe/modify the arguments going in, and
+     * the return value coming back, but won't see the instructions that
+     * happened between.
+     *
+     * Useful to improve performance and reduce noise.
+     *
+     * @param range Range to exclude.
+     */
+    function exclude(range: MemoryRange): void;
+
+    /**
      * Starts following the execution of a given thread.
      *
      * @param threadId Thread ID to start following the execution of, or the
@@ -2406,14 +3411,44 @@ declare namespace Stalker {
     function garbageCollect(): void;
 
     /**
-     * Calls `callback` synchronously when a `CALL` is made to `address`.
+     * Invalidates the current thread's translated code for a given basic block.
+     * Useful when providing a transform callback and wanting to dynamically
+     * adapt the instrumentation for a given basic block. This is much more
+     * efficient than unfollowing and re-following the thread, which would
+     * discard all cached translations and require all encountered basic blocks
+     * to be compiled from scratch.
+     *
+     * @param address Start address of basic block to invalidate.
+     */
+    function invalidate(address: NativePointerValue): void;
+
+    /**
+     * Invalidates a specific thread's translated code for a given basic block.
+     * Useful when providing a transform callback and wanting to dynamically
+     * adapt the instrumentation for a given basic block. This is much more
+     * efficient than unfollowing and re-following the thread, which would
+     * discard all cached translations and require all encountered basic blocks
+     * to be compiled from scratch.
+     *
+     * @param threadId Thread that should have some of its code invalidated.
+     * @param address Start address of basic block to invalidate.
+     */
+    function invalidate(threadId: ThreadId, address: NativePointerValue): void;
+
+    /**
+     * Calls `callback` synchronously when a call is made to `address`.
      * Returns an id that can be passed to `removeCallProbe()` later.
      *
      * @param address Address of function to monitor stalked calls to.
      * @param callback Function to be called synchronously when a stalked
      *                 thread is about to call the function at `address`.
+     * @param data User data to be passed to `StalkerNativeCallProbeCallback`.
      */
-    function addCallProbe(address: NativePointerValue, callback: StalkerCallProbeCallback): StalkerCallProbeId;
+    function addCallProbe(
+        address: NativePointerValue,
+        callback: StalkerCallProbeCallback,
+        data?: NativePointerValue,
+    ): StalkerCallProbeId;
 
     /**
      * Removes a call probe added by `addCallProbe()`.
@@ -2443,7 +3478,9 @@ declare namespace Stalker {
      * Time in milliseconds between each time the event queue is drained.
      *
      * Defaults to 250 ms, which means that the event queue is drained four
-     * times per second.
+     * times per second. You may also set this property to zero to disable
+     * periodic draining and instead call `Stalker.flush()` when you would
+     * like the queue to be drained.
      */
     let queueDrainInterval: number;
 }
@@ -2466,34 +3503,34 @@ interface StalkerOptions {
         /**
          * Whether to generate events for CALL/BLR instructions.
          */
-        call?: boolean;
+        call?: boolean | undefined;
 
         /**
          * Whether to generate events for RET instructions.
          */
-        ret?: boolean;
+        ret?: boolean | undefined;
 
         /**
          * Whether to generate events for all instructions.
          *
          * Not recommended as it's potentially a lot of data.
          */
-        exec?: boolean;
+        exec?: boolean | undefined;
 
         /**
          * Whether to generate an event whenever a basic block is executed.
          *
          * Useful to record a coarse execution trace.
          */
-        block?: boolean;
+        block?: boolean | undefined;
 
         /**
          * Whether to generate an event whenever a basic block is compiled.
          *
          * Useful for coverage.
          */
-        compile?: boolean;
-    };
+        compile?: boolean | undefined;
+    } | undefined;
 
     /**
      * Callback that periodically receives batches of events.
@@ -2502,7 +3539,7 @@ interface StalkerOptions {
      *               See `gumevent.h` for details about the format.
      *               Use `Stalker.parse()` to examine the data.
      */
-    onReceive?: (events: ArrayBuffer) => void;
+    onReceive?: ((events: ArrayBuffer) => void) | undefined;
 
     /**
      * Callback that periodically receives a summary of `call` events that
@@ -2516,35 +3553,65 @@ interface StalkerOptions {
      * @param summary Key-value mapping of call target to number of calls, in
      *                the current time window.
      */
-    onCallSummary?: (summary: StalkerCallSummary) => void;
+    onCallSummary?: ((summary: StalkerCallSummary) => void) | undefined;
+
+    /**
+     * C callback that processes events as they occur, allowing synchronous
+     * processing of events in native code – typically implemented using
+     * CModule.
+     *
+     * This is useful when wanting to implement custom filtering and/or queuing
+     * logic to improve performance, or sacrifice performance in exchange for
+     * reliable event delivery.
+     *
+     * Note that this precludes usage of `onReceive()` and `onCallSummary()`.
+     */
+    onEvent?: StalkerNativeEventCallback | undefined;
 
     /**
      * Callback that transforms each basic block compiled whenever Stalker
      * wants to recompile a basic block of the code that's about to be executed
      * by the stalked thread.
      */
-    transform?: StalkerTransformCallback;
+    transform?: StalkerTransformCallback | undefined;
+
+    /**
+     * User data to be passed to `StalkerNativeEventCallback` and `StalkerNativeTransformCallback`.
+     */
+    data?: NativePointerValue | undefined;
 }
 
 interface StalkerParseOptions {
     /**
      * Whether to include the type of each event. Defaults to `true`.
      */
-    annotate?: boolean;
+    annotate?: boolean | undefined;
 
     /**
      * Whether to format pointer values as strings instead of `NativePointer`
      * values, i.e. less overhead if you're just going to `send()` the result
      * and not actually parse the data agent-side.
      */
-    stringify?: boolean;
+    stringify?: boolean | undefined;
 }
 
 interface StalkerCallSummary {
     [target: string]: number;
 }
 
-type StalkerCallProbeCallback = (args: InvocationArguments) => void;
+type StalkerCallProbeCallback = StalkerScriptCallProbeCallback | StalkerNativeCallProbeCallback;
+
+/**
+ * Called synchronously when a call is made to the given address.
+ */
+type StalkerScriptCallProbeCallback = (args: InvocationArguments) => void;
+
+/**
+ * Called synchronously when a call is made to the given address.
+ *
+ * Signature: `void onCall (GumCallSite * site, gpointer user_data)`
+ */
+type StalkerNativeCallProbeCallback = NativePointer;
 
 type StalkerCallProbeId = number;
 
@@ -2553,47 +3620,96 @@ type StalkerEventType =
     | "ret"
     | "exec"
     | "block"
-    | "compile"
-    ;
+    | "compile";
 
-type StalkerEventFull = StalkerCallEventFull | StalkerRetEventFull | StalkerExecEventFull |
-    StalkerBlockEventFull | StalkerCompileEventFull;
-type StalkerEventBare = StalkerCallEventBare | StalkerRetEventBare | StalkerExecEventBare |
-    StalkerBlockEventBare | StalkerCompileEventBare;
+type StalkerEventFull =
+    | StalkerCallEventFull
+    | StalkerRetEventFull
+    | StalkerExecEventFull
+    | StalkerBlockEventFull
+    | StalkerCompileEventFull;
+type StalkerEventBare =
+    | StalkerCallEventBare
+    | StalkerRetEventBare
+    | StalkerExecEventBare
+    | StalkerBlockEventBare
+    | StalkerCompileEventBare;
 
-type StalkerCallEventFull = [ "call", NativePointer | string, NativePointer | string, number ];
-type StalkerCallEventBare = [         NativePointer | string, NativePointer | string, number ];
+type StalkerCallEventFull = ["call", NativePointer | string, NativePointer | string, number];
+type StalkerCallEventBare = [NativePointer | string, NativePointer | string, number];
 
-type StalkerRetEventFull = [ "ret", NativePointer | string, NativePointer | string, number ];
-type StalkerRetEventBare = [        NativePointer | string, NativePointer | string, number ];
+type StalkerRetEventFull = ["ret", NativePointer | string, NativePointer | string, number];
+type StalkerRetEventBare = [NativePointer | string, NativePointer | string, number];
 
-type StalkerExecEventFull = [ "exec", NativePointer | string ];
-type StalkerExecEventBare = [         NativePointer | string ];
+type StalkerExecEventFull = ["exec", NativePointer | string];
+type StalkerExecEventBare = [NativePointer | string];
 
-type StalkerBlockEventFull = [ "block", NativePointer | string, NativePointer | string ];
-type StalkerBlockEventBare = [          NativePointer | string, NativePointer | string ];
+type StalkerBlockEventFull = ["block", NativePointer | string, NativePointer | string];
+type StalkerBlockEventBare = [NativePointer | string, NativePointer | string];
 
-type StalkerCompileEventFull = [ "compile", NativePointer | string, NativePointer | string ];
-type StalkerCompileEventBare = [            NativePointer | string, NativePointer | string ];
+type StalkerCompileEventFull = ["compile", NativePointer | string, NativePointer | string];
+type StalkerCompileEventBare = [NativePointer | string, NativePointer | string];
 
-type StalkerTransformCallback = StalkerX86TransformCallback | StalkerArm64TransformCallback;
+/**
+ * Signature: `void process (const GumEvent * event, GumCpuContext * cpu_context, gpointer user_data)`
+ */
+type StalkerNativeEventCallback = NativePointer;
+
+type StalkerTransformCallback =
+    | StalkerX86TransformCallback
+    | StalkerArm32TransformCallback
+    | StalkerArm64TransformCallback
+    | StalkerNativeTransformCallback;
 
 type StalkerX86TransformCallback = (iterator: StalkerX86Iterator) => void;
+type StalkerArm32TransformCallback = (iterator: StalkerArmIterator | StalkerThumbIterator) => void;
 type StalkerArm64TransformCallback = (iterator: StalkerArm64Iterator) => void;
 
-declare abstract class StalkerX86Iterator extends X86Writer {
+/**
+ * Signature: `void transform (GumStalkerIterator * iterator, GumStalkerOutput * output, gpointer user_data)`
+ */
+type StalkerNativeTransformCallback = NativePointer;
+
+interface StalkerX86Iterator extends X86Writer {
+    memoryAccess: MemoryAccess;
     next(): X86Instruction | null;
     keep(): void;
-    putCallout(callout: StalkerCallout): void;
+    putCallout(callout: StalkerCallout, data?: NativePointerValue): void;
+    putChainingReturn(): void;
 }
 
-declare abstract class StalkerArm64Iterator extends Arm64Writer {
+interface StalkerArmIterator extends ArmWriter {
+    memoryAccess: MemoryAccess;
+    next(): ArmInstruction | null;
+    keep(): void;
+    putCallout(callout: StalkerCallout, data?: NativePointerValue): void;
+    putChainingReturn(): void;
+}
+
+interface StalkerThumbIterator extends ThumbWriter {
+    memoryAccess: MemoryAccess;
+    next(): ArmInstruction | null;
+    keep(): void;
+    putCallout(callout: StalkerCallout, data?: NativePointerValue): void;
+    putChainingReturn(): void;
+}
+
+interface StalkerArm64Iterator extends Arm64Writer {
+    memoryAccess: MemoryAccess;
     next(): Arm64Instruction | null;
     keep(): void;
-    putCallout(callout: StalkerCallout): void;
+    putCallout(callout: StalkerCallout, data?: NativePointerValue): void;
+    putChainingReturn(): void;
 }
 
-type StalkerCallout = (context: CpuContext) => void;
+type StalkerCallout = StalkerScriptCallout | StalkerNativeCallout;
+
+type StalkerScriptCallout = (context: CpuContext) => void;
+
+/**
+ * Signature: `void onAesEnc (GumCpuContext * cpu_context, gpointer user_data)`
+ */
+type StalkerNativeCallout = NativePointer;
 
 /**
  * Provides efficient API resolving using globs, allowing you to quickly
@@ -2618,47 +3734,68 @@ declare class ApiResolver {
     /**
      * Performs the resolver-specific query.
      *
-     * @param query Resolver-specific query.
+     * @param query Resolver-specific query, optionally suffixed with `/i` to
+     *              perform case-insensitive matching.
      */
     enumerateMatches(query: string): ApiResolverMatch[];
 }
 
 interface ApiResolverMatch {
     /**
-     * Canonical name of the function that was found.
+     * Canonical name of the API that was found.
      */
     name: string;
 
     /**
-     * Memory address that the given function is loaded at.
+     * Memory address that the given API is at.
      */
     address: NativePointer;
+
+    /**
+     * Size in bytes, if applicable.
+     */
+    size?: number | undefined;
 }
 
 type ApiResolverType =
     /**
-     * Resolves exported and imported functions of shared libraries
-     * currently loaded.
+     * Resolves module exports, imports, and sections.
      *
      * Always available.
      *
-     * Example query: `"exports:*!open*"`
-     * Which may resolve to: `"/usr/lib/libSystem.B.dylib!opendir$INODE64"`
+     * Example queries:
+     * - `"exports:*!open*"`
+     * - `"imports:*!open*"`
+     * - `"sections:*!*text*"`
+     *
+     * Suffix with `/i` to perform case-insensitive matching.
      */
     | "module"
-
     /**
-     * Resolves Objective-C methods of classes currently loaded.
+     * Resolves Swift functions.
+     *
+     * Available in processes that have a Swift runtime loaded. Use
+     * `Swift.available` to check at runtime, or wrap your
+     * `new ApiResolver("swift")` call in a try-catch.
+     *
+     * Example query: `"functions:*CoreDevice!*RemoteDevice*"`
+     *
+     * Suffix with `/i` to perform case-insensitive matching.
+     */
+    | "swift"
+    /**
+     * Resolves Objective-C methods.
      *
      * Available on macOS and iOS in processes that have the Objective-C
-     * runtime loaded. Use `ObjC.available` to check at runtime, or wrap
-     * your `new ApiResolver(ApiResolverType.ObjC)` call in a try-catch.
+     * runtime loaded. Use `ObjC.available` (in frida-objc-bridge) to check
+     * at runtime, or wrap your `new ApiResolver("objc")` call in a try-catch.
      *
      * Example query: `"-[NSURL* *HTTP*]"`
      * Which may resolve to: `"-[NSURLRequest valueForHTTPHeaderField:]"`
+     *
+     * Suffix with `/i` to perform case-insensitive matching.
      */
-    | "objc"
-    ;
+    | "objc";
 
 declare class DebugSymbol {
     /**
@@ -2667,24 +3804,24 @@ declare class DebugSymbol {
     address: NativePointer;
 
     /**
-     * Name of the symbol.
+     * Name of the symbol, or `null` if unknown.
      */
-    name: string;
+    name: string | null;
 
     /**
-     * Module name owning this symbol.
+     * Module name owning this symbol, or `null` if unknown.
      */
-    moduleName: string;
+    moduleName: string | null;
 
     /**
-     * File name owning this symbol.
+     * File name owning this symbol, or `null` if unknown.
      */
-    fileName: string;
+    fileName: string | null;
 
     /**
-     * Line number in `fileName`.
+     * Line number in `fileName`, or `null` if unknown.
      */
-    lineNumber: number;
+    lineNumber: number | null;
 
     /**
      * Looks up debug information for `address`.
@@ -2724,9 +3861,165 @@ declare class DebugSymbol {
     static findFunctionsMatching(glob: string): NativePointer[];
 
     /**
+     * Loads debug symbols for a specific module.
+     *
+     * @param path Path of module to load symbols for.
+     */
+    static load(path: string): void;
+
+    /**
      * Converts to a human-readable string.
      */
     toString(): string;
+}
+
+/**
+ * Compiles C source code to machine code, straight to memory. May also be
+ * constructed from a precompiled shared library.
+ *
+ * Useful for implementing hot callbacks, e.g. for `Interceptor` and `Stalker`,
+ * but also useful when needing to start new threads in order to call functions
+ * in a tight loop, e.g. for fuzzing purposes.
+ *
+ * Global functions are automatically exported as `NativePointer` properties
+ * named exactly like in the C source code. This means you can pass them to
+ * `Interceptor` and `Stalker`, or call them using `NativeFunction`.
+ *
+ * In addition to accessing a curated subset of Gum, GLib, and standard C APIs,
+ * the code being mapped in can also communicate with JavaScript through the
+ * symbols exposed to it. These can be plugged in at creation, e.g. to share
+ * memory allocated using `Memory.alloc()`, or `NativeCallback` values for
+ * receiving callbacks from the C module.
+ *
+ * To perform initialization and cleanup, you may define functions with the
+ * following names and signatures:
+ *
+ *     `void init (void)`
+ *     `void finalize (void)`
+ *
+ * Note that all data is read-only, so writable globals should be declared
+ * `extern`, allocated using e.g. `Memory.alloc()`, and passed in as symbols
+ * through the constructor's second argument.
+ */
+declare class CModule {
+    /**
+     * Creates a new C module from the provided `code`.
+     *
+     * @param code C source code to compile, or a precompiled shared library.
+     * @param symbols Symbols to expose to the C module. Declare them as `extern`.
+     *    This may for example be one or more memory blocks allocated using
+     *     `Memory.alloc()`, and/or `NativeCallback` values for receiving
+     *     callbacks from the C module.
+     * @param options Options for customizing the construction.
+     */
+    constructor(code: string | ArrayBuffer, symbols?: CSymbols, options?: CModuleOptions);
+
+    /**
+     * Eagerly unmaps the module from memory. Useful for short-lived modules
+     * when waiting for a future garbage collection isn't desirable.
+     */
+    dispose(): void;
+
+    readonly [name: string]: any;
+
+    static builtins: CModuleBuiltins;
+}
+
+interface CModuleOptions {
+    toolchain?: CModuleToolchain | undefined;
+}
+
+/**
+ * Toolchain to use when constructing a CModule from C source code.
+ *
+ * `internal`: Use TinyCC, which is statically linked into the runtime.
+ *     Never touches the filesystem and works even in sandboxed processes.
+ *     The generated code is however not optimized, as TinyCC optimizes for
+ *     small compiler footprint and short compilation times.
+ * `external`: Use toolchain provided by the target system, assuming it is
+ *     accessible to the process we're executing inside.
+ * `any`: Same as `internal` if `Process.arch` is supported by TinyCC, and
+ *     `external` otherwise.
+ */
+type CModuleToolchain = "any" | "internal" | "external";
+
+interface CSymbols {
+    [name: string]: NativePointerValue;
+}
+
+/**
+ * Builtins present when constructing a CModule from C source code.
+ *
+ * This is typically used by a scaffolding tool such as `frida-create` in order
+ * to set up a build environment that matches what CModule uses.
+ */
+interface CModuleBuiltins {
+    defines: CModuleDefines;
+    headers: CModuleHeaders;
+}
+
+/**
+ * Preprocessor defines present when constructing a CModule from C source code.
+ *
+ * The mapping to GCC-style command-line arguments depends on the type of the value:
+ * `string`: `-Dname=value`
+ * `true`: `-Dname`
+ */
+interface CModuleDefines {
+    readonly [name: string]: string | true;
+}
+
+/**
+ * C headers present when constructing a CModule from C source code.
+ *
+ * The `name` is a relative filesystem path, and the value is the contents of
+ * the header.
+ */
+interface CModuleHeaders {
+    readonly [name: string]: string;
+}
+
+/**
+ * Compiles Rust source code to machine code, straight to memory.
+ *
+ * Useful for implementing hot callbacks, e.g. for `Interceptor` and `Stalker`,
+ * but also useful when needing to start new threads in order to call functions
+ * in a tight loop, e.g. for fuzzing purposes.
+ *
+ * Public functions are automatically exported as `NativePointer` properties.
+ * This means you can pass them to `Interceptor` and `Stalker`, or call them
+ * using `NativeFunction`. In such cases you typically want to ensure they
+ * are marked `#[no_mangle]` and `extern "C"`.
+ *
+ * In addition to Rust libraries, the code being mapped in can also communicate
+ * with JavaScript through the symbols exposed to it. These can be plugged in at
+ * creation, e.g. to share memory allocated using `Memory.alloc()`, or
+ * `NativeCallback` values for receiving callbacks from the Rust module.
+ */
+declare class RustModule {
+    /**
+     * Creates a new Rust module from the provided `code`.
+     *
+     * @param code Rust source code to compile.
+     * @param symbols Symbols to expose to the Rust module. Declare them as
+     * `extern "C"`. This may for example be one or more memory blocks allocated
+     * using `Memory.alloc()`, and/or `NativeCallback` values for receiving
+     * callbacks from the Rust module.
+     * @param options Options for customizing the construction.
+     */
+    constructor(code: string, symbols?: CSymbols, options?: RustModuleOptions);
+
+    /**
+     * Eagerly unmaps the module from memory. Useful for short-lived modules
+     * when waiting for a future garbage collection isn't desirable.
+     */
+    dispose(): void;
+
+    readonly [name: string]: any;
+}
+
+interface RustModuleOptions {
+    dependencies?: string[];
 }
 
 declare class Instruction {
@@ -2740,7 +4033,9 @@ declare class Instruction {
      *
      * @param target Memory location containing instruction to parse.
      */
-    static parse(target: NativePointerValue): Instruction | X86Instruction | ArmInstruction | Arm64Instruction | MipsInstruction;
+    static parse(
+        target: NativePointerValue,
+    ): Instruction | X86Instruction | ArmInstruction | Arm64Instruction | MipsInstruction;
 
     /**
      * Address (EIP) of this instruction.
@@ -2785,6 +4080,11 @@ declare class X86Instruction extends Instruction {
     operands: X86Operand[];
 
     /**
+     * Registers accessed by this instruction, either implicitly or explicitly.
+     */
+    regsAccessed: RegsAccessed<X86Register>;
+
+    /**
      * Registers implicitly read by this instruction.
      */
     regsRead: X86Register[];
@@ -2800,6 +4100,11 @@ declare class ArmInstruction extends Instruction {
      * Array of objects describing each operand.
      */
     operands: ArmOperand[];
+
+    /**
+     * Registers accessed by this instruction, either implicitly or explicitly.
+     */
+    regsAccessed: RegsAccessed<ArmRegister>;
 
     /**
      * Registers implicitly read by this instruction.
@@ -2819,6 +4124,11 @@ declare class Arm64Instruction extends Instruction {
     operands: Arm64Operand[];
 
     /**
+     * Registers accessed by this instruction, either implicitly or explicitly.
+     */
+    regsAccessed: RegsAccessed<Arm64Register>;
+
+    /**
      * Registers implicitly read by this instruction.
      */
     regsRead: Arm64Register[];
@@ -2836,6 +4146,11 @@ declare class MipsInstruction extends Instruction {
     operands: MipsOperand[];
 
     /**
+     * Registers accessed by this instruction, either implicitly or explicitly.
+     */
+    regsAccessed: RegsAccessed<MipsRegister>;
+
+    /**
      * Registers implicitly read by this instruction.
      */
     regsRead: MipsRegister[];
@@ -2846,12 +4161,20 @@ declare class MipsInstruction extends Instruction {
     regsWritten: MipsRegister[];
 }
 
+interface RegsAccessed<T> {
+    read: T[];
+    written: T[];
+}
+
+type OperandAccess = "" | "r" | "w" | "rw";
+
 type X86Operand = X86RegOperand | X86ImmOperand | X86MemOperand;
 
 type X86OperandType = "reg" | "imm" | "mem";
 
 interface X86BaseOperand {
     size: number;
+    access: OperandAccess;
 }
 
 interface X86RegOperand extends X86BaseOperand {
@@ -2867,17 +4190,23 @@ interface X86ImmOperand extends X86BaseOperand {
 interface X86MemOperand extends X86BaseOperand {
     type: "mem";
     value: {
-        segment?: X86Register;
-        base?: X86Register;
-        index?: X86Register;
+        segment?: X86Register | undefined;
+        base?: X86Register | undefined;
+        index?: X86Register | undefined;
         scale: number;
         disp: number;
     };
 }
 
-type ArmOperand = ArmRegOperand | ArmImmOperand | ArmMemOperand |
-    ArmFpOperand | ArmCimmOperand | ArmPimmOperand | ArmSetendOperand |
-    ArmSysregOperand;
+type ArmOperand =
+    | ArmRegOperand
+    | ArmImmOperand
+    | ArmMemOperand
+    | ArmFpOperand
+    | ArmCimmOperand
+    | ArmPimmOperand
+    | ArmSetendOperand
+    | ArmSysregOperand;
 
 type ArmOperandType =
     | "reg"
@@ -2887,16 +4216,16 @@ type ArmOperandType =
     | "cimm"
     | "pimm"
     | "setend"
-    | "sysreg"
-    ;
+    | "sysreg";
 
 interface ArmBaseOperand {
     shift?: {
         type: ArmShifter;
         value: number;
-    };
-    vectorIndex?: number;
+    } | undefined;
+    vectorIndex?: number | undefined;
     subtracted: boolean;
+    access: OperandAccess;
 }
 
 interface ArmRegOperand extends ArmBaseOperand {
@@ -2912,8 +4241,8 @@ interface ArmImmOperand extends ArmBaseOperand {
 interface ArmMemOperand extends ArmBaseOperand {
     type: "mem";
     value: {
-        base?: ArmRegister;
-        index?: ArmRegister;
+        base?: ArmRegister | undefined;
+        index?: ArmRegister | undefined;
         scale: number;
         disp: number;
     };
@@ -2944,22 +4273,18 @@ interface ArmSysregOperand extends ArmBaseOperand {
     value: ArmRegister;
 }
 
-type ArmShifter =
-    | "asr"
-    | "lsl"
-    | "lsr"
-    | "ror"
-    | "rrx"
-    | "asr-reg"
-    | "lsl-reg"
-    | "lsr-reg"
-    | "ror-reg"
-    | "rrx-reg"
-    ;
-
-type Arm64Operand = Arm64RegOperand | Arm64ImmOperand | Arm64MemOperand |
-    Arm64FpOperand | Arm64CimmOperand | Arm64RegMrsOperand | Arm64RegMsrOperand |
-    Arm64PstateOperand | Arm64SysOperand | Arm64PrefetchOperand | Arm64BarrierOperand;
+type Arm64Operand =
+    | Arm64RegOperand
+    | Arm64ImmOperand
+    | Arm64MemOperand
+    | Arm64FpOperand
+    | Arm64CimmOperand
+    | Arm64RegMrsOperand
+    | Arm64RegMsrOperand
+    | Arm64PstateOperand
+    | Arm64SysOperand
+    | Arm64PrefetchOperand
+    | Arm64BarrierOperand;
 
 type Arm64OperandType =
     | "reg"
@@ -2972,17 +4297,17 @@ type Arm64OperandType =
     | "pstate"
     | "sys"
     | "prefetch"
-    | "barrier"
-    ;
+    | "barrier";
 
 interface Arm64BaseOperand {
     shift?: {
         type: Arm64Shifter;
         value: number;
-    };
-    ext?: Arm64Extender;
-    vas?: Arm64Vas;
-    vectorIndex?: number;
+    } | undefined;
+    ext?: Arm64Extender | undefined;
+    vas?: Arm64Vas | undefined;
+    vectorIndex?: number | undefined;
+    access: OperandAccess;
 }
 
 interface Arm64RegOperand extends Arm64BaseOperand {
@@ -2998,8 +4323,8 @@ interface Arm64ImmOperand extends Arm64BaseOperand {
 interface Arm64MemOperand extends Arm64BaseOperand {
     type: "mem";
     value: {
-        base?: Arm64Register;
-        index?: Arm64Register;
+        base?: Arm64Register | undefined;
+        index?: Arm64Register | undefined;
         disp: number;
     };
 }
@@ -3049,8 +4374,7 @@ type Arm64Shifter =
     | "msl"
     | "lsr"
     | "asr"
-    | "ror"
-    ;
+    | "ror";
 
 type Arm64Extender =
     | "uxtb"
@@ -3060,8 +4384,7 @@ type Arm64Extender =
     | "sxtb"
     | "sxth"
     | "sxtw"
-    | "sxtx"
-    ;
+    | "sxtx";
 
 type Arm64Vas =
     | "8b"
@@ -3072,8 +4395,7 @@ type Arm64Vas =
     | "4s"
     | "1d"
     | "2d"
-    | "1q"
-    ;
+    | "1q";
 
 type MipsOperand = MipsRegOperand | MipsImmOperand | MipsMemOperand;
 
@@ -3092,7 +4414,7 @@ interface MipsImmOperand {
 interface MipsMemOperand {
     type: "mem";
     value: {
-        base?: MipsRegister;
+        base?: MipsRegister | undefined;
         disp: number;
     };
 }
@@ -3156,16 +4478,15 @@ declare namespace Kernel {
      *
      * @param address Starting address to scan from.
      * @param size Number of bytes to scan.
-     * @param pattern Match pattern of the form “13 37 ?? ff” to match 0x13 followed by 0x37 followed by any byte
-     *                followed by 0xff. For more advanced matching it is also possible to specify an r2-style mask.
-     *                The mask is bitwise AND-ed against both the needle and the haystack. To specify the mask append
-     *                a `:` character after the needle, followed by the mask using the same syntax.
-     *                For example: “13 37 13 37 : 1f ff ff f1”.
-     *                For convenience it is also possible to specify nibble-level wildcards, like “?3 37 13 ?7”,
-     *                which gets translated into masks behind the scenes.
+     * @param pattern Match pattern, see `MatchPattern` for details.
      * @param callbacks Object with callbacks.
      */
-    function scan(address: UInt64, size: number | UInt64, pattern: string, callbacks: KernelMemoryScanCallbacks): void;
+    function scan(
+        address: UInt64,
+        size: number | UInt64,
+        pattern: string | MatchPattern,
+        callbacks: KernelMemoryScanCallbacks,
+    ): Promise<void>;
 
     /**
      * Synchronous version of `scan()`.
@@ -3174,7 +4495,7 @@ declare namespace Kernel {
      * @param size Number of bytes to scan.
      * @param pattern Match pattern, see `Memory.scan()` for details.
      */
-    function scanSync(address: UInt64, size: number | UInt64, pattern: string): KernelMemoryScanMatch[];
+    function scanSync(address: UInt64, size: number | UInt64, pattern: string | MatchPattern): KernelMemoryScanMatch[];
 
     function readS8(address: UInt64): number;
     function readU8(address: UInt64): number;
@@ -3218,1072 +4539,200 @@ declare namespace Kernel {
     function writeUtf16String(address: UInt64, value: string): void;
 }
 
-declare namespace ObjC {
-    // tslint:disable:no-unnecessary-qualifier
-
-    /**
-     * Whether the current process has an Objective-C runtime loaded. Do not invoke any other ObjC properties or
-     * methods unless this is the case.
-     */
-    const available: boolean;
-
-    /**
-     * Direct access to a big portion of the Objective-C runtime API.
-     */
-    const api: {
-        [name: string]: any;
-    };
-
-    /**
-     * Dynamically generated bindings for each of the currently registered classes.
-     *
-     * You can interact with objects by using dot notation and replacing colons with underscores, i.e.:
-     *
-     * ```
-     *     [NSString stringWithString:@"Hello World"];
-     * ```
-     *
-     * becomes:
-     *
-     * ```
-     *     const NSString = ObjC.classes.NSString;
-     *     NSString.stringWithString_("Hello World");
-     * ```
-     *
-     * Note the underscore after the method name.
-     */
-    const classes: {
-        [name: string]: ObjC.Object
-    };
-
-    /**
-     * Dynamically generated bindings for each of the currently registered protocols.
-     */
-    const protocols: {
-        [name: string]: Protocol
-    };
-
-    /**
-     * GCD queue of the main thread.
-     */
-    const mainQueue: NativePointer;
-
-    /**
-     * Schedule the JavaScript function `work` on the GCD queue specified by `queue`. An NSAutoreleasePool is created
-     * just before calling `work`, and cleaned up on return.
-     *
-     * E.g. on macOS:
-     * ```
-     *     const { NSSound } = ObjC.classes;
-     *     ObjC.schedule(ObjC.mainQueue, () => {
-     *         const sound = NSSound.alloc().initWithContentsOfFile_byReference_("/Users/oleavr/.Trash/test.mp3", true).autorelease();
-     *         sound.play();
-     *     });
-     * ```
-     *
-     * @param queue GCD queue to schedule `work` on.
-     * @param work Function to call on the specified `queue`.
-     */
-    function schedule(queue: NativePointerValue, work: () => void): void;
-
-    /**
-     * Dynamically generated wrapper for any Objective-C instance, class, or meta-class.
-     */
-    class Object implements ObjectWrapper, ObjectMethods {
-        constructor(handle: NativePointer, protocol?: Protocol);
-
-        handle: NativePointer;
-
-        /**
-         * Whether this is an instance, class, or meta-class.
-         */
-        $kind: ObjectKind;
-
-        /**
-         * Instance used for chaining up to super-class method implementations.
-         */
-        $super: ObjC.Object;
-
-        /**
-         * Super-class of this object's class.
-         */
-        $superClass: ObjC.Object;
-
-        /**
-         * Class that this object is an instance of.
-         */
-        $class: ObjC.Object;
-
-        /**
-         * Class name of this object.
-         */
-        $className: string;
-
-        /**
-         * Name of module where this object is implemented.
-         */
-        $moduleName: string;
-
-        /**
-         * Protocols that this object conforms to.
-         */
-        $protocols: {
-            [name: string]: Protocol;
-        };
-
-        /**
-         * Native method names exposed by this object’s class and parent classes.
-         */
-        $methods: string[];
-
-        /**
-         * Native method names exposed by this object’s class, not including parent classes.
-         */
-        $ownMethods: string[];
-
-        /**
-         * Instance variables on this object. Supports both access and assignment.
-         */
-        $ivars: {
-            [name: string]: any;
-        };
-
-        /**
-         * Determines whether two instances refer to the same underlying object.
-         *
-         * @param other Other object instance or address to compare to.
-         */
-        equals(other: ObjC.Object | NativePointer): boolean;
-
-        [name: string]: any;
-    }
-
-    interface ObjectMethods {
-        [name: string]: ObjectMethod;
-    }
-
-    class ObjectMethod implements ObjectWrapper {
-        handle: NativePointer;
-
-        /**
-         * Objective-C selector. Use `ObjC.selectorAsString()` to convert it to a string.
-         */
-        selector: NativePointer;
-
-        /**
-         * Current implementation.
-         *
-         * You may replace it by assigning to this property. See `ObjC.implement()` for details.
-         */
-        implementation: AnyFunction | NativePointer;
-
-        /**
-         * Return type name.
-         */
-        returnType: string;
-
-        /**
-         * Argument type names.
-         */
-        argumentTypes: string;
-
-        /**
-         * Signature.
-         */
-        types: string;
-    }
-
-    /**
-     * What kind of object an ObjC.Object represents.
-     */
-    type ObjectKind = "instance" | "class" | "meta-class";
-
-    /**
-     * Dynamically generated language binding for any Objective-C protocol.
-     */
-    class Protocol implements ObjectWrapper {
-        constructor(handle: NativePointer);
-
-        handle: NativePointer;
-
-        /**
-         * Name visible to the Objective-C runtime.
-         */
-        name: string;
-
-        /**
-         * Protocols that this protocol conforms to.
-         */
-        protocols: {
-            [name: string]: Protocol
-        };
-
-        /**
-         * Properties declared by this protocol.
-         */
-        properties: {
-            [name: string]: ProtocolPropertyAttributes;
-        };
-
-        /**
-         * Methods declared by this protocol.
-         */
-        methods: {
-            [name: string]: ProtocolMethodDescription;
-        };
-    }
-
-    interface ProtocolPropertyAttributes {
-        [name: string]: string;
-    }
-
-    interface ProtocolMethodDescription {
-        /**
-         * Whether this method is required or optional.
-         */
-        required: boolean;
-
-        /**
-         * Method signature.
-         */
-        types: string;
-    }
-
-    /**
-     * Dynamically generated language binding for any Objective-C block. Also supports implementing a block from
-     * scratch by passing in a MethodDefinition.
-     */
-    class Block implements ObjectWrapper {
-        constructor(target: NativePointer | MethodSpec);
-
-        handle: NativePointer;
-
-        /**
-         * Current implementation. You may replace it by assigning to this property.
-         */
-        implementation: AnyFunction;
-    }
-
-    /**
-     * Creates a JavaScript implementation compatible with the signature of `method`, where `fn` is used as the
-     * implementation. Returns a `NativeCallback` that you may assign to an ObjC method’s `implementation` property.
-     *
-     * @param method Method to implement.
-     * @param fn Implementation.
-     */
-    function implement(method: ObjectMethod, fn: AnyFunction): NativeCallback;
-
-    /**
-     * Creates a new class designed to act as a proxy for a target object.
-     *
-     * @param spec Proxy specification.
-     */
-    function registerProxy(spec: ProxySpec): ProxyConstructor;
-
-    /**
-     * Creates a new Objective-C class.
-     *
-     * @param spec Class specification.
-     */
-    function registerClass(spec: ClassSpec): ObjC.Object;
-
-    /**
-     * Creates a new Objective-C protocol.
-     *
-     * @param spec Protocol specification.
-     */
-    function registerProtocol(spec: ProtocolSpec): Protocol;
-
-    /**
-     * Binds some JavaScript data to an Objective-C instance.
-     *
-     * @param obj Objective-C instance to bind data to.
-     * @param data Data to bind.
-     */
-    function bind(obj: ObjC.Object | NativePointer, data: InstanceData): void;
-
-    /**
-     * Unbinds previously associated JavaScript data from an Objective-C instance.
-     *
-     * @param obj Objective-C instance to unbind data from.
-     */
-    function unbind(obj: ObjC.Object | NativePointer): void;
-
-    /**
-     * Looks up previously bound data from an Objective-C object.
-     *
-     * @param obj Objective-C instance to look up data for.
-     */
-    function getBoundData(obj: ObjC.Object | NativePointer): any;
-
-    /**
-     * Enumerates loaded classes.
-     *
-     * @param callbacks Object with callbacks.
-     */
-    function enumerateLoadedClasses(callbacks: EnumerateLoadedClassesCallbacks): void;
-
-    /**
-     * Enumerates loaded classes.
-     *
-     * @param options Options customizing the enumeration.
-     * @param callbacks Object with callbacks.
-     */
-    function enumerateLoadedClasses(options: EnumerateLoadedClassesOptions, callbacks: EnumerateLoadedClassesCallbacks): void;
-
-    /**
-     * Synchronous version of `enumerateLoadedClasses()`.
-     *
-     * @param options Options customizing the enumeration.
-     */
-    function enumerateLoadedClassesSync(options?: EnumerateLoadedClassesOptions): EnumerateLoadedClassesResult;
-
-    interface EnumerateLoadedClassesOptions {
-        /**
-         * Limit enumeration to modules in the given module map.
-         */
-        ownedBy?: ModuleMap;
-    }
-
-    interface EnumerateLoadedClassesCallbacks {
-        onMatch: (name: string, owner: string) => void;
-        onComplete: () => void;
-    }
-
-    interface EnumerateLoadedClassesResult {
-        /**
-         * Class names grouped by name of owner module.
-         */
-        [owner: string]: string[];
-    }
-
-    function choose(specifier: ChooseSpecifier, callbacks: EnumerateCallbacks<ObjC.Object>): void;
-
-    /**
-     * Synchronous version of `choose()`.
-     *
-     * @param specifier What kind of objects to look for.
-     */
-    function chooseSync(specifier: ChooseSpecifier): ObjC.Object[];
-
-    /**
-     * Converts the JavaScript string `name` to a selector.
-     *
-     * @param name Name to turn into a selector.
-     */
-    function selector(name: string): NativePointer;
-
-    /**
-     * Converts the selector `sel` to a JavaScript string.
-     *
-     * @param sel Selector to turn into a string.
-     */
-    function selectorAsString(sel: NativePointerValue): string;
-
-    interface ProxySpec {
-        /**
-         * Protocols this proxy class conforms to.
-         */
-        protocols?: Protocol[];
-
-        /**
-         * Methods to implement.
-         */
-        methods?: {
-            [name: string]: AnyFunction | MethodSpec;
-        };
-
-        /**
-         * Callbacks for getting notified about events.
-         */
-        events?: {
-            /**
-             * Gets notified about the method name that we’re about to forward a call to. This might be where you’d
-             * start out with a temporary callback that just logs the names to help you decide which methods to
-             * override.
-             *
-             * @param name Name of method that is about to get called.
-             */
-            forward?(name: string): void;
-        };
-    }
-
-    /**
-     * Constructor for instantiating a proxy object.
-     *
-     * @param target Target object to proxy to.
-     * @param data Object with arbitrary data.
-     */
-    type ProxyConstructor = (target: ObjC.Object | NativePointer, data: InstanceData) => void;
-
-    interface ClassSpec {
-        /**
-         * Name of the class.
-         *
-         * Omit this if you don’t care about the globally visible name and would like the runtime to auto-generate one
-         * for you.
-         */
-        name?: string;
-
-        /**
-         * Super-class, or `null` to create a new root class. Omit to inherit from `NSObject`.
-         */
-        super?: ObjC.Object | null;
-
-        /**
-         * Protocols this class conforms to.
-         */
-        protocols?: Protocol[];
-
-        /**
-         * Methods to implement.
-         */
-        methods?: {
-            [name: string]: AnyFunction | MethodSpec;
-        };
-    }
-
-    type MethodSpec = SimpleMethodSpec | DetailedMethodSpec;
-
-    interface SimpleMethodSpec {
-        /**
-         * Return type.
-         */
-        retType: string;
-
-        /**
-         * Argument types.
-         */
-        argTypes: string[];
-
-        /**
-         * Implementation.
-         */
-        implementation: AnyFunction;
-    }
-
-    interface DetailedMethodSpec {
-        /**
-         * Signature.
-         */
-        types: string;
-
-        /**
-         * Implementation.
-         */
-        implementation: AnyFunction;
-    }
-
-    /**
-     * User-defined data that can be accessed from method implementations.
-     */
-    interface InstanceData {
-        [name: string]: any;
-    }
-
-    interface ProtocolSpec {
-        /**
-         * Name of the protocol.
-         *
-         * Omit this if you don’t care about the globally visible name and would like the runtime to auto-generate one
-         * for you.
-         */
-        name?: string;
-
-        /**
-         * Protocols this protocol conforms to.
-         */
-        protocols?: Protocol[];
-
-        methods?: {
-            [name: string]: ProtocolMethodSpec;
-        };
-    }
-
-    type ProtocolMethodSpec = SimpleProtocolMethodSpec | DetailedProtocolMethodSpec;
-
-    interface SimpleProtocolMethodSpec {
-        /**
-         * Return type.
-         */
-        retType: string;
-
-        /**
-         * Argument types.
-         */
-        argTypes: string[];
-
-        /**
-         * Whether this method is required or optional. Default is required.
-         */
-        optional?: boolean;
-    }
-
-    interface DetailedProtocolMethodSpec {
-        /**
-         * Method signature.
-         */
-        types: string;
-
-        /**
-         * Whether this method is required or optional. Default is required.
-         */
-        optional?: boolean;
-    }
-
-    type ChooseSpecifier = SimpleChooseSpecifier | DetailedChooseSpecifier;
-
-    type SimpleChooseSpecifier = ObjC.Object;
-
-    interface DetailedChooseSpecifier {
-        /**
-         * Which class to look for instances of. E.g.: `ObjC.classes.UIButton`.
-         */
-        class: ObjC.Object;
-
-        /**
-         * Whether you’re also interested in subclasses matching the given class selector.
-         *
-         * The default is to also include subclasses.
-         */
-        subclasses?: boolean;
-    }
-
-    // tslint:enable:no-unnecessary-qualifier
-}
-
-declare namespace Java {
-    /**
-     * Whether the current process has a Java runtime loaded. Do not invoke any other Java properties or
-     * methods unless this is the case.
-     */
-    const available: boolean;
-
-    /**
-     * Which version of Android we're running on.
-     */
-    const androidVersion: string;
-
-    /**
-     * Calls `func` with the `obj` lock held.
-     *
-     * @param obj Instance whose lock to hold.
-     * @param fn Function to call with lock held.
-     */
-    function synchronized(obj: Wrapper, fn: () => void): void;
-
-    /**
-     * Enumerates loaded classes.
-     *
-     * @param callbacks Object with callbacks.
-     */
-    function enumerateLoadedClasses(callbacks: EnumerateLoadedClassesCallbacks): void;
-
-    /**
-     * Synchronous version of `enumerateLoadedClasses()`.
-     */
-    function enumerateLoadedClassesSync(): string[];
-
-    /**
-     * Enumerates class loaders.
-     *
-     * You may assign such a loader to `Java.classFactory.loader` to make
-     * `Java.use()` look for classes on a specific loader instead of the default
-     * loader used by the app.
-     *
-     * @param callbacks Object with callbacks.
-     */
-    function enumerateClassLoaders(callbacks: EnumerateClassLoadersCallbacks): void;
-
-    /**
-     * Synchronous version of `enumerateClassLoaders()`.
-     */
-    function enumerateClassLoadersSync(): Wrapper[];
-
-    /**
-     * Runs `fn` on the main thread of the VM.
-     *
-     * @param fn Function to run on the main thread of the VM.
-     */
-    function scheduleOnMainThread(fn: () => void): void;
-
-    /**
-     * Ensures that the current thread is attached to the VM and calls `fn`.
-     * (This isn't necessary in callbacks from Java.)
-     *
-     * Will defer calling `fn` if the app's class loader is not available yet.
-     * Use `Java.performNow()` if access to the app's classes is not needed.
-     *
-     * @param fn Function to run while attached to the VM.
-     */
-    function perform(fn: () => void): void;
-
-    /**
-     * Ensures that the current thread is attached to the VM and calls `fn`.
-     * (This isn't necessary in callbacks from Java.)
-     *
-     * @param fn Function to run while attached to the VM.
-     */
-    function performNow(fn: () => void): void;
-
-    /**
-     * Dynamically generates a JavaScript wrapper for `className` that you can
-     * instantiate objects from by calling `$new()` on to invoke a constructor.
-     * Call `$dispose()` on an instance to clean it up explicitly, or wait for
-     * the JavaScript object to get garbage-collected, or script to get
-     * unloaded. Static and non-static methods are available, and you can even
-     * replace method implementations.
-     *
-     * Uses the app's class loader by default, but you may customize this by
-     * assigning a different loader instance to `Java.classFactory.loader`.
-     *
-     * @param className Canonical class name to get a wrapper for.
-     */
-    function use(className: string): Wrapper;
-
-    /**
-     * Opens the .dex file at `filePath`.
-     *
-     * @param filePath Path to .dex to open.
-     */
-    function openClassFile(filePath: string): DexFile;
-
-    /**
-     * Enumerates live instances of the `className` class by scanning the Java
-     * VM's heap.
-     *
-     * @param className Name of class to enumerate instances of.
-     * @param callbacks Object with callbacks.
-     */
-    function choose(className: string, callbacks: ChooseCallbacks): void;
-
-    /**
-     * Creates a JavaScript wrapper given the existing instance at `handle` of
-     * given class `klass` as returned from `Java.use()`.
-     *
-     * @param handle An existing wrapper or a JNI handle.
-     * @param klass Class wrapper for type to cast to.
-     */
-    function cast(handle: any, klass: Wrapper): Wrapper;
-
-    /**
-     * Creates a Java array with elements of the specified `type`, from a
-     * JavaScript array `elements`. The resulting Java array behaves like
-     * a JS array, but can be passed by reference to Java APIs in order to
-     * allow them to modify its contents.
-     *
-     * @param type Type name of elements.
-     * @param elements Array of JavaScript values to use for constructing the
-     *                 Java array.
-     */
-    function array(type: string, elements: any[]): any[];
-
-    /**
-     * Determines whether the caller is running on the main thread.
-     */
-    function isMainThread(): boolean;
-
-    /**
-     * Creates a new Java class.
-     *
-     * @param spec Object describing the class to be created.
-     */
-    function registerClass(spec: ClassSpec): Wrapper;
-
-    /**
-     * Forces the VM to execute everything with its interpreter. Necessary to
-     * prevent optimizations from bypassing method hooks in some cases, and
-     * allows ART's Instrumentation APIs to be used for tracing the runtime.
-     */
-    function deoptimizeEverything(): void;
-
-    const vm: VM;
-
-    const classFactory: ClassFactory;
-
-    interface EnumerateLoadedClassesCallbacks {
-        /**
-         * Called with the name of each currently loaded class.
-         *
-         * Pass this to `Java.use()` to get a JavaScript wrapper.
-         */
-        onMatch: (className: string) => void;
-
-        /**
-         * Called when all loaded classes have been enumerated.
-         */
-        onComplete: () => void;
-    }
-
-    interface EnumerateClassLoadersCallbacks {
-        /**
-         * Called with a `java.lang.ClassLoader` wrapper for each class loader
-         * found in the VM.
-         */
-        onMatch: (loader: Wrapper) => void;
-
-        /**
-         * Called when all class loaders have been enumerated.
-         */
-        onComplete: () => void;
-    }
-
-    interface ChooseCallbacks {
-        /**
-         * Called with each live instance found with a ready-to-use `instance`
-         * just as if you would have called `Java.cast()` with a raw handle to
-         * this particular instance.
-         *
-         * May return `EnumerateAction.Stop` to stop the enumeration early.
-         */
-        onMatch: (instance: Wrapper) => void | EnumerateAction;
-
-        /**
-         * Called when all instances have been enumerated.
-         */
-        onComplete: () => void;
-    }
-
-    /**
-     * Dynamically generated wrapper for any Java class, instance, or interface.
-     */
-    interface Wrapper {
-        /**
-         * Allocates and initializes a new instance of the given class.
-         *
-         * Use this to create a new instance.
-         */
-        $new: MethodDispatcher;
-
-        /**
-         * Allocates a new instance without initializing it.
-         *
-         * Call `$init()` to initialize it.
-         */
-        $alloc: MethodDispatcher;
-
-        /**
-         * Initializes an instance that was allocated but not yet initialized.
-         * This wraps the constructor(s).
-         *
-         * Replace the `implementation` property to hook a given constructor.
-         */
-        $init: MethodDispatcher;
-
-        /**
-         * Retrieves a `java.lang.Class` wrapper for the current class.
-         */
-        class: Wrapper;
-
-        /**
-         * Canonical name of class being wrapped.
-         */
-        $className: string;
-
-        /**
-         * Methods and fields.
-         */
-        [name: string]: any;
-    }
-
-    interface MethodDispatcher extends Method {
-        /**
-         * Available overloads.
-         */
-        overloads: Method[];
-
-        /**
-         * Obtains a specific overload.
-         *
-         * @param args Signature of the overload to obtain.
-         *             For example: `"java.lang.String", "int"`.
-         */
-        overload(...args: string[]): Method;
-    }
-
-    interface Method {
-        (...params: any[]): any;
-
-        /**
-         * Name of this method.
-         */
-        methodName: string;
-
-        /**
-         * Class that this method belongs to.
-         */
-        holder: Wrapper;
-
-        /**
-         * What kind of method this is, i.e. constructor vs static vs instance.
-         */
-        type: MethodType;
-
-        /**
-         * Pointer to the VM's underlying method object.
-         */
-        handle: NativePointer;
-
-        /**
-         * Implementation. Assign to this property to replace it.
-         */
-        implementation: (...params: any[]) => any;
-
-        /**
-         * Method return type.
-         */
-        returnType: Type;
-
-        /**
-         * Method argument types.
-         */
-        argumentTypes: Type[];
-
-        /**
-         * Queries whether the method may be invoked with a given argument list.
-         */
-        canInvokeWith: (...args: any[]) => boolean;
-    }
-
-    interface Field {
-        /**
-         * Current value of this field. Assign to update the field's value.
-         */
-        value: any;
-
-        /**
-         * Class that this field belongs to.
-         */
-        holder: Wrapper;
-
-        /**
-         * What kind of field this is, i.e. static vs instance.
-         */
-        fieldType: FieldType;
-
-        /**
-         * Type of value.
-         */
-        fieldReturnType: Type;
-    }
-
-    // tslint:disable-next-line:no-const-enum
-    const enum MethodType {
-        Constructor = 1,
-        Static = 2,
-        Instance = 3,
-    }
-
-    // tslint:disable-next-line:no-const-enum
-    const enum FieldType {
-        Static = 1,
-        Instance = 2,
-    }
-
-    interface Type {
-        /**
-         * VM type name. For example `I` for `int`.
-         */
-        name: string;
-
-        /**
-         * Frida type name. For example `pointer` for a handle.
-         */
-        type: string;
-
-        /**
-         * Size in words.
-         */
-        size: number;
-
-        /**
-         * Size in bytes.
-         */
-        byteSize: number;
-
-        /**
-         * Class name, if applicable.
-         */
-        className?: string;
-
-        /**
-         * Checks whether a given JavaScript `value` is compatible.
-         */
-        isCompatible: (value: any) => boolean;
-
-        /**
-         * Converts `value` from a JNI value to a JavaScript value.
-         */
-        fromJni?: (value: any) => any;
-
-        /**
-         * Converts `value` from a JavaScript value to a JNI value.
-         */
-        toJni?: (value: any) => any;
-
-        /**
-         * Reads a value from memory.
-         */
-        read?: (address: NativePointerValue) => any;
-
-        /**
-         * Writes a value to memory.
-         */
-        write?: (address: NativePointerValue, value: any) => void;
-    }
-
-    interface DexFile {
-        /**
-         * Loads the contained classes into the VM.
-         */
-        load(): void;
-
-        /**
-         * Determines available class names.
-         */
-        getClassNames(): string[];
-    }
-
-    interface ClassSpec {
-        /**
-         * Name of the class.
-         */
-        name: string;
-
-        /**
-         * Interfaces implemented by this class.
-         */
-        implements?: Wrapper[];
-
-        /**
-         * Methods to implement.
-         */
-        methods?: {
-            [name: string]: AnyFunction | MethodSpec | MethodSpec[];
-        };
-    }
-
-    interface MethodSpec {
-        /**
-         * Return type. Defaults to `void` if omitted.
-         */
-        returnType?: string;
-
-        /**
-         * Argument types. Defaults to `[]` if omitted.
-         */
-        argumentTypes?: string[];
-
-        /**
-         * Implementation.
-         */
-        implementation: AnyFunction;
-    }
-
-    interface VM {
-        /**
-         * Ensures that the current thread is attached to the VM and calls `fn`.
-         * (This isn't necessary in callbacks from Java.)
-         *
-         * @param fn Function to run while attached to the VM.
-         */
-        perform(fn: () => void): void;
-
-        /**
-         * Gets a wrapper for the current thread's `JNIEnv`.
-         *
-         * Throws an exception if the current thread is not attached to the VM.
-         */
-        getEnv(): Env;
-
-        /**
-         * Tries to get a wrapper for the current thread's `JNIEnv`.
-         *
-         * Returns `null` if the current thread is not attached to the VM.
-         */
-        tryGetEnv(): Env | null;
-    }
-
-    type Env = any;
-
-    interface ClassFactory {
-        /**
-         * Class loader currently being used. Typically updated by the
-         * first call to `Java.perform()`.
-         *
-         * You may assign a different `java.lang.ClassLoader` to make
-         * `Java.use()` look for classes on a specific loader instead of
-         * the default loader used by the app.
-         */
-        loader: Wrapper | null;
-
-        /**
-         * Path to cache directory currently being used. Typically updated by
-         * the first call to `Java.perform()`.
-         */
-        cacheDir: string;
-
-        /**
-         * Naming convention to use for temporary files.
-         *
-         * Defaults to `{ prefix: "frida", suffix: "dat" }`.
-         */
-        tempFileNaming: TempFileNaming;
-    }
-
-    interface TempFileNaming {
-        /**
-         * File name prefix to use.
-         *
-         * For example: `frida`.
-         */
-        prefix: string;
-
-        /**
-         * File name suffix to use.
-         *
-         * For example: `dat`.
-         */
-        suffix: string;
-    }
-}
-
 /**
- * Monitors the lifetime of a heap-allocated JavaScript value.
+ * Keeps you from seeing yourself during process introspection.
  *
- * Useful when you're building a language-binding where you need to free
- * native resources when a JS value is no longer needed.
+ * Introspection APIs such as `Process.enumerateThreads()` ensure that cloaked
+ * resources are skipped, and things appear as if you were not inside the
+ * process being instrumented.
+ *
+ * Any resources created by Frida's runtime will be cloaked automatically.
+ * This means you typically only need to manage cloaked resources if you use an
+ * OS-specific API to create a given resource.
  */
-declare namespace WeakRef {
+declare namespace Cloak {
     /**
-     * Starts monitoring the lifetime of `target`. Calls `callback` as soon as
-     * value has been garbage-collected, or the script is about to get
-     * unloaded.
+     * Updates the registry of cloaked resources so the given thread `id`
+     * becomes invisible to cloak-aware APIs, such as
+     * `Process.enumerateThreads()`.
      *
-     * Be careful so `callback` is not a closure that accidentally captures
-     * `target` and keeps it alive beyond its intended lifetime.
-     *
-     * @param target Heap-allocated JavaScript value to monitor lifetime of.
-     * @param callback Function to call when `target` gets GCed.
+     * @param id The thread ID to cloak.
      */
-    function bind(target: any, callback: WeakRefCallback): WeakRefId;
+    function addThread(id: ThreadId): void;
 
     /**
-     * Stops monitoring the value passed to `WeakRef.bind()` and calls the
-     * callback immediately.
+     * Updates the registry of cloaked resources so the given thread `id`
+     * becomes visible to cloak-aware APIs, such as
+     * `Process.enumerateThreads()`.
      *
-     * @param id ID returned by a previous call to `WeakRef.bind()`.
+     * @param id The thread ID to uncloak.
      */
-    function unbind(id: WeakRefId): void;
+    function removeThread(id: ThreadId): void;
+
+    /**
+     * Checks whether the current thread is currently being cloaked.
+     *
+     * @returns Whether the current thread is cloaked.
+     */
+    function hasCurrentThread(): boolean;
+
+    /**
+     * Checks whether the given thread `id` is currently being cloaked.
+     *
+     * @param id The thread ID to check.
+     * @returns Whether the specified thread `id` is cloaked.
+     */
+    function hasThread(id: ThreadId): boolean;
+
+    /**
+     * Updates the registry of cloaked resources so the given memory `range`
+     * becomes invisible to cloak-aware APIs, such as
+     * `Process.enumerateRanges()`.
+     *
+     * @param range The range to cloak.
+     */
+    function addRange(range: MemoryRange): void;
+
+    /**
+     * Updates the registry of cloaked resources so the given memory `range`
+     * becomes visible to cloak-aware APIs, such as `Process.enumerateRanges()`.
+     *
+     * @param range The range to uncloak.
+     */
+    function removeRange(range: MemoryRange): void;
+
+    /**
+     * Determines whether a memory range containing `address` is currently
+     * cloaked.
+     *
+     * @param address The address to look for.
+     * @return Whether `address` is inside a cloaked range.
+     */
+    function hasRangeContaining(address: NativePointerValue): boolean;
+
+    /**
+     * Determines how much of the given memory `range` is currently visible.
+     * May return an empty array if the entire range is cloaked, or `null` if it
+     * is entirely visible.
+     *
+     * @param range The range to determine the visible parts of.
+     * @return Visible parts of `range`, or `null` if it is entirely visible.
+     */
+    function clipRange(range: MemoryRange): MemoryRange[] | null;
+
+    /**
+     * Updates the registry of cloaked resources so the given `fd` becomes
+     * invisible to cloak-aware APIs.
+     *
+     * @param fd The file descriptor to cloak.
+     */
+    function addFileDescriptor(fd: number): void;
+
+    /**
+     * Updates the registry of cloaked resources so the given `fd` becomes
+     * visible to cloak-aware APIs.
+     *
+     * @param fd The file descriptor to uncloak.
+     */
+    function removeFileDescriptor(fd: number): void;
+
+    /**
+     * Checks whether the given `fd` is currently being cloaked.
+     *
+     * @param fd The file descriptor to check.
+     * @returns Whether `fd` is cloaked.
+     */
+    function hasFileDescriptor(fd: number): boolean;
 }
 
-type WeakRefCallback = () => void;
+/**
+ * Simple worst-case profiler built on top of Interceptor.
+ *
+ * Unlike a conventional profiler, which samples call stacks at a certain
+ * frequency, you decide the exact functions that you're interested in
+ * profiling.
+ *
+ * When any of those functions gets called, the profiler grabs a sample on
+ * entry, and another one upon return. It then subtracts the two, to compute how
+ * expensive the call was. If the resulting value is greater than what it's seen
+ * previously for the specific function, that value becomes its new worst-case.
+ *
+ * Whenever a new worst-case has been discovered, it isn't necessarily enough to
+ * know that most of the time/cycles/etc. was spent by a specific function. That
+ * function may only be slow with certain input arguments, for example.
+ *
+ * This is a situation where you can pass in `ProfilerInstrumentCallbacks` to
+ * implement a `describe()` callback for the specific function. Your callback
+ * should capture relevant context from the argument list and/or other state,
+ * and return a string that describes the new worst-case that was just
+ * discovered.
+ *
+ * When you later decide to call `generateReport()`, you'll find your computed
+ * descriptions embedded in each worst-case entry.
+ */
+declare class Profiler {
+    /**
+     * Starts instrumenting the specified function using the specified sampler.
+     */
+    instrument(functionAddress: NativePointerValue, sampler: Sampler, callbacks?: ProfilerInstrumentCallbacks): void;
+
+    /**
+     * Generates an XML report from the live profiler state. May be called at
+     * any point, and as many times as desired.
+     */
+    generateReport(): string;
+}
+
+interface ProfilerInstrumentCallbacks {
+    /**
+     * Called synchronously when a new worst-case has been discovered, and a
+     * description should be captured from the argument list and/or other
+     * relevant state.
+     */
+    describe?(this: InvocationContext, args: InvocationArguments): string;
+}
+
+declare abstract class Sampler {
+    /**
+     * Retrieves a new sample. What it denotes depends on the specific sampler.
+     */
+    sample(): bigint;
+}
 
 /**
- * Opaque ID returned by `WeakRef.bind()`. Pass it to `WeakRef.unbind()` to
- * stop monitoring the target value.
+ * Sampler that measures CPU cycles, e.g. using the RDTSC instruction on x86.
  */
-type WeakRefId = number;
+declare class CycleSampler extends Sampler {}
+
+/**
+ * Sampler that measures CPU cycles only spent by the current thread, e.g.
+ * using QueryThreadCycleTime() on Windows.
+ */
+declare class BusyCycleSampler extends Sampler {}
+
+/**
+ * Sampler that measures passage of time.
+ */
+declare class WallClockSampler extends Sampler {}
+
+/**
+ * Sampler that measures time spent in user-space.
+ */
+declare class UserTimeSampler extends Sampler {
+    constructor(threadId?: ThreadId);
+}
+
+/**
+ * Sampler that counts the number of calls to malloc(), calloc(), and realloc().
+ */
+declare class MallocCountSampler extends Sampler {}
+
+/**
+ * Sampler that counts the number of calls to functions of your choosing.
+ */
+declare class CallCountSampler extends Sampler {
+    constructor(functions: NativePointerValue[]);
+}
 
 /**
  * Generates machine code for x86.
@@ -4623,7 +5072,13 @@ declare class X86Writer {
     /**
      * Puts a MOV instruction.
      */
-    putMovRegBaseIndexScaleOffsetPtr(dstReg: X86Register, baseReg: X86Register, indexReg: X86Register, scale: number, offset: number | Int64 | UInt64): void;
+    putMovRegBaseIndexScaleOffsetPtr(
+        dstReg: X86Register,
+        baseReg: X86Register,
+        indexReg: X86Register,
+        scale: number,
+        offset: number | Int64 | UInt64,
+    ): void;
 
     /**
      * Puts a MOV instruction.
@@ -4646,6 +5101,16 @@ declare class X86Writer {
     putMovRegFsU32Ptr(dstReg: X86Register, fsOffset: number): void;
 
     /**
+     * Puts a MOV FS instruction.
+     */
+    putMovFsRegPtrReg(fsOffset: X86Register, srcReg: X86Register): void;
+
+    /**
+     * Puts a MOV FS instruction.
+     */
+    putMovRegFsRegPtr(dstReg: X86Register, fsOffset: X86Register): void;
+
+    /**
      * Puts a MOV GS instruction.
      */
     putMovGsU32PtrReg(fsOffset: number, srcReg: X86Register): void;
@@ -4654,6 +5119,16 @@ declare class X86Writer {
      * Puts a MOV GS instruction.
      */
     putMovRegGsU32Ptr(dstReg: X86Register, fsOffset: number): void;
+
+    /**
+     * Puts a MOV GS instruction.
+     */
+    putMovGsRegPtrReg(gsOffset: X86Register, srcReg: X86Register): void;
+
+    /**
+     * Puts a MOV GS instruction.
+     */
+    putMovRegGsRegPtr(dstReg: X86Register, gsOffset: X86Register): void;
 
     /**
      * Puts a MOVQ XMM0 ESP instruction.
@@ -4729,6 +5204,16 @@ declare class X86Writer {
      * Puts a POPFX instruction.
      */
     putPopfx(): void;
+
+    /**
+     * Puts a SAHF instruction.
+     */
+    putSahf(): void;
+
+    /**
+     * Puts a LAHF instruction.
+     */
+    putLahf(): void;
 
     /**
      * Puts a TEST instruction.
@@ -4821,6 +5306,16 @@ declare class X86Writer {
     putNopPadding(n: number): void;
 
     /**
+     * Puts a FXSAVE instruction.
+     */
+    putFxsaveRegPtr(reg: X86Register): void;
+
+    /**
+     * Puts a FXRSTOR instruction.
+     */
+    putFxrstorRegPtr(reg: X86Register): void;
+
+    /**
      * Puts a uint8.
      */
     putU8(value: number): void;
@@ -4844,7 +5339,7 @@ interface X86WriterOptions {
      * temporary location that later gets mapped into memory at the
      * intended memory location.
      */
-    pc?: NativePointer;
+    pc?: NativePointer | undefined;
 }
 
 type X86CallArgument = X86Register | number | UInt64 | Int64 | NativePointerValue;
@@ -4931,12 +5426,12 @@ declare class X86Relocator {
     skipOneNoLabel(): void;
 
     /**
-     * write the next buffered instruction.
+     * Writes the next buffered instruction.
      */
     writeOne(): boolean;
 
     /**
-     * write the next buffered instruction, but without a
+     * Writes the next buffered instruction, but without a
      * label for internal use. This breaks relocation of branches to locations
      * inside the relocated range, and is an optimization for use-cases where all
      * branches are rewritten (e.g. Frida's Stalker).
@@ -4992,8 +5487,7 @@ type X86Register =
     | "r15d"
     | "xip"
     | "eip"
-    | "rip"
-    ;
+    | "rip";
 
 type X86InstructionId =
     | "jo"
@@ -5014,8 +5508,7 @@ type X86InstructionId =
     | "jg"
     | "jcxz"
     | "jecxz"
-    | "jrcxz"
-    ;
+    | "jrcxz";
 
 type X86BranchHint = "no-hint" | "likely" | "unlikely";
 
@@ -5084,9 +5577,68 @@ declare class ArmWriter {
     putLabel(id: string): void;
 
     /**
+     * Puts code needed for calling a C function with the specified `args`.
+     */
+    putCallAddressWithArguments(func: NativePointerValue, args: ArmCallArgument[]): void;
+
+    /**
+     * Puts a CALL instruction.
+     */
+    putCallReg(reg: ArmRegister): void;
+
+    /**
+     * Puts code needed for calling a C function with the specified `args`.
+     */
+    putCallRegWithArguments(reg: ArmRegister, args: ArmCallArgument[]): void;
+
+    /**
+     * Puts code needed for branching/jumping to the given address.
+     */
+    putBranchAddress(address: NativePointerValue): void;
+
+    /**
+     * Determines whether a direct branch is possible between the two
+     * given memory locations.
+     */
+    canBranchDirectlyBetween(from: NativePointerValue, to: NativePointerValue): boolean;
+
+    /**
      * Puts a B instruction.
      */
     putBImm(target: NativePointerValue): void;
+
+    /**
+     * Puts a B COND instruction.
+     */
+    putBCondImm(cc: ArmConditionCode, target: NativePointerValue): void;
+
+    /**
+     * Puts a B instruction referencing `labelId`, defined by a past
+     * or future `putLabel()`.
+     */
+    putBLabel(labelId: string): void;
+
+    /**
+     * Puts a B COND instruction referencing `labelId`, defined by a past
+     * or future `putLabel()`.
+     */
+    putBCondLabel(cc: ArmConditionCode, labelId: string): void;
+
+    /**
+     * Puts a BL instruction.
+     */
+    putBlImm(target: NativePointerValue): void;
+
+    /**
+     * Puts a BLX instruction.
+     */
+    putBlxImm(target: NativePointerValue): void;
+
+    /**
+     * Puts a BL instruction referencing `labelId`, defined by a past
+     * or future `putLabel()`.
+     */
+    putBlLabel(labelId: string): void;
 
     /**
      * Puts a BX instruction.
@@ -5094,10 +5646,29 @@ declare class ArmWriter {
     putBxReg(reg: ArmRegister): void;
 
     /**
-     * Puts a B instruction referencing `labelId`, defined by a past
-     * or future `putLabel()`.
+     * Puts a BL instruction.
      */
-    putBLabel(labelId: string): void;
+    putBlReg(reg: ArmRegister): void;
+
+    /**
+     * Puts a BLX instruction.
+     */
+    putBlxReg(reg: ArmRegister): void;
+
+    /**
+     * Puts a RET instruction.
+     */
+    putRet(): void;
+
+    /**
+     * Puts a VPUSH RANGE instruction.
+     */
+    putVpushRange(firstReg: ArmRegister, lastReg: ArmRegister): void;
+
+    /**
+     * Puts a VPOP RANGE instruction.
+     */
+    putVpopRange(firstReg: ArmRegister, lastReg: ArmRegister): void;
 
     /**
      * Puts an LDR instruction.
@@ -5110,14 +5681,140 @@ declare class ArmWriter {
     putLdrRegU32(reg: ArmRegister, val: number): void;
 
     /**
+     * Puts an LDR instruction.
+     */
+    putLdrRegReg(dstReg: ArmRegister, srcReg: ArmRegister): void;
+
+    /**
+     * Puts an LDR instruction.
+     */
+    putLdrRegRegOffset(dstReg: ArmRegister, srcReg: ArmRegister, srcOffset: number | Int64 | UInt64): void;
+
+    /**
+     * Puts an LDR COND instruction.
+     */
+    putLdrCondRegRegOffset(
+        cc: ArmConditionCode,
+        dstReg: ArmRegister,
+        srcReg: ArmRegister,
+        srcOffset: number | Int64 | UInt64,
+    ): void;
+
+    /**
+     * Puts an LDMIA MASK instruction.
+     */
+    putLdmiaRegMask(reg: ArmRegister, mask: number): void;
+
+    /**
+     * Puts an LDMIA MASK WB instruction.
+     */
+    putLdmiaRegMaskWb(reg: ArmRegister, mask: number): void;
+
+    /**
+     * Puts a STR instruction.
+     */
+    putStrRegReg(srcReg: ArmRegister, dstReg: ArmRegister): void;
+
+    /**
+     * Puts a STR instruction.
+     */
+    putStrRegRegOffset(srcReg: ArmRegister, dstReg: ArmRegister, dstOffset: number | Int64 | UInt64): void;
+
+    /**
+     * Puts a STR COND instruction.
+     */
+    putStrCondRegRegOffset(
+        cc: ArmConditionCode,
+        srcReg: ArmRegister,
+        dstReg: ArmRegister,
+        dstOffset: number | Int64 | UInt64,
+    ): void;
+
+    /**
+     * Puts a MOV instruction.
+     */
+    putMovRegReg(dstReg: ArmRegister, srcReg: ArmRegister): void;
+
+    /**
+     * Puts a MOV SHIFT instruction.
+     */
+    putMovRegRegShift(dstReg: ArmRegister, srcReg: ArmRegister, shift: ArmShifter, shiftValue: number): void;
+
+    /**
+     * Puts a MOV CPSR instruction.
+     */
+    putMovRegCpsr(reg: ArmRegister): void;
+
+    /**
+     * Puts a MOV CPSR instruction.
+     */
+    putMovCpsrReg(reg: ArmRegister): void;
+
+    /**
+     * Puts an ADD U16 instruction.
+     */
+    putAddRegU16(dstReg: ArmRegister, val: number): void;
+
+    /**
+     * Puts an ADD instruction.
+     */
+    putAddRegU32(dstReg: ArmRegister, val: number): void;
+
+    /**
      * Puts an ADD instruction.
      */
     putAddRegRegImm(dstReg: ArmRegister, srcReg: ArmRegister, immVal: number): void;
 
     /**
-     * Puts an LDR instruction.
+     * Puts an ADD instruction.
      */
-    putLdrRegRegImm(dstReg: ArmRegister, srcReg: ArmRegister, immVal: number): void;
+    putAddRegRegReg(dstReg: ArmRegister, srcReg1: ArmRegister, srcReg2: ArmRegister): void;
+
+    /**
+     * Puts an ADD SHIFT instruction.
+     */
+    putAddRegRegRegShift(
+        dstReg: ArmRegister,
+        srcReg1: ArmRegister,
+        srcReg2: ArmRegister,
+        shift: ArmShifter,
+        shiftValue: number,
+    ): void;
+
+    /**
+     * Puts a SUB U16 instruction.
+     */
+    putSubRegU16(dstReg: ArmRegister, val: number): void;
+
+    /**
+     * Puts a SUB instruction.
+     */
+    putSubRegU32(dstReg: ArmRegister, val: number): void;
+
+    /**
+     * Puts a SUB instruction.
+     */
+    putSubRegRegImm(dstReg: ArmRegister, srcReg: ArmRegister, immVal: number): void;
+
+    /**
+     * Puts a SUB instruction.
+     */
+    putSubRegRegReg(dstReg: ArmRegister, srcReg1: ArmRegister, srcReg2: ArmRegister): void;
+
+    /**
+     * Puts a RSB instruction.
+     */
+    putRsbRegRegImm(dstReg: ArmRegister, srcReg: ArmRegister, immVal: number): void;
+
+    /**
+     * Puts an ANDS instruction.
+     */
+    putAndsRegRegImm(dstReg: ArmRegister, srcReg: ArmRegister, immVal: number): void;
+
+    /**
+     * Puts a CMP instruction.
+     */
+    putCmpRegImm(dstReg: ArmRegister, immVal: number): void;
 
     /**
      * Puts a NOP instruction.
@@ -5128,6 +5825,11 @@ declare class ArmWriter {
      * Puts an OS/architecture-specific breakpoint instruction.
      */
     putBreakpoint(): void;
+
+    /**
+     * Puts a BRK instruction.
+     */
+    putBrkImm(imm: number): void;
 
     /**
      * Puts a raw instruction.
@@ -5148,7 +5850,7 @@ interface ArmWriterOptions {
      * temporary location that later gets mapped into memory at the
      * intended memory location.
      */
-    pc?: NativePointer;
+    pc?: NativePointer | undefined;
 }
 
 type ArmCallArgument = ArmRegister | number | UInt64 | Int64 | NativePointerValue;
@@ -5227,7 +5929,7 @@ declare class ArmRelocator {
     skipOne(): void;
 
     /**
-     * write the next buffered instruction.
+     * Writes the next buffered instruction.
      */
     writeOne(): boolean;
 
@@ -5300,6 +6002,13 @@ declare class ThumbWriter {
     putLabel(id: string): void;
 
     /**
+     * Commits the first pending reference to the given label, returning
+     * `true` on success. Returns `false` if the given label hasn't been
+     * defined yet, or there are no more pending references to it.
+     */
+    commitLabel(id: string): boolean;
+
+    /**
      * Puts code needed for calling a C function with the specified `args`.
      */
     putCallAddressWithArguments(func: NativePointerValue, args: ArmCallArgument[]): void;
@@ -5308,6 +6017,17 @@ declare class ThumbWriter {
      * Puts code needed for calling a C function with the specified `args`.
      */
     putCallRegWithArguments(reg: ArmRegister, args: ArmCallArgument[]): void;
+
+    /**
+     * Puts code needed for branching/jumping to the given address.
+     */
+    putBranchAddress(address: NativePointerValue): void;
+
+    /**
+     * Determines whether a direct branch is possible between the two
+     * given memory locations.
+     */
+    canBranchDirectlyBetween(from: NativePointerValue, to: NativePointerValue): boolean;
 
     /**
      * Puts a B instruction.
@@ -5402,6 +6122,16 @@ declare class ThumbWriter {
     putPopRegs(regs: ArmRegister[]): void;
 
     /**
+     * Puts a VPUSH RANGE instruction.
+     */
+    putVpushRange(firstReg: ArmRegister, lastReg: ArmRegister): void;
+
+    /**
+     * Puts a VPOP RANGE instruction.
+     */
+    putVpopRange(firstReg: ArmRegister, lastReg: ArmRegister): void;
+
+    /**
      * Puts an LDR instruction.
      */
     putLdrRegAddress(reg: ArmRegister, address: NativePointerValue): void;
@@ -5422,6 +6152,21 @@ declare class ThumbWriter {
     putLdrRegRegOffset(dstReg: ArmRegister, srcReg: ArmRegister, srcOffset: number | Int64 | UInt64): void;
 
     /**
+     * Puts an LDRB instruction.
+     */
+    putLdrbRegReg(dstReg: ArmRegister, srcReg: ArmRegister): void;
+
+    /**
+     * Puts a VLDR instruction.
+     */
+    putVldrRegRegOffset(dstReg: ArmRegister, srcReg: ArmRegister, srcOffset: number | Int64 | UInt64): void;
+
+    /**
+     * Puts an LDMIA MASK instruction.
+     */
+    putLdmiaRegMask(reg: ArmRegister, mask: number): void;
+
+    /**
      * Puts a STR instruction.
      */
     putStrRegReg(srcReg: ArmRegister, dstReg: ArmRegister): void;
@@ -5440,6 +6185,16 @@ declare class ThumbWriter {
      * Puts a MOV instruction.
      */
     putMovRegU8(dstReg: ArmRegister, immValue: number): void;
+
+    /**
+     * Puts a MOV CPSR instruction.
+     */
+    putMovRegCpsr(reg: ArmRegister): void;
+
+    /**
+     * Puts a MOV CPSR instruction.
+     */
+    putMovCpsrReg(reg: ArmRegister): void;
 
     /**
      * Puts an ADD instruction.
@@ -5480,6 +6235,31 @@ declare class ThumbWriter {
      * Puts a SUB instruction.
      */
     putSubRegRegImm(dstReg: ArmRegister, leftReg: ArmRegister, rightValue: number | Int64 | UInt64): void;
+
+    /**
+     * Puts an AND instruction.
+     */
+    putAndRegRegImm(dstReg: ArmRegister, leftReg: ArmRegister, rightValue: number | Int64 | UInt64): void;
+
+    /**
+     * Puts an OR instruction.
+     */
+    putOrRegRegImm(dstReg: ArmRegister, leftReg: ArmRegister, rightValue: number | Int64 | UInt64): void;
+
+    /**
+     * Puts a LSL instruction.
+     */
+    putLslRegRegImm(dstReg: ArmRegister, leftReg: ArmRegister, rightValue: number): void;
+
+    /**
+     * Puts a LSLS instruction.
+     */
+    putLslsRegRegImm(dstReg: ArmRegister, leftReg: ArmRegister, rightValue: number): void;
+
+    /**
+     * Puts a LSRS instruction.
+     */
+    putLsrsRegRegImm(dstReg: ArmRegister, leftReg: ArmRegister, rightValue: number): void;
 
     /**
      * Puts a MRS instruction.
@@ -5530,7 +6310,7 @@ interface ThumbWriterOptions {
      * temporary location that later gets mapped into memory at the
      * intended memory location.
      */
-    pc?: NativePointer;
+    pc?: NativePointer | undefined;
 }
 
 /**
@@ -5607,9 +6387,16 @@ declare class ThumbRelocator {
     skipOne(): void;
 
     /**
-     * write the next buffered instruction.
+     * Writes the next buffered instruction.
      */
     writeOne(): boolean;
+
+    /**
+     * Copies out the next buffered instruction without advancing the
+     * output cursor, allowing the same instruction to be written out
+     * multiple times.
+     */
+    copyOne(): boolean;
 
     /**
      * Writes all buffered instructions.
@@ -5641,7 +6428,86 @@ type ArmRegister =
     | "fp"
     | "ip"
     | "pc"
-    ;
+    | "s0"
+    | "s1"
+    | "s2"
+    | "s3"
+    | "s4"
+    | "s5"
+    | "s6"
+    | "s7"
+    | "s8"
+    | "s9"
+    | "s10"
+    | "s11"
+    | "s12"
+    | "s13"
+    | "s14"
+    | "s15"
+    | "s16"
+    | "s17"
+    | "s18"
+    | "s19"
+    | "s20"
+    | "s21"
+    | "s22"
+    | "s23"
+    | "s24"
+    | "s25"
+    | "s26"
+    | "s27"
+    | "s28"
+    | "s29"
+    | "s30"
+    | "s31"
+    | "d0"
+    | "d1"
+    | "d2"
+    | "d3"
+    | "d4"
+    | "d5"
+    | "d6"
+    | "d7"
+    | "d8"
+    | "d9"
+    | "d10"
+    | "d11"
+    | "d12"
+    | "d13"
+    | "d14"
+    | "d15"
+    | "d16"
+    | "d17"
+    | "d18"
+    | "d19"
+    | "d20"
+    | "d21"
+    | "d22"
+    | "d23"
+    | "d24"
+    | "d25"
+    | "d26"
+    | "d27"
+    | "d28"
+    | "d29"
+    | "d30"
+    | "d31"
+    | "q0"
+    | "q1"
+    | "q2"
+    | "q3"
+    | "q4"
+    | "q5"
+    | "q6"
+    | "q7"
+    | "q8"
+    | "q9"
+    | "q10"
+    | "q11"
+    | "q12"
+    | "q13"
+    | "q14"
+    | "q15";
 
 type ArmSystemRegister = "apsr-nzcvq";
 
@@ -5660,8 +6526,19 @@ type ArmConditionCode =
     | "lt"
     | "gt"
     | "le"
-    | "al"
-    ;
+    | "al";
+
+type ArmShifter =
+    | "asr"
+    | "lsl"
+    | "lsr"
+    | "ror"
+    | "rrx"
+    | "asr-reg"
+    | "lsl-reg"
+    | "lsr-reg"
+    | "ror-reg"
+    | "rrx-reg";
 
 /**
  * Generates machine code for arm64.
@@ -5736,9 +6613,15 @@ declare class Arm64Writer {
     putCallRegWithArguments(reg: Arm64Register, args: Arm64CallArgument[]): void;
 
     /**
-     * Puts a BRANCH instruction.
+     * Puts code needed for branching/jumping to the given address.
      */
     putBranchAddress(address: NativePointerValue): void;
+
+    /**
+     * Determines whether a direct branch is possible between the two
+     * given memory locations.
+     */
+    canBranchDirectlyBetween(from: NativePointerValue, to: NativePointerValue): boolean;
 
     /**
      * Puts a B instruction.
@@ -5774,14 +6657,41 @@ declare class Arm64Writer {
     putBrReg(reg: Arm64Register): void;
 
     /**
+     * Puts a BR instruction expecting a raw pointer without
+     * any authentication bits.
+     */
+    putBrRegNoAuth(reg: Arm64Register): void;
+
+    /**
      * Puts a BLR instruction.
      */
     putBlrReg(reg: Arm64Register): void;
 
     /**
+     * Puts a BLR instruction expecting a raw pointer without
+     * any authentication bits.
+     */
+    putBlrRegNoAuth(reg: Arm64Register): void;
+
+    /**
      * Puts a RET instruction.
      */
     putRet(): void;
+
+    /**
+     * Puts a RET instruction.
+     */
+    putRetReg(reg: Arm64Register): void;
+
+    /**
+     * Puts a CBZ instruction.
+     */
+    putCbzRegImm(reg: Arm64Register, target: NativePointerValue): void;
+
+    /**
+     * Puts a CBNZ instruction.
+     */
+    putCbnzRegImm(reg: Arm64Register, target: NativePointerValue): void;
 
     /**
      * Puts a CBZ instruction referencing `labelId`, defined by a past
@@ -5794,6 +6704,16 @@ declare class Arm64Writer {
      * or future `putLabel()`.
      */
     putCbnzRegLabel(reg: Arm64Register, labelId: string): void;
+
+    /**
+     * Puts a TBZ instruction.
+     */
+    putTbzRegImmImm(reg: Arm64Register, bit: number, target: NativePointerValue): void;
+
+    /**
+     * Puts a TBNZ instruction.
+     */
+    putTbnzRegImmImm(reg: Arm64Register, bit: number, target: NativePointerValue): void;
 
     /**
      * Puts a TBZ instruction referencing `labelId`, defined by a past
@@ -5845,7 +6765,22 @@ declare class Arm64Writer {
     /**
      * Puts an LDR instruction.
      */
+    putLdrRegU32(reg: Arm64Register, val: number): void;
+
+    /**
+     * Puts an LDR instruction.
+     */
     putLdrRegU64(reg: Arm64Register, val: number | UInt64): void;
+
+    /**
+     * Puts an LDR instruction.
+     */
+    putLdrRegU32Ptr(reg: Arm64Register, srcAddress: NativePointerValue): void;
+
+    /**
+     * Puts an LDR instruction.
+     */
+    putLdrRegU64Ptr(reg: Arm64Register, srcAddress: NativePointerValue): void;
 
     /**
      * Puts an LDR instruction with a dangling data reference,
@@ -5863,7 +6798,22 @@ declare class Arm64Writer {
     /**
      * Puts an LDR instruction.
      */
+    putLdrRegReg(dstReg: Arm64Register, srcReg: Arm64Register): void;
+
+    /**
+     * Puts an LDR instruction.
+     */
     putLdrRegRegOffset(dstReg: Arm64Register, srcReg: Arm64Register, srcOffset: number | Int64 | UInt64): void;
+
+    /**
+     * Puts an LDR MODE instruction.
+     */
+    putLdrRegRegOffsetMode(
+        dstReg: Arm64Register,
+        srcReg: Arm64Register,
+        srcOffset: number | Int64 | UInt64,
+        mode: Arm64IndexMode,
+    ): void;
 
     /**
      * Puts an LDRSW instruction.
@@ -5878,22 +6828,59 @@ declare class Arm64Writer {
     /**
      * Puts a STR instruction.
      */
+    putStrRegReg(srcReg: Arm64Register, dstReg: Arm64Register): void;
+
+    /**
+     * Puts a STR instruction.
+     */
     putStrRegRegOffset(srcReg: Arm64Register, dstReg: Arm64Register, dstOffset: number | Int64 | UInt64): void;
+
+    /**
+     * Puts a STR MODE instruction.
+     */
+    putStrRegRegOffsetMode(
+        srcReg: Arm64Register,
+        dstReg: Arm64Register,
+        dstOffset: number | Int64 | UInt64,
+        mode: Arm64IndexMode,
+    ): void;
 
     /**
      * Puts an LDP instruction.
      */
-    putLdpRegRegRegOffset(regA: Arm64Register, regB: Arm64Register, regSrc: Arm64Register, srcOffset: number | Int64 | UInt64, mode: Arm64IndexMode): void;
+    putLdpRegRegRegOffset(
+        regA: Arm64Register,
+        regB: Arm64Register,
+        regSrc: Arm64Register,
+        srcOffset: number | Int64 | UInt64,
+        mode: Arm64IndexMode,
+    ): void;
 
     /**
      * Puts a STP instruction.
      */
-    putStpRegRegRegOffset(regA: Arm64Register, regB: Arm64Register, regDst: Arm64Register, dstOffset: number | Int64 | UInt64, mode: Arm64IndexMode): void;
+    putStpRegRegRegOffset(
+        regA: Arm64Register,
+        regB: Arm64Register,
+        regDst: Arm64Register,
+        dstOffset: number | Int64 | UInt64,
+        mode: Arm64IndexMode,
+    ): void;
 
     /**
      * Puts a MOV instruction.
      */
     putMovRegReg(dstReg: Arm64Register, srcReg: Arm64Register): void;
+
+    /**
+     * Puts a MOV NZCV instruction.
+     */
+    putMovRegNzcv(reg: Arm64Register): void;
+
+    /**
+     * Puts a MOV NZCV instruction.
+     */
+    putMovNzcvReg(reg: Arm64Register): void;
 
     /**
      * Puts an UXTW instruction.
@@ -5923,7 +6910,27 @@ declare class Arm64Writer {
     /**
      * Puts an AND instruction.
      */
-    putAndRegRegImm(dstReg: Arm64Register, leftReg: Arm64Register, rightValue: number | Int64 | UInt64): void;
+    putAndRegRegImm(dstReg: Arm64Register, leftReg: Arm64Register, rightValue: number | UInt64): void;
+
+    /**
+     * Puts an EOR instruction.
+     */
+    putEorRegRegReg(dstReg: Arm64Register, leftReg: Arm64Register, rightReg: Arm64Register): void;
+
+    /**
+     * Puts an UBFM instruction.
+     */
+    putUbfm(dstReg: Arm64Register, srcReg: Arm64Register, imms: number, immr: number): void;
+
+    /**
+     * Puts a LSL instruction.
+     */
+    putLslRegImm(dstReg: Arm64Register, srcReg: Arm64Register, shift: number): void;
+
+    /**
+     * Puts a LSR instruction.
+     */
+    putLsrRegImm(dstReg: Arm64Register, srcReg: Arm64Register, shift: number): void;
 
     /**
      * Puts a TST instruction.
@@ -5936,6 +6943,11 @@ declare class Arm64Writer {
     putCmpRegReg(regA: Arm64Register, regB: Arm64Register): void;
 
     /**
+     * Puts an XPACI instruction.
+     */
+    putXpaciReg(reg: Arm64Register): void;
+
+    /**
      * Puts a NOP instruction.
      */
     putNop(): void;
@@ -5946,6 +6958,11 @@ declare class Arm64Writer {
     putBrkImm(imm: number): void;
 
     /**
+     * Puts a MRS instruction.
+     */
+    putMrs(dstReg: Arm64Register, systemReg: number): void;
+
+    /**
      * Puts a raw instruction.
      */
     putInstruction(insn: number): void;
@@ -5954,6 +6971,11 @@ declare class Arm64Writer {
      * Puts raw data.
      */
     putBytes(data: ArrayBuffer | number[] | string): void;
+
+    /**
+     * Signs the given pointer value.
+     */
+    sign(value: NativePointerValue): NativePointer;
 }
 
 interface Arm64WriterOptions {
@@ -5964,7 +6986,7 @@ interface Arm64WriterOptions {
      * temporary location that later gets mapped into memory at the
      * intended memory location.
      */
-    pc?: NativePointer;
+    pc?: NativePointer | undefined;
 }
 
 type Arm64CallArgument = Arm64Register | number | UInt64 | Int64 | NativePointerValue;
@@ -6043,7 +7065,7 @@ declare class Arm64Relocator {
     skipOne(): void;
 
     /**
-     * write the next buffered instruction.
+     * Writes the next buffered instruction.
      */
     writeOne(): boolean;
 
@@ -6220,8 +7242,7 @@ type Arm64Register =
     | "q28"
     | "q29"
     | "q30"
-    | "q31"
-    ;
+    | "q31";
 
 type Arm64ConditionCode =
     | "eq"
@@ -6239,8 +7260,7 @@ type Arm64ConditionCode =
     | "gt"
     | "le"
     | "al"
-    | "nv"
-    ;
+    | "nv";
 
 type Arm64IndexMode = "post-adjust" | "signed-offset" | "pre-adjust";
 
@@ -6322,6 +7342,11 @@ declare class MipsWriter {
     putJAddress(address: NativePointerValue): void;
 
     /**
+     * Puts a J WITHOUT NOP instruction.
+     */
+    putJAddressWithoutNop(address: NativePointerValue): void;
+
+    /**
      * Puts a J instruction referencing `labelId`, defined by a past
      * or future `putLabel()`.
      */
@@ -6369,9 +7394,19 @@ declare class MipsWriter {
     putLuiRegImm(reg: MipsRegister, imm: number): void;
 
     /**
+     * Puts a DSLL instruction.
+     */
+    putDsllRegReg(dstReg: MipsRegister, srcReg: MipsRegister, amount: number): void;
+
+    /**
      * Puts an ORI instruction.
      */
     putOriRegRegImm(rt: MipsRegister, rs: MipsRegister, imm: number): void;
+
+    /**
+     * Puts an LD instruction.
+     */
+    putLdRegRegOffset(dstReg: MipsRegister, srcReg: MipsRegister, srcOffset: number | Int64 | UInt64): void;
 
     /**
      * Puts a LW instruction.
@@ -6396,17 +7431,17 @@ declare class MipsWriter {
     /**
      * Puts an ADDI instruction.
      */
-    putAddiRegRegImm(destReg: MipsRegister, leftReg: MipsRegister, imm: number): void;
+    putAddiRegRegImm(dstReg: MipsRegister, leftReg: MipsRegister, imm: number): void;
 
     /**
      * Puts an ADDI instruction.
      */
-    putAddiRegImm(destReg: MipsRegister, imm: number): void;
+    putAddiRegImm(dstReg: MipsRegister, imm: number): void;
 
     /**
      * Puts a SUB instruction.
      */
-    putSubRegRegImm(destReg: MipsRegister, leftReg: MipsRegister, imm: number): void;
+    putSubRegRegImm(dstReg: MipsRegister, leftReg: MipsRegister, imm: number): void;
 
     /**
      * Puts a PUSH instruction.
@@ -6449,6 +7484,11 @@ declare class MipsWriter {
     putBreak(): void;
 
     /**
+     * Puts a minimal sized trampoline for vectoring to the given address.
+     */
+    putPrologueTrampoline(reg: MipsRegister, address: NativePointerValue): void;
+
+    /**
      * Puts a raw instruction.
      */
     putInstruction(insn: number): void;
@@ -6467,7 +7507,7 @@ interface MipsWriterOptions {
      * temporary location that later gets mapped into memory at the
      * intended memory location.
      */
-    pc?: NativePointer;
+    pc?: NativePointer | undefined;
 }
 
 type MipsCallArgument = MipsRegister | number | UInt64 | Int64 | NativePointerValue;
@@ -6546,7 +7586,7 @@ declare class MipsRelocator {
     skipOne(): void;
 
     /**
-     * write the next buffered instruction.
+     * Writes the next buffered instruction.
      */
     writeOne(): boolean;
 
@@ -6623,5 +7663,55 @@ type MipsRegister =
     | "28"
     | "29"
     | "30"
-    | "31"
-    ;
+    | "31";
+
+declare const $gdb: GDBClient;
+
+interface GDBClient {
+    state: GDBState;
+    exception: GDBException | null;
+    continue(): void;
+    stop(): void;
+    restart(): void;
+    addBreakpoint(kind: GDBBreakpointKind, address: bigint, size: number): GDBBreakpoint;
+    execute(command: string): void;
+    query(request: string): string;
+}
+
+type GDBState =
+    | "stopped"
+    | "running"
+    | "stopping"
+    | "closed";
+
+interface GDBException {
+    signum: number;
+    breakpoint: GDBBreakpoint | null;
+    thread: GDBThread;
+}
+
+interface GDBThread {
+    id: string;
+    name: string | null;
+    step(): void;
+    stepAndContinue(): void;
+    readRegisters(): { [name: string]: NativePointer };
+    readRegister(name: string): NativePointer;
+    writeRegister(name: string, val: NativePointer): void;
+}
+
+interface GDBBreakpoint {
+    kind: GDBBreakpointKind;
+    address: NativePointer;
+    size: number;
+    enable(): void;
+    disable(): void;
+    remove(): void;
+}
+
+type GDBBreakpointKind =
+    | "soft"
+    | "hard"
+    | "write"
+    | "read"
+    | "access";

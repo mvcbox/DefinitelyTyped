@@ -1,6 +1,12 @@
 {
     "private": true,
-    "dependencies": {
-        "@types/winston": "^2.3.9"
-    }
+    "name": "@types/slack-winston",
+    "version": "0.0.9999",
+    "projects": [
+        "https://github.com/niftylettuce/slack-winston"
+    ],
+    "devDependencies": {
+        "@types/slack-winston": "workspace:."
+    },
+    "owners": []
 }

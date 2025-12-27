@@ -1,14 +1,6 @@
-// Type definitions for non-npm package W3C Image Capture 1.0
-// Project: https://www.w3.org/TR/image-capture/
-// Definitions by: Cosium <https://github.com/cosium>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 3.0
-
 /// <reference types="webrtc" />
 
-declare class ImageCapture {
-    constructor(videoTrack: MediaStreamTrack);
-
+interface ImageCapture {
     takePhoto(photoSettings?: PhotoSettings): Promise<Blob>;
 
     getPhotoCapabilities(): Promise<PhotoCapabilities>;
@@ -20,28 +12,30 @@ declare class ImageCapture {
     readonly track: MediaStreamTrack;
 }
 
+declare var ImageCapture: {
+    prototype: ImageCapture;
+    new(videoTrack: MediaStreamTrack): ImageCapture;
+};
+
 interface PhotoCapabilities {
-    readonly redEyeReduction: RedEyeReduction;
-    readonly imageHeight: MediaSettingsRange;
-    readonly imageWidth: MediaSettingsRange;
-    readonly fillLightMode: FillLightMode[];
+    redEyeReduction?: "never" | "always" | "controllable";
+    imageHeight?: MediaSettingsRange;
+    imageWidth?: MediaSettingsRange;
+    fillLightMode?: ("auto" | "off" | "flash")[];
 }
 
 interface PhotoSettings {
-    fillLightMode?: FillLightMode;
-    imageHeight?: number;
-    imageWidth?: number;
-    redEyeReduction?: boolean;
+    fillLightMode?: "auto" | "off" | "flash" | undefined;
+    imageHeight?: number | undefined;
+    imageWidth?: number | undefined;
+    redEyeReduction?: boolean | undefined;
 }
 
 interface MediaSettingsRange {
-    readonly max: number;
-    readonly min: number;
-    readonly step: number;
+    max?: number;
+    min?: number;
+    step?: number;
 }
-
-type RedEyeReduction = 'never' | 'always' | 'controllable';
-type FillLightMode = 'auto' | 'off' | 'flash';
 
 interface MediaTrackCapabilities {
     whiteBalanceMode: MeteringMode[];
@@ -57,6 +51,8 @@ interface MediaTrackCapabilities {
     sharpness: MediaSettingsRange;
 
     focusDistance: MediaSettingsRange;
+    pan: MediaSettingsRange;
+    tilt: MediaSettingsRange;
     zoom: MediaSettingsRange;
     torch: boolean;
 }
@@ -66,45 +62,49 @@ declare namespace W3C {
 }
 
 interface MediaTrackConstraintSet {
-    whiteBalanceMode?: W3C.ConstrainString;
-    exposureMode?: W3C.ConstrainString;
-    focusMode?: W3C.ConstrainString;
-    pointsOfInterest?: W3C.ConstrainPoint2D;
+    whiteBalanceMode?: W3C.ConstrainString | undefined;
+    exposureMode?: W3C.ConstrainString | undefined;
+    focusMode?: W3C.ConstrainString | undefined;
+    pointsOfInterest?: W3C.ConstrainPoint2D | undefined;
 
-    exposureCompensation?: W3C.ConstrainDouble;
-    colorTemperature?: W3C.ConstrainDouble;
-    iso?: W3C.ConstrainDouble;
+    exposureCompensation?: W3C.ConstrainDouble | undefined;
+    colorTemperature?: W3C.ConstrainDouble | undefined;
+    iso?: W3C.ConstrainDouble | undefined;
 
-    brightness?: W3C.ConstrainDouble;
-    contrast?: W3C.ConstrainDouble;
-    saturation?: W3C.ConstrainDouble;
-    sharpness?: W3C.ConstrainDouble;
+    brightness?: W3C.ConstrainDouble | undefined;
+    contrast?: W3C.ConstrainDouble | undefined;
+    saturation?: W3C.ConstrainDouble | undefined;
+    sharpness?: W3C.ConstrainDouble | undefined;
 
-    focusDistance?: W3C.ConstrainDouble;
-    zoom?: W3C.ConstrainDouble;
+    focusDistance?: W3C.ConstrainDouble | undefined;
+    zoom?: boolean | W3C.ConstrainDouble | undefined;
+    pan?: boolean | W3C.ConstrainDouble | undefined;
+    tilt?: boolean | W3C.ConstrainDouble | undefined;
 
-    torch?: W3C.ConstrainBoolean;
+    torch?: W3C.ConstrainBoolean | undefined;
 }
 
 interface MediaTrackSettings {
-    whiteBalanceMode: MeteringMode;
-    exposureMode: MeteringMode;
-    focusMode: MeteringMode;
-    pointsOfInterest: Point2D[];
+    whiteBalanceMode?: string | undefined;
+    exposureMode?: MeteringMode | undefined;
+    focusMode?: MeteringMode | undefined;
+    pointsOfInterest?: Point2D[] | undefined;
 
-    exposureCompensation: number;
-    colorTemperature: number;
-    iso: number;
+    exposureCompensation?: number | undefined;
+    colorTemperature?: number | undefined;
+    iso?: number | undefined;
 
-    brightness: number;
-    contrast: number;
-    saturation: number;
-    sharpness: number;
+    brightness?: number | undefined;
+    contrast?: number | undefined;
+    saturation?: number | undefined;
+    sharpness?: number | undefined;
 
-    focusDistance: number;
-    zoom: number;
+    focusDistance?: number | undefined;
+    pan?: number | undefined;
+    tilt?: number | undefined;
+    zoom?: number | undefined;
 
-    torch: boolean;
+    torch?: boolean | undefined;
 }
 
 interface MediaTrackSupportedConstraints {
@@ -131,7 +131,7 @@ interface ConstrainPoint2DParameters {
     ideal: Point2D[];
 }
 
-type MeteringMode = 'none' | 'manual' | 'single-shot' | 'continuous';
+type MeteringMode = "none" | "manual" | "single-shot" | "continuous";
 
 interface Point2D {
     x: number;

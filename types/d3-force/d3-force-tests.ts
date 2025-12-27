@@ -6,7 +6,7 @@
  * are not intended as functional tests.
  */
 
-import * as d3Force from 'd3-force';
+import * as d3Force from "d3-force";
 
 // -------------------------------------------------------------------------------------
 // Preparatory Steps
@@ -31,18 +31,18 @@ interface Graph {
 
 const graph: Graph = {
     nodes: [
-        { id: 'Myriel', group: 1, r: 5 },
-        { id: 'Napoleon', group: 1, r: 10 },
-        { id: 'Mlle.Baptistine', group: 1, r: 5 },
-        { id: 'Mme.Magloire', group: 1, r: 10 },
-        { id: 'CountessdeLo', group: 1, r: 5 }
+        { id: "Myriel", group: 1, r: 5 },
+        { id: "Napoleon", group: 1, r: 10 },
+        { id: "Mlle.Baptistine", group: 1, r: 5 },
+        { id: "Mme.Magloire", group: 1, r: 10 },
+        { id: "CountessdeLo", group: 1, r: 5 },
     ],
     links: [
-        { source: 'Napoleon', target: 'Myriel', value: 1, d: 60, s: 0.95 },
-        { source: 'Mlle.Baptistine', target: 'Myriel', value: 8, d: 100, s: 0.85 },
-        { source: 'Mme.Magloire', target: 'Myriel', value: 10, d: 80, s: 0.85 },
-        { source: 'Mme.Magloire', target: 'Mlle.Baptistine', value: 6, d: 60, s: 0.95 }
-    ]
+        { source: "Napoleon", target: "Myriel", value: 1, d: 60, s: 0.95 },
+        { source: "Mlle.Baptistine", target: "Myriel", value: 8, d: 100, s: 0.85 },
+        { source: "Mme.Magloire", target: "Myriel", value: 10, d: 80, s: 0.85 },
+        { source: "Mme.Magloire", target: "Mlle.Baptistine", value: 6, d: 60, s: 0.95 },
+    ],
 };
 
 let simNode: SimNode | undefined;
@@ -53,8 +53,8 @@ let simLinks: SimLink[];
 
 let num: number;
 
-const canvas = document.querySelector('canvas')!;
-const context = canvas.getContext('2d');
+const canvas = document.querySelector("canvas")!;
+const context = canvas.getContext("2d");
 const width = canvas.width;
 const height = canvas.height;
 
@@ -85,9 +85,12 @@ num = forceCenter.x();
 forceCenter = forceCenter.y(150);
 num = forceCenter.y();
 
+forceCenter = forceCenter.strength(0.05);
+num = forceCenter.strength();
+
 // Use Centering force -----------------------------------------------------------------
 
-forceCenter.initialize(graph.nodes);
+forceCenter.initialize(graph.nodes, () => 1);
 forceCenter(0.1); // alpha
 
 // Collision ===========================================================================
@@ -138,7 +141,7 @@ num = forceCollide.iterations();
 
 // Use Collision force -----------------------------------------------------------------
 
-forceCollide.initialize(graph.nodes);
+forceCollide.initialize(graph.nodes, () => 1);
 forceCollide(0.1); // alpha
 
 // Link ================================================================================
@@ -166,8 +169,8 @@ simLinks = forceLink.links();
 
 simLink = simLinks[0];
 
-simNode = (typeof simLink.source !== 'number' && typeof simLink.source !== 'string') ? simLink.source : undefined;
-simNode = (typeof simLink.target !== 'number' && typeof simLink.target !== 'string') ? simLink.target : undefined;
+simNode = (typeof simLink.source !== "number" && typeof simLink.source !== "string") ? simLink.source : undefined;
+simNode = (typeof simLink.target !== "number" && typeof simLink.target !== "string") ? simLink.target : undefined;
 
 const maybeNum: number | undefined = simLink.index; // Ex-ante type before initialization of links
 num = simLink.index!; // Ex-post after link initialization, use ! non-null assertion operator to narrow to number
@@ -178,6 +181,15 @@ num = simLink.s;
 
 // id (node id accessor)
 
+// Using id of type number.
+forceLink = forceLink.id((node, index, nodes) => {
+    const n: SimNode = node;
+    const i: number = index;
+    const ns: SimNode[] = nodes;
+    return i;
+});
+
+// Using id of type string.
 forceLink = forceLink.id((node, index, nodes) => {
     const n: SimNode = node;
     const i: number = index;
@@ -216,7 +228,7 @@ num = forceLink.iterations();
 
 // Use Link force -----------------------------------------------------------------
 
-forceLink.initialize(graph.nodes);
+forceLink.initialize(graph.nodes, () => 1);
 forceLink(0.1); // alpha
 
 // ManyBody ============================================================================
@@ -259,7 +271,7 @@ num = forceCharge.distanceMax();
 
 // Use ManyBody force -----------------------------------------------------------------
 
-forceCharge.initialize(graph.nodes);
+forceCharge.initialize(graph.nodes, () => 1);
 forceCharge(0.1); // alpha
 
 // ForceX ==============================================================================
@@ -313,7 +325,7 @@ simNodeNumberAccessor = forcePosX.x();
 
 // Use ForceX force -----------------------------------------------------------------
 
-forcePosX.initialize(graph.nodes);
+forcePosX.initialize(graph.nodes, () => 1);
 forcePosX(0.1); // alpha
 
 // ForceY ==============================================================================
@@ -367,7 +379,7 @@ simNodeNumberAccessor = forcePosY.y();
 
 // Use ForceY force -----------------------------------------------------------------
 
-forcePosY.initialize(graph.nodes);
+forcePosY.initialize(graph.nodes, () => 1);
 forcePosY(0.1); // alpha
 
 // ForceRadial ==============================================================================
@@ -394,7 +406,7 @@ forceRadial = d3Force.forceRadial<SimNode>(
         const i: number = index;
         const ns: SimNode[] = nodes;
         return 10 * n.group;
-    } // center-x
+    }, // center-x
 );
 
 // Radius and center set
@@ -407,7 +419,7 @@ forceRadial = d3Force.forceRadial<SimNode>(
         const i: number = index;
         const ns: SimNode[] = nodes;
         return 10 * n.group;
-    } // center-y
+    }, // center-y
 );
 
 forceRadial = d3Force.forceRadial<SimNode>(
@@ -428,7 +440,7 @@ forceRadial = d3Force.forceRadial<SimNode>(
         const i: number = index;
         const ns: SimNode[] = nodes;
         return 10 * n.group;
-    } // center-y
+    }, // center-y
 );
 // Configure ForceRadial force -----------------------------------------------------------
 
@@ -529,7 +541,7 @@ simNodeNumberAccessor = forceRadial.y();
 
 // Use ForceRadial force -----------------------------------------------------------------
 
-forceRadial.initialize(graph.nodes);
+forceRadial.initialize(graph.nodes, () => 1);
 forceRadial(0.1); // alpha
 
 // -------------------------------------------------------------------------------------
@@ -586,31 +598,31 @@ num = nodeLinkSimulation.velocityDecay();
 
 // force() -----------------------------------------------------------------------------
 
-nodeSimulation = nodeSimulation.force('posx', forcePosX);
-nodeSimulation.force('posy', forcePosY);
+nodeSimulation = nodeSimulation.force("posx", forcePosX);
+nodeSimulation.force("posy", forcePosY);
 
 // Remove force
-nodeSimulation = nodeSimulation.force('posx', null);
+nodeSimulation = nodeSimulation.force("posx", null);
 
-nodeLinkSimulation = nodeLinkSimulation.force('link', forceLink);
+nodeLinkSimulation = nodeLinkSimulation.force("link", forceLink);
 
 nodeLinkSimulation
-    .force('charge', forceCharge)
-    .force('center', forceCenter);
+    .force("charge", forceCharge)
+    .force("center", forceCenter);
 
 let maybeF: d3Force.Force<SimNode, SimLink> | undefined;
 let f: d3Force.Force<SimNode, SimLink>;
 
 // getter with generic force returned
 
-maybeF = nodeLinkSimulation.force('charge');
-maybeF = nodeLinkSimulation.force('link');
+maybeF = nodeLinkSimulation.force("charge");
+maybeF = nodeLinkSimulation.force("link");
 
 // assuming certainty that force has been previously assigned
-f = nodeLinkSimulation.force<d3Force.Force<SimNode, SimLink>>('charge')!;
+f = nodeLinkSimulation.force<d3Force.Force<SimNode, SimLink>>("charge")!;
 
 // if force may not have been assigned for the name
-maybeF = nodeLinkSimulation.force<d3Force.Force<SimNode, SimLink>>('charge');
+maybeF = nodeLinkSimulation.force<d3Force.Force<SimNode, SimLink>>("charge");
 // f = nodeLinkSimulation.force<d3Force.Force<SimNode, SimLink>>('charge'); // fails, with strictNullChecks
 
 // getter with force type cast to improve return type specificity
@@ -618,12 +630,12 @@ maybeF = nodeLinkSimulation.force<d3Force.Force<SimNode, SimLink>>('charge');
 let fLink: d3Force.ForceLink<SimNode, SimLink>;
 
 // Need explicit, careful type casting to a specific force type
-fLink = nodeLinkSimulation.force<d3Force.ForceLink<SimNode, SimLink>>('link')!;
+fLink = nodeLinkSimulation.force<d3Force.ForceLink<SimNode, SimLink>>("link")!;
 
 // This is mainly an issue for ForceLinks, if once wants to get the links from an initialized force
 // or re-set new links for an initialized force, e.g.:
 
-simLinks = nodeLinkSimulation.force<d3Force.ForceLink<SimNode, SimLink>>('link')!.links();
+simLinks = nodeLinkSimulation.force<d3Force.ForceLink<SimNode, SimLink>>("link")!.links();
 
 // fLink = nodeLinkSimulation.force('link')!; // fails, as ForceLink specific properties are missing from 'generic' force
 
@@ -632,8 +644,8 @@ simLinks = nodeLinkSimulation.force<d3Force.ForceLink<SimNode, SimLink>>('link')
 function drawLink(d: SimLink) {
     let source: SimNode | undefined;
     let target: SimNode | undefined;
-    source = (typeof d.source !== 'string' && typeof d.source !== 'number') ? d.source : undefined;
-    target = (typeof d.target !== 'string' && typeof d.target !== 'number') ? d.target : undefined;
+    source = (typeof d.source !== "string" && typeof d.source !== "number") ? d.source : undefined;
+    target = (typeof d.target !== "string" && typeof d.target !== "number") ? d.target : undefined;
     if (context && source && source.x && source.y && target && target.x && target.y) {
         context.moveTo(source.x, source.y);
         context.lineTo(target.x, target.y);
@@ -647,7 +659,7 @@ function drawNode(d: SimNode) {
     }
 }
 
-nodeLinkSimulation = nodeLinkSimulation.on('tick', function ticked() {
+nodeLinkSimulation = nodeLinkSimulation.on("tick", function ticked() {
     const that: d3Force.Simulation<SimNode, SimLink> = this;
 
     if (context) {
@@ -655,22 +667,22 @@ nodeLinkSimulation = nodeLinkSimulation.on('tick', function ticked() {
 
         context.beginPath();
         graph.links.forEach(drawLink);
-        context.strokeStyle = '#aaa';
+        context.strokeStyle = "#aaa";
         context.stroke();
 
         context.beginPath();
         graph.nodes.forEach(drawNode);
         context.fill();
-        context.strokeStyle = '#fff';
+        context.strokeStyle = "#fff";
         context.stroke();
     }
 });
 
 // remove listener
-nodeSimulation = nodeSimulation.on('tick', null);
+nodeSimulation = nodeSimulation.on("tick", null);
 
 // get listener
-const listener: ((this: d3Force.Simulation<SimNode, undefined>) => void) | undefined = nodeSimulation.on('tick');
+const listener: ((this: d3Force.Simulation<SimNode, undefined>) => void) | undefined = nodeSimulation.on("tick");
 
 // Configure and Use Force Simulation ===================================================
 
@@ -691,3 +703,8 @@ nodeLinkSimulation.tick(10);
 
 simNode = nodeLinkSimulation.find(100, 100);
 simNode = nodeLinkSimulation.find(100, 100, 20);
+
+// randomSource() -----------------------------------------------------------------------------
+
+const randomSource: () => number = nodeLinkSimulation.randomSource();
+nodeLinkSimulation = nodeLinkSimulation.randomSource(randomSource);

@@ -1,4 +1,4 @@
-import { ComponentType } from '@wordpress/element';
+import { ComponentType } from "react";
 
 /**
  * Higher-order component creator, creating a new component which renders with the given prop names,
@@ -11,18 +11,18 @@ import { ComponentType } from '@wordpress/element';
  *
  * ```jsx
  * function MyComponent( { isMobile } ) {
- * 	return (
- * 		<div>Currently: { isMobile ? 'Mobile' : 'Not Mobile' }</div>
- * 	);
+ *     return (
+ *         <div>Currently: { isMobile ? 'Mobile' : 'Not Mobile' }</div>
+ *     );
  * }
  *
  * MyComponent = withViewportMatch( { isMobile: '< small' } )( MyComponent );
  * ```
  */
 // prettier-ignore
-declare function withViewportMatch<T extends Record<string, string>>(queries: T):
-    <U extends ComponentType<any>>(component: U) => U extends ComponentType<infer V> ?
-        ComponentType<Omit<V, keyof T>> :
-        never;
+declare function withViewportMatch<T extends Record<string, string>>(
+    queries: T,
+): <U extends ComponentType<any>>(component: U) => U extends ComponentType<infer V> ? ComponentType<Omit<V, keyof T>>
+    : never;
 
 export default withViewportMatch;

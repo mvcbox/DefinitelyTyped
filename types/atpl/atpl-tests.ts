@@ -1,5 +1,4 @@
-
-import atpl = require('atpl');
+import atpl = require("atpl");
 
 var bool: boolean;
 var str: string;
@@ -19,6 +18,6 @@ atpl.registerTests(items);
 
 atpl.registerTags(null);
 atpl.renderFile(str, str, options, bool, (e, res?) => {
-	err = err;
-	str = res;
+    err = err;
+    str = res;
 });

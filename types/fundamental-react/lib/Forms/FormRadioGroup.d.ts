@@ -1,10 +1,12 @@
 import * as React from "react";
 
 export type FormRadioGroupProps = {
-    disabled?: boolean;
-    /* Set to **true** to display radio buttons in a row. */
-    inline?: boolean;
-    onChange?: (...args: any[]) => any;
+    className?: string | undefined;
+    compact?: boolean | undefined;
+    disabled?: boolean | undefined;
+    disableStyles?: boolean | undefined;
+    inline?: boolean | undefined;
+    onChange?: ((...args: any[]) => any) | undefined;
 } & { [x: string]: any };
 
 declare class FormRadioGroup extends React.Component<FormRadioGroupProps> {}

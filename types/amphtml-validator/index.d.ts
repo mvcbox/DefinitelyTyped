@@ -1,9 +1,3 @@
-// Type definitions for amphtml-validator 1.0
-// Project: https://github.com/ampproject/amphtml/tree/master/validator/nodejs
-// Definitions by: Kevin Tjiam <https://github.com/kevincharm>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
-
 /// <reference types="node" />
 
 import { Context, Script } from "vm";
@@ -14,7 +8,6 @@ export interface ValidationError {
     col: number;
     message: string;
     specUrl: string | null;
-    category: ErrorCategoryCode;
     code: ValidationErrorCode;
     params: string[];
 }
@@ -26,12 +19,15 @@ export interface ValidationResult {
 
 export class Validator extends Script {
     sandbox: Context;
-    validateString(stringToValidate: string): ValidationResult;
+    validateString(
+        stringToValidate: string,
+        htmlFormat?: string,
+    ): ValidationResult;
 }
 
 export function getInstance(
     validatorJs?: string,
-    userAgent?: string
+    userAgent?: string,
 ): Promise<Validator>;
 export function newInstance(validatorJsContents: string): Validator;
 
@@ -43,24 +39,12 @@ export type ValidationResultStatus = "UNKNOWN" | "PASS" | "FAIL";
 
 export type ValidationErrorSeverity = "UNKNOWN_SEVERITY" | "ERROR" | "WARNING";
 
-export type ErrorCategoryCode =
-    | "UNKNOWN"
-    | "GENERIC"
-    | "DISALLOWED_HTML_WITH_AMP_EQUIVALENT"
-    | "DISALLOWED_HTML"
-    | "AUTHOR_STYLESHEET_PROBLEM"
-    | "MANDATORY_AMP_TAG_MISSING_OR_INCORRECT"
-    | "AMP_TAG_PROBLEM"
-    | "CUSTOM_JAVASCRIPT_DISALLOWED"
-    | "AMP_LAYOUT_PROBLEM"
-    | "AMP_HTML_TEMPLATE_PROBLEM"
-    | "DEPRECATION";
-
 export type ValidationErrorCode =
     | "UNKNOWN_CODE"
     | "MANDATORY_TAG_MISSING"
     | "TAG_REQUIRED_BY_MISSING"
     | "WARNING_TAG_REQUIRED_BY_MISSING"
+    | "TAG_EXCLUDED_BY_TAG"
     | "WARNING_EXTENSION_UNUSED"
     | "EXTENSION_UNUSED"
     | "WARNING_EXTENSION_DEPRECATED_VERSION"
@@ -73,18 +57,23 @@ export type ValidationErrorCode =
     | "INVALID_ATTR_VALUE"
     | "DUPLICATE_ATTRIBUTE"
     | "ATTR_VALUE_REQUIRED_BY_LAYOUT"
+    | "MISSING_LAYOUT_ATTRIBUTES"
     | "IMPLIED_LAYOUT_INVALID"
     | "SPECIFIED_LAYOUT_INVALID"
     | "MANDATORY_ATTR_MISSING"
     | "MANDATORY_ONEOF_ATTR_MISSING"
+    | "MANDATORY_ANYOF_ATTR_MISSING"
     | "DUPLICATE_DIMENSION"
     | "DUPLICATE_UNIQUE_TAG"
     | "DUPLICATE_UNIQUE_TAG_WARNING"
     | "WRONG_PARENT_TAG"
     | "STYLESHEET_TOO_LONG"
+    | "STYLESHEET_AND_INLINE_STYLE_TOO_LONG"
+    | "INLINE_STYLE_TOO_LONG"
     | "MANDATORY_CDATA_MISSING_OR_INCORRECT"
     | "CDATA_VIOLATES_BLACKLIST"
     | "NON_WHITESPACE_CDATA_ENCOUNTERED"
+    | "INVALID_JSON_CDATA"
     | "DEPRECATED_ATTR"
     | "DEPRECATED_TAG"
     | "MANDATORY_PROPERTY_MISSING_FROM_ATTR_VALUE"
@@ -122,7 +111,9 @@ export type ValidationErrorCode =
     | "ATTR_MISSING_REQUIRED_EXTENSION"
     | "DOCUMENT_TOO_COMPLEX"
     | "INVALID_UTF8"
-    | "CSS_SYNTAX"
+    | "DOCUMENT_SIZE_LIMIT_EXCEEDED"
+    | "DEV_MODE_ONLY"
+    | "VALUE_SET_MISMATCH"
     | "CSS_SYNTAX_INVALID_AT_RULE"
     | "CSS_SYNTAX_STRAY_TRAILING_BACKSLASH"
     | "CSS_SYNTAX_UNTERMINATED_COMMENT"
@@ -150,6 +141,7 @@ export type ValidationErrorCode =
     | "CSS_SYNTAX_DISALLOWED_MEDIA_TYPE"
     | "CSS_SYNTAX_DISALLOWED_MEDIA_FEATURE"
     | "CSS_SYNTAX_DISALLOWED_PROPERTY_VALUE"
+    | "CSS_EXCESSIVELY_NESTED"
     | "CSS_SYNTAX_DISALLOWED_PROPERTY_VALUE_WITH_HINT"
     | "CSS_SYNTAX_PROPERTY_DISALLOWED_WITHIN_AT_RULE"
     | "CSS_SYNTAX_PROPERTY_DISALLOWED_TOGETHER_WITH"

@@ -1,3 +1,3 @@
-import * as validator from "validator";
-declare const isBefore: typeof validator.isBefore;
-export = isBefore;
+import validator from "../";
+export type IsBeforeOptions = validator.IsBeforeOptions;
+export default validator.isBefore;

@@ -1,52 +1,57 @@
-import { DownloadPreloadOption } from '../system/download-preload';
-import { RGB, ContextMenuSettings } from '../../shapes';
+import { ContextMenuSettings, Hotkey, RGB } from "../../shapes/shapes";
+import { DownloadPreloadOption } from "../system/download-preload";
 export interface WindowOption {
-    accelerator?: object;
-    alphaMask?: RGB;
-    alwaysOnTop?: boolean;
-    api?: object;
-    applicationIcon?: string;
-    aspectRatio?: number;
-    autoShow?: boolean;
-    backgroundColor?: string;
-    contentNavigation?: object;
-    contextMenu?: boolean;
-    contextMenuSettings?: ContextMenuSettings;
-    cornerRounding?: object;
+    accelerator?: Accelerator | undefined;
+    alphaMask?: RGB | undefined;
+    alwaysOnTop?: boolean | undefined;
+    api?: Api | undefined;
+    applicationIcon?: string | undefined;
+    aspectRatio?: number | undefined;
+    autoShow?: boolean | undefined;
+    backgroundColor?: string | undefined;
+    contentNavigation?: ContentNavigation | undefined;
+    contentRedirect?: ContentRedirect | undefined;
+    contextMenu?: boolean | undefined;
+    contextMenuSettings?: ContextMenuSettings | undefined;
+    cornerRounding?: CornerRounding | undefined;
+    customContext?: any;
     customData?: any;
-    customRequestHeaders?: Array<CustomRequestHeaders>;
-    defaultCentered?: boolean;
-    defaultHeight?: number;
-    defaultLeft?: number;
-    defaultTop?: number;
-    defaultWidth?: number;
-    frame?: boolean;
-    hideOnClose?: boolean;
-    icon?: string;
-    maxHeight?: number;
-    maximizable?: boolean;
-    maxWidth?: number;
-    minHeight?: number;
-    minimizable?: boolean;
-    minWidth?: number;
-    name?: string;
-    opacity?: number;
-    preloadScripts?: Array<DownloadPreloadOption>;
-    resizable?: boolean;
-    resizeRegion?: object;
-    saveWindowState?: boolean;
-    shadow?: boolean;
-    showTaskbarIcon?: boolean;
-    smallWindow?: boolean;
-    state?: string;
-    taskbarIconGroup?: string;
-    url?: string;
-    uuid?: string;
-    waitForPageLoad?: boolean;
+    customRequestHeaders?: CustomRequestHeaders[] | undefined;
+    defaultCentered?: boolean | undefined;
+    defaultHeight?: number | undefined;
+    defaultLeft?: number | undefined;
+    defaultTop?: number | undefined;
+    defaultWidth?: number | undefined;
+    frame?: boolean | undefined;
+    hideOnClose?: boolean | undefined;
+    hotkeys?: Hotkey[] | undefined;
+    icon?: string | undefined;
+    layout?: GoldenLayout.Config | undefined;
+    maxHeight?: number | undefined;
+    maximizable?: boolean | undefined;
+    maxWidth?: number | undefined;
+    minHeight?: number | undefined;
+    minimizable?: boolean | undefined;
+    minWidth?: number | undefined;
+    name?: string | undefined;
+    opacity?: number | undefined;
+    preloadScripts?: DownloadPreloadOption[] | undefined;
+    resizable?: boolean | undefined;
+    resizeRegion?: ResizeRegion | undefined;
+    saveWindowState?: boolean | undefined;
+    shadow?: boolean | undefined;
+    showTaskbarIcon?: boolean | undefined;
+    showBackgroundImages?: boolean | undefined;
+    smallWindow?: boolean | undefined;
+    state?: string | undefined;
+    taskbarIconGroup?: string | undefined;
+    url?: string | undefined;
+    uuid?: string | undefined;
+    waitForPageLoad?: boolean | undefined;
 }
 export interface CustomRequestHeaders {
-    urlPatterns: Array<string>;
-    headers: Array<object>;
+    urlPatterns: string[];
+    headers: any[];
 }
 export declare type WindowOptionDiff = {
     [key in keyof WindowOption]: {
@@ -54,3 +59,37 @@ export declare type WindowOptionDiff = {
         newVal: WindowOption[key];
     };
 };
+export interface ResizeRegion {
+    size?: number | undefined;
+    bottomRightCorner?: number | undefined;
+    sides?: {
+        top?: boolean | undefined;
+        bottom?: boolean | undefined;
+        left?: boolean | undefined;
+        right?: boolean | undefined;
+    } | undefined;
+}
+export interface Accelerator {
+    devtools?: boolean | undefined;
+    reload?: boolean | undefined;
+    reloadIgnoringCache?: boolean | undefined;
+    zoom?: boolean | undefined;
+}
+export interface Api {
+    iframe?: {
+        crossOriginInjection?: boolean | undefined;
+        sameOriginInjection?: boolean | undefined;
+    } | undefined;
+}
+export interface ContentNavigation {
+    whitelist?: string[] | undefined;
+    blacklist?: string[] | undefined;
+}
+export interface ContentRedirect {
+    whitelist?: string[] | undefined;
+    blacklist?: string[] | undefined;
+}
+export interface CornerRounding {
+    height?: number | undefined;
+    width?: number | undefined;
+}

@@ -1,68 +1,97 @@
-import SystemJS = require('systemjs');
-
-SystemJS.config({
-    baseURL: '/app'
+System.import("./hi.js").then(hi => {
+    hi.someProperty();
 });
 
-SystemJS.import('main.js');
-
-SystemJS.config({
-    // 'plugin-traceur' or 'plugin-typescript' or 'babel' or 'traceur' or 'typescript' or false.
-    transpiler: 'plugin-babel',
-    // or traceurOptions or typescriptOptions
-    babelOptions: {
-    }
+System.import<Hi>("./hi.js").then(hi => {
+    hi.someExport();
 });
 
-SystemJS.config({
-    map: {
-        traceur: 'path/to/traceur.js'
-    }
-});
+System.import("./hi.js", "https://example.com/base/");
 
-SystemJS.config({
-    meta: {
-        '*': {
-            authorization: true
-        }
-    }
-});
+System.register(["foo", "bar"], (_export, _context) => {
+    let foo;
+    let bar;
 
-SystemJS.config({
-    meta: {
-        '*': {
-            authorization: 'Basic YWxhZGRpbjpvcGVuc2VzYW1l'
-        }
-    }
-});
+    return {
+        setters: [
+            module => {
+                foo = module;
+            },
+            module => {
+                bar = module;
+            },
+        ],
+        execute() {
+            _export("a", "thing");
+            _export("b", 123);
+            _export("c", () => "hi");
+            _export({ some: "thing" });
 
-SystemJS.config({
-    map: {
-        'local/package': {
-            x: 'vendor/x.js'
+            _context.import("./other-thing.js");
+
+            _context.meta.url;
         },
-        'another/package': {
-            x: 'vendor/y.js'
-        }
-    }
+    };
 });
 
-SystemJS.transpiler = 'traceur';
+// named register
+System.register("name", [], () => ({}));
 
-const mockModule = {
-    default: () => {
-        return 42;
-    }
-};
+const update = System.delete("https://example.com/a.js");
+if (update) {
+    update();
+} else {
+    const expected: false = update;
+}
 
-SystemJS.set('./app.js', SystemJS.newModule(mockModule));
+const a = System.get("https://example.com/a.js");
+if (a) {
+    a.doThing();
+} else {
+    // $ExpectType null
+    a;
+}
 
-SystemJS.import('./app.js').then((m: typeof mockModule) => {
-    m.default();
+const b = System.get<ModuleB>("https://example.com/b.js");
+if (b) {
+    b.theBThing();
+} else {
+    // $ExpectType null
+    b;
+}
+
+const hasC: boolean = System.has("https://example.com/c.js");
+
+System.set("https://example.com/d.js", {
+    hi: "there",
 });
 
-SystemJS.import('lodash').then((_: (...args: any[]) => any) => {
-    _(1, '2', {}, []);
+for (const entry of System.entries()) {
+    // $ExpectType string
+    const moduleId = entry[0];
+    const module = entry[1];
+}
+
+interface ModuleB {
+    theBThing(): void;
+}
+
+interface Hi {
+    someExport(): void;
+}
+
+System.addImportMap({
+    imports: {
+        a: "https://example.com/a.js",
+    },
+    scopes: {
+        b: {
+            c: "https://example.com/c.js",
+        },
+    },
+    integrity: {
+        "https://example.com/a.js": "sha256-5e3e",
+    },
 });
 
-const clonedSystemJSJS = new SystemJS.constructor();
+System.getImportMap();

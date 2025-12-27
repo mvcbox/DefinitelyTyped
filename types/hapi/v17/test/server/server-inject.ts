@@ -6,27 +6,27 @@ const server = new Server({
 });
 
 const serverRoute: ServerRoute = {
-    path: '/',
-    method: 'GET',
+    path: "/",
+    method: "GET",
     handler(request, h) {
-        return 'Success!';
-    }
+        return "Success!";
+    },
 };
 
 server.route(serverRoute);
 server.start();
 
-server.inject('/').then(res => console.log(res.result));
+server.inject("/").then(res => console.log(res.result));
 
-declare module 'hapi' {
-	interface ApplicationState {
-		injectState?: number;
-	}
+declare module "hapi" {
+    interface ApplicationState {
+        injectState?: number | undefined;
+    }
 }
 
 server.inject({
-	url: "test",
-	app: {
-		injectState: 1
-	}
+    url: "test",
+    app: {
+        injectState: 1,
+    },
 });

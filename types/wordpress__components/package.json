@@ -1,6 +1,0 @@
-{
-    "private": true,
-    "dependencies": {
-        "re-resizable": "^4.7.1"
-    }
-}

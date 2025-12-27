@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6"
         ],
@@ -8,22 +8,12 @@
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
         "types": [],
         "noEmit": true,
-        "forceConsistentCasingInFileNames": true,
-        "esModuleInterop": true
+        "forceConsistentCasingInFileNames": true
     },
     "files": [
         "index.d.ts",
-        "simplecrawler-tests.ts",
-        "cache.d.ts",
-        "cookies.d.ts",
-        "queue.d.ts",
-        "cache-backend-fs.d.ts",
-        "crawler.d.ts"
+        "simplecrawler-tests.ts"
     ]
 }

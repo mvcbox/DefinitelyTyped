@@ -1,48 +1,48 @@
-import { AST, Property, TreeNode, Node } from "idyll-compiler";
+import { AST, Node, Property, TreeNode } from "idyll-compiler";
 
 import {
     appendNode,
-    getNodesByName,
     appendNodes,
-    prependNode,
-    prependNodes,
     createNode,
-    getChildren,
-    walkNodes,
-    findNodes,
-    modifyChildren,
     filterChildren,
     filterNodes,
-    modifyNodesByName,
-    getProperty,
+    findNodes,
+    getChildren,
+    getNodesByName,
     getProperties,
     getPropertiesByType,
+    getProperty,
+    modifyChildren,
+    modifyNodesByName,
+    prependNode,
+    prependNodes,
     removeNodesByName,
-    setProperty,
+    removeProperty,
     setProperties,
-    removeProperty
+    setProperty,
+    walkNodes,
 } from "idyll-ast";
 
 const ast: AST = [
     ["h2", [], []],
     "world",
-    ["h1", [], ["child1", ["child2", [], []]]]
+    ["h1", [], ["child1", ["child2", [], []]]],
 ];
 const prop: Property = ["className", ["value", "hello"]];
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 appendNode(ast, "hello");
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 appendNode(getNodesByName(ast, "div"), "test");
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 appendNodes(ast, [["strong", [], ["div", ["pre", [], []]]], "test"]);
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 prependNode(getNodesByName(ast, "div"), "test");
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 prependNodes(ast, [["strong", [], ["div", ["pre", [], []]]], "test"]);
 
 // $ExpectType TreeNode
@@ -71,22 +71,22 @@ getNodesByName(ast, "h1");
 // $ExpectType Node
 filterChildren(ast[1], n => n === "world");
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 filterNodes(ast, n => (n instanceof Object ? n[0] === "h1" : false));
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 modifyNodesByName(ast, "h2", n => {
     typeof n === "object" ? (n[1] = []) : undefined;
 });
 
-// $ExpectType [PropType, PropData] | null
+// $ExpectType [PropType, PropData] | null || PropValue | null
 getProperty(ast[1], "someProp");
-// $ExpectType [string, [PropType, PropData]]
+// $ExpectType [string, [PropType, PropData]] || Property
 getProperties(ast[1])[0];
-// $ExpectType [string, [PropType, PropData]][]
+// $ExpectType [string, [PropType, PropData]][] || Property[]
 getPropertiesByType(["h1", [], []], "variable");
 
-// $ExpectType Node[]
+// $ExpectType Node[] || AST
 removeNodesByName(ast, "h1");
 
 // $ExpectType Node

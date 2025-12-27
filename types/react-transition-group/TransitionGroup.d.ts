@@ -1,22 +1,23 @@
-import { Component, ReactType, HTMLProps, ReactElement } from "react";
+import { Component, ElementType, JSX, ReactElement } from "react";
 import { TransitionActions, TransitionProps } from "./Transition";
 
-declare namespace TransitionGroup {
-    interface IntrinsicTransitionGroupProps<T extends keyof JSX.IntrinsicElements = "div"> extends TransitionActions {
-        component?: T|null;
-    }
+export interface IntrinsicTransitionGroupProps<T extends keyof JSX.IntrinsicElements = "div">
+    extends TransitionActions
+{
+    component?: T | null | undefined;
+}
 
-    interface ComponentTransitionGroupProps<T extends ReactType> extends TransitionActions {
-        component: T;
-    }
+export interface ComponentTransitionGroupProps<T extends ElementType> extends TransitionActions {
+    component: T;
+}
 
-    type TransitionGroupProps<T extends keyof JSX.IntrinsicElements = "div", V extends ReactType = any> =
-        (IntrinsicTransitionGroupProps<T> & JSX.IntrinsicElements[T]) | (ComponentTransitionGroupProps<V>) & {
-        children?: ReactElement<TransitionProps> | Array<ReactElement<TransitionProps>>;
+export type TransitionGroupProps<T extends keyof JSX.IntrinsicElements = "div", V extends ElementType = any> =
+    | (IntrinsicTransitionGroupProps<T> & JSX.IntrinsicElements[T])
+    | (ComponentTransitionGroupProps<V>) & {
+        children?: ReactElement<TransitionProps<any>> | Array<ReactElement<TransitionProps<any>>> | undefined;
         childFactory?(child: ReactElement): ReactElement;
         [prop: string]: any;
     };
-}
 
 /**
  * The `<TransitionGroup>` component manages a set of `<Transition>` components
@@ -75,6 +76,6 @@ declare namespace TransitionGroup {
  * components. This means you can mix and match animations across different
  * list items.
  */
-declare class TransitionGroup extends Component<TransitionGroup.TransitionGroupProps> {}
+declare class TransitionGroup extends Component<TransitionGroupProps> {}
 
-export = TransitionGroup;
+export default TransitionGroup;

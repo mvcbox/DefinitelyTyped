@@ -1,186 +1,454 @@
-function testDropdown() {
-    UIkit.dropdown("#parent");
-    UIkit.dropdown($("#parent"));
+import UIkit, { UIkitElementBase } from "uikit";
 
-    const options: UIkit.DropdownOptions = {
-        pos: 'bottom-center',
-        mode: 'click',
-        remaintime: 150,
-        justify: false,
-        boundary: window,
-        delay: 0,
-        dropdownSelector: '.uk-dropdown,.uk-dropdown-blank',
-        hoverDelayIdle: 200,
-        preventflip: 'x'
-    };
-    const dropdown = UIkit.dropdown("$parent", options);
+const element = document.createElement("div");
 
-    dropdown.show();
-    dropdown.hide();
-    dropdown.hide(true);
-    dropdown.hide(false);
+function testUIkitElementBase() {
+    const component: UIkitElementBase = UIkit.alert(element, {
+        animation: true,
+        duration: 300,
+        selClose: ">",
+    });
+
+    // $ExpectError - Doesn't seem to be working...
+    // component.$el = undefined;
+
+    component.$el.classList; // $el is a HTML element
+    component.$destroy();
 }
 
-function testModal() {
-    UIkit.modal.alert("Attention!");
-
-    const options: UIkit.ModalOptions = {
-        keyboard: true,
-        bgclose: true,
-        minScrollHeight: 150,
-        center: false,
-        modal: true
-    };
-    UIkit.modal.confirm("Are you sure?", () => {});
-    UIkit.modal.confirm("Are you sure?", () => {}, {});
-    UIkit.modal.confirm("Are you sure?", () => {}, () => {});
-    UIkit.modal.confirm("Are you sure?", () => {}, () => {}, {});
-    UIkit.modal.confirm("Are you sure?", () => {}, {});
-
-    UIkit.modal.prompt("Name:", 'value', (newvalue: string) => {
-        // will be executed on submit.
+function testAccordion() {
+    UIkit.accordion(element).$destroy();
+    const component = UIkit.accordion(element, {
+        active: 0,
+        animation: true,
+        collapsible: true,
+        content: ">",
+        duration: 300,
+        multiple: true,
+        targets: ">",
+        toggle: ">",
+        transition: "ease",
+        offset: 1,
     });
-    let modal = UIkit.modal.blockUI("Any content...");
-    modal.hide();
-    modal.show();
-    modal = UIkit.modal(".modalSelector");
 
-    if (modal.isActive()) {
+    component.toggle(0);
+    component.toggle(0, true);
+    component.$destroy();
+}
+
+function testAlert() {
+    UIkit.alert(element).$destroy();
+    const component = UIkit.alert(element, {
+        animation: true,
+        duration: 300,
+        selClose: ">",
+    });
+
+    component.close();
+    component.$destroy();
+}
+
+function testCountdown() {
+    UIkit.countdown(element).$destroy();
+    const component = UIkit.countdown(element, {
+        date: 123,
+        reload: true,
+    });
+
+    component.stop();
+    component.start();
+    component.$destroy();
+}
+
+function testCover() {
+    UIkit.cover(element).$destroy();
+    const component = UIkit.cover(element, {
+        automute: true,
+        width: 1,
+        height: 1,
+    });
+
+    component.$destroy();
+}
+
+function testDrop() {
+    UIkit.drop(element).$destroy();
+    const component = UIkit.drop(element, {
+        toggle: ">",
+    });
+
+    component.hide();
+    component.hide(true);
+    component.show();
+    component.$destroy();
+}
+
+function testDropdown() {
+    UIkit.dropdown(element).$destroy();
+    const component = UIkit.dropdown(element, {
+        pos: "bottom-center",
+        mode: "click",
+        flip: true,
+    });
+
+    component.hide();
+    component.hide(true);
+    component.show();
+    component.$destroy();
+}
+
+function testDropnav() {
+    UIkit.dropnav(element).$destroy();
+    const component = UIkit.dropnav(element, {
+        align: "center",
+        mode: "click",
+        dropbar: true,
+    });
+
+    component.$destroy();
+}
+
+function testFilter() {
+    UIkit.filter(element).$destroy();
+    const component = UIkit.filter(element, {
+        target: ">",
+        selActive: "active",
+        animation: "slide",
+        duration: 100,
+    });
+
+    component.$destroy();
+}
+
+function testForm() {
+    UIkit.formCustom(element).$destroy();
+    const component = UIkit.formCustom(element, {
+        target: ">",
+    });
+
+    component.$destroy();
+}
+
+function testGrid() {
+    UIkit.grid(element).$destroy();
+    const component = UIkit.grid(element, {
+        masonry: "next",
+    });
+
+    component.$destroy();
+}
+
+function testHeightMatch() {
+    UIkit.heightMatch(element).$destroy();
+    const component = UIkit.heightMatch(element, {
+        row: true,
+    });
+
+    component.$destroy();
+}
+
+function testHeightPlaceholder() {
+    UIkit.heightPlaceholder(element).$destroy();
+    const component = UIkit.heightPlaceholder(element, {});
+
+    component.$destroy();
+}
+
+function testHeightViewport() {
+    UIkit.heightViewport(element).$destroy();
+    const component = UIkit.heightViewport(element, {
+        expand: true,
+    });
+
+    component.$destroy();
+}
+
+async function testIcon() {
+    UIkit.icon(element).$destroy();
+    const component = UIkit.icon(element, { icon: "facebook" });
+
+    await component.svg.then(() => console.log("Loaded"));
+    component.$destroy();
+}
+
+function testImage() {
+    UIkit.img(element).$destroy();
+    const component = UIkit.img(element, { dataSrc: "" });
+
+    component.$destroy();
+}
+
+function testInverse() {
+    UIkit.inverse(element).$destroy();
+    const component = UIkit.inverse(element, {
+        target: ">",
+        selActive: "active",
+    });
+
+    component.$destroy();
+}
+
+function testLeader() {
+    UIkit.leader(element).$destroy();
+    const component = UIkit.leader(element, {
+        fill: "a",
+        media: "@l",
+    });
+
+    component.$destroy();
+}
+
+function testLightbox() {
+    UIkit.lightbox(element).$destroy();
+    const lightbox = UIkit.lightbox(element, {
+        videoAutoplay: true,
+    });
+
+    lightbox.show(0);
+    lightbox.hide();
+    lightbox.$destroy();
+
+    UIkit.lightboxPanel(element).$destroy;
+    const panel = UIkit.lightboxPanel({ delayControls: true });
+
+    panel.show(1);
+    panel.startAutoplay();
+    panel.stopAutoplay();
+    panel.$destroy();
+}
+
+function testMargin() {
+    UIkit.margin(element).$destroy();
+    const component = UIkit.margin(element, {
+        margin: "uk-grid-margin",
+    });
+
+    component.$destroy();
+}
+
+async function testModal() {
+    UIkit.modal(element).$destroy();
+
+    // Alert
+    const alert = UIkit.modal.alert("Attention!");
+    await alert.then(() => console.log("Success"));
+    alert.dialog.$destroy();
+
+    // Confirm
+    const confirm = UIkit.modal.confirm("Are you sure?");
+    await confirm.then(() => console.log("Success")).catch(() => console.log("Cancelled"));
+    confirm.dialog.$destroy();
+
+    // Confirm
+    const prompt = UIkit.modal.prompt("Name", "");
+    await prompt.then((v) => console.log("Success", v)).catch(() => console.log("Cancelled"));
+    prompt.dialog.$destroy();
+
+    // Confirm
+    const dialog = UIkit.modal.dialog("<p>UIkit dialog!</p>");
+    await dialog.then(() => console.log("Success")).catch(() => console.log("Cancelled"));
+    dialog.dialog.$destroy();
+
+    const modal = UIkit.modal("#modal", {
+        stack: true,
+        container: false,
+    });
+
+    setTimeout(() => modal.show(), 2000);
+    setTimeout(() => {
         modal.hide();
-    } else {
-        modal.show();
-    }
+        modal.$destroy();
+    }, 4000);
+}
+
+function testNav() {
+    UIkit.nav(element).$destroy();
+    const component = UIkit.nav(element, {
+        targets: ">",
+    });
+
+    component.toggle(0);
+    component.toggle(0, true);
+    component.$destroy();
+}
+
+function testNavbar() {
+    UIkit.navbar(element).$destroy();
+    const component = UIkit.navbar(element, {
+        align: "left",
+    });
+
+    component.$destroy();
+}
+
+function testNotification() {
+    UIkit.notification("Hi").$destroy();
+    UIkit.notification("Hi", "primary").$destroy();
+    const component = UIkit.notification("Hi", { status: "primary" });
+
+    component.close();
+    component.close(false);
+    component.$destroy();
+
+    UIkit.notification.closeAll();
+    UIkit.notification.closeAll("group1");
+    UIkit.notification.closeAll("group1", true);
 }
 
 function testOffCanvas() {
-    UIkit.offcanvas.show("#id");
-    UIkit.offcanvas.hide();
-    UIkit.offcanvas.hide(true);
-}
+    UIkit.offcanvas(element).$destroy();
+    const component = UIkit.offcanvas(element, {
+        mode: "push",
+    });
 
-function testLightBox() {
-    const element = "#group";
-    const lightbox = UIkit.lightbox(element, {/* options */});
-    const lightbox2 = UIkit.lightbox.create([
-        {source: 'http://url/to/video.mp4', type: 'video'},
-        {source: 'http://url/to/image.jpg', type: 'image'}
-    ]);
-    lightbox2.show();
-    const lightbox3 = UIkit.lightbox(element);
-}
-
-function testAutoComplete() {
-    UIkit.autocomplete("#group", {});
-    UIkit.autocomplete("#group");
-}
-
-function testDatepicker() {
-    const datepicker = UIkit.datepicker("#element", {});
-}
-
-function testHtmlEditor() {
-    const htmleditor = UIkit.htmleditor("textarea", {/* options */});
-}
-
-function testSlider() {
-    const slider = UIkit.slider("element", {});
-}
-function testSlideSet() {
-    const slideset = UIkit.slideset("element", {});
-}
-function testSlideShow() {
-    const slideshow = UIkit.slideshow("element", {});
+    component.show();
+    component.hide();
+    component.$destroy();
 }
 
 function testParallax() {
-    const parallax = UIkit.parallax("element", {});
-}
-function testAccordion() {
-    const accordion = UIkit.accordion("element", {});
+    UIkit.parallax(element).$destroy();
+    const component = UIkit.parallax(element, { easing: 1 });
+
+    component.$destroy();
 }
 
-function testNotify() {
-    UIkit.notify({
-        message: 'Bazinga!',
-        status: 'info',
-        timeout: 5000,
-        pos: 'top-center'
+function testScroll() {
+    UIkit.scroll(element).$destroy();
+    const component = UIkit.scroll(element, {
+        offset: 1,
     });
 
-    // Shortcuts
-    UIkit.notify('My message');
-    UIkit.notify('My message', status);
-    UIkit.notify('My message', {/* options */});
-
-    UIkit.notify("Message...", {timeout: 0});
-    UIkit.notify("...", {pos: 'top-center'});
-    UIkit.notify("...", {status: 'info'});
+    component.scrollTo(">");
+    component.scrollTo(document.createElement("a"));
+    component.$destroy();
 }
 
-function testSearch() {
-    const search = UIkit.search("element", {});
+function testScrollspy() {
+    UIkit.scrollspy(element).$destroy();
+    const component = UIkit.scrollspy(element, { cls: "active" });
+
+    UIkit.scrollspyNav(element).$destroy();
+    const nav = UIkit.scrollspyNav(element, { target: ">" });
+
+    nav.$destroy();
 }
 
-function testNestable() {
-    const nestable = UIkit.nestable('element', {});
+function testSlider() {
+    UIkit.slider(element).$destroy();
+    const slider = UIkit.slider(element, {
+        autoplay: true,
+    });
+
+    slider.startAutoplay();
+    slider.stopAutoplay();
+    slider.show(1);
+    slider.$destroy();
 }
+
+function testSlideshow() {
+    UIkit.slideshow(element).$destroy();
+    const component = UIkit.slideshow(element, {
+        ratio: 1,
+    });
+
+    component.startAutoplay();
+    component.stopAutoplay();
+    component.show(10);
+    component.$destroy();
+}
+
 function testSortable() {
-    const sortable = UIkit.sortable('element', {});
+    UIkit.sortable(element).$destroy();
+    const component = UIkit.sortable(element, {
+        group: "abc",
+    });
+
+    component.$destroy();
 }
-function testStick() {
-    const sticky = UIkit.sticky('element', {});
+
+function testSticky() {
+    UIkit.sticky(element).$destroy();
+    const component = UIkit.sticky(element, {
+        end: 1,
+    });
+
+    component.$destroy();
 }
-function testTimePicker() {
-    const timepicker = UIkit.timepicker('element', {});
+
+async function testSvg() {
+    UIkit.svg(element).$destroy();
+    const component = UIkit.svg(element, {
+        src: "",
+        strokeAnimation: true,
+    });
+
+    await component.svg;
+    component.$destroy();
+}
+
+function testSwitcher() {
+    UIkit.switcher(element).$destroy();
+    const component = UIkit.switcher(element, {
+        connect: ">",
+    });
+
+    component.show(0);
+    component.show(document.createElement("a"));
+    component.$destroy();
+}
+
+function testToggle() {
+    UIkit.toggle(element).$destroy();
+    const component = UIkit.toggle(element, {
+        mode: "click",
+    });
+
+    component.toggle();
+    component.$destroy();
 }
 
 function testTooltip() {
-    const tooltip = UIkit.tooltip('element', {});
+    UIkit.tooltip(element).$destroy();
+    const tooltip = UIkit.tooltip(element, {
+        title: "A Tooltip",
+    });
+
+    tooltip.show();
+    tooltip.hide();
+    tooltip.$destroy();
 }
 
 function testUpload() {
-    $(() => {
-        const progressbar = $("#progressbar");
-        const bar = progressbar.find('.uk-progress-bar');
-        const settings = {
-            action: '/', // upload url
-            allow : '*.(jpg|jpeg|gif|png)', // allow only images
-            loadstart() {
-                bar.css("width", "0%").text("0%");
-                progressbar.removeClass("uk-hidden");
-            },
-            progress(percent: number) {
-                percent = Math.ceil(percent);
-                bar.css("width", percent + "%").text(percent + "%");
-            },
-            allcomplete(response: any) {
-                bar.css("width", "100%").text("100%");
-
-                setTimeout(() => {
-                    progressbar.addClass("uk-hidden");
-                }, 250);
-
-                alert("Upload Completed");
-            }
-        };
-
-        const select = UIkit.uploadSelect($("#upload-select"), settings);
-        const drop   = UIkit.uploadDrop($("#upload-drop"), settings);
-    });
-
-    // Test with object literal
-    const select2 = UIkit.uploadSelect($("#upload-select"), {
-        action: '/', // upload url
-        allow: '*.(jpg|jpeg|gif|png)', // allow only images
-        loadstart: () => {},
-        progress: (percent: number) => {},
-        allcomplete: (response: any) => {}
-    });
-    const drop2 = UIkit.uploadDrop($("#upload-drop"), {
-        action: '/', // upload url
-        allow: '*.(jpg|jpeg|gif|png)', // allow only images
-        loadstart: () => {},
-        progress: (percent: number) => {},
-        allcomplete: (response: any) => {}
+    UIkit.upload("#upload", {
+        abort: (asd: number) => {
+            return asd;
+        },
     });
 }
+
+function testUse() {
+    const plugin = (uikit: typeof UIkit) => {};
+    plugin.installed = false;
+    UIkit.use(plugin);
+}
+
+function testUtils() {
+    const handler = (e: Event) => console.log(e.target);
+    UIkit.util.on(document.body, "show", handler);
+    UIkit.util.off(document.body, "show", handler);
+}
+
+import Icons from "uikit/dist/js/uikit-icons";
+
+// $ExpectType boolean
+Icons.installed;
+
+UIkit.icon.add("icon", "<svg>...</svg>");
+UIkit.icon.add({
+    icon1: "<svg>A</svg>",
+    icon2: "<svg>B</svg>",
+});
+UIkit.icon("#app", {
+    icon: "home",
+});

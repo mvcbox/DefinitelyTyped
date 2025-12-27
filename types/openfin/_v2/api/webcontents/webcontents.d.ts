@@ -1,10 +1,18 @@
-import { EmitterBase } from '../base';
-import { BaseEventMap } from '../events/base';
-import { Identity } from '../../identity';
-import Transport from '../../transport/transport';
-export declare class WebContents<T extends BaseEventMap> extends EmitterBase<T> {
+import { Identity } from "../../identity";
+import Transport from "../../transport/transport";
+import { EmitterBase } from "../base";
+import { WebContentsEventMapping } from "../events/webcontents";
+import { Area, FindInPageOptions, PrinterInfo, PrintOptions } from "../window/window";
+declare type ImageFormat = "bmp" | "jpg" | "png";
+export interface CapturePageOptions {
+    area?: Area | undefined;
+    format?: ImageFormat | undefined;
+    quality?: number | undefined;
+}
+export declare class WebContents<T extends WebContentsEventMapping> extends EmitterBase<T> {
     entityType: string;
     constructor(wire: Transport, identity: Identity, entityType: string);
+    capturePage(options?: CapturePageOptions): Promise<string>;
     executeJavaScript(code: string): Promise<void>;
     getZoomLevel(): Promise<number>;
     setZoomLevel(level: number): Promise<void>;
@@ -12,4 +20,14 @@ export declare class WebContents<T extends BaseEventMap> extends EmitterBase<T> 
     navigateBack(): Promise<void>;
     navigateForward(): Promise<void>;
     stopNavigation(): Promise<void>;
+    reload(ignoreCache?: boolean): Promise<void>;
+    print(options?: PrintOptions): Promise<void>;
+    findInPage(searchTerm: string, options?: FindInPageOptions): Promise<void>;
+    stopFindInPage(action: string): Promise<void>;
+    getPrinters(): Promise<PrinterInfo>;
+    focus({ emitSynthFocused }?: {
+        emitSynthFocused: boolean;
+    }): Promise<void>;
+    showDeveloperTools(): Promise<void>;
 }
+export {};

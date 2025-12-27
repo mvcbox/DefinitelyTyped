@@ -1,8 +1,22 @@
-import { CreateOrderRequest } from 'square-connect';
+import { CatalogQuerySet, Money } from "square-connect";
 
-const createOrderRequest: CreateOrderRequest = {
-    idempotency_key: 'optional',
-    order: {
-        location_id: 'required',
-    },
+enum CustomCurrencyEnum {
+    CAD = "CAD",
+}
+
+// Should work with string
+const moneyUSD: Money = {
+    amount: 1,
+    currency: "USD",
+};
+
+// Should work with custom enum
+const moneyCAD: Money = {
+    amount: 1,
+    currency: CustomCurrencyEnum.CAD,
+};
+
+const querySet: CatalogQuerySet = {
+    attribute_name: "foo",
+    attribute_values: ["bar"],
 };

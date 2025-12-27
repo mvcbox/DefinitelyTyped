@@ -1,9 +1,14 @@
-import { ReactNativeFile, ReactNativeFileOptions } from "extract-files";
+import extractFiles from "extract-files/extractFiles.mjs";
+import isExtractableFile from "extract-files/isExtractableFile.mjs";
 
-const options: ReactNativeFileOptions = {
-    name: "",
-    type: "",
-    uri: "",
-};
+interface StreamLike {
+    pipe: () => void;
+}
 
-new ReactNativeFile(options);
+// Support NodeJS streams
+const isStreamLike = (value: any): value is StreamLike =>
+    value !== null && typeof value === "object" && typeof value.pipe === "function";
+
+extractFiles({}, isStreamLike, "");
+
+extractFiles({}, isExtractableFile);

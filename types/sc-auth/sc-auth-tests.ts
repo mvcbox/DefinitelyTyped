@@ -24,7 +24,7 @@ authEngine.signToken(testObject, "shhhhh", { audience: "theAudience" });
 
 // sign with default (HMAC SHA256) and multiple audiences
 authEngine.signToken(testObject, "shhhhh", {
-    audience: ["audience1", "audience2"]
+    audience: ["audience1", "audience2"],
 });
 
 // sign with default (HMAC SHA256) and a keyid
@@ -41,7 +41,7 @@ authEngine.signToken(testObject, secret, { algorithm: "RS256" }); // the algorit
 
 // sign asynchronously
 authEngine.signToken(testObject, cert, { algorithm: "RS256" }, (err, token) => {
-    signedToken = token;
+    signedToken = token as string;
 });
 
 // verify a token symmetric

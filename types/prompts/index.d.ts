@@ -1,26 +1,28 @@
-// Type definitions for prompts 2.0
-// Project: https://github.com/terkelg/prompts
-// Definitions by: Berkay GURSOY <https://github.com/Berkays>
-//                 Daniel Perez Alvarez <https://github.com/danielpa9708>
-//                 Kamontat Chantrachirathumrong <https://github.com/kamontat>
-//                 theweirdone <https://github.com/theweirdone>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.9
+/// <reference types="node" />
 
 export = prompts;
 
+import { Kleur } from "kleur";
+import { Readable, Writable } from "stream";
+
 declare function prompts<T extends string = string>(
     questions: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>,
-    options?: prompts.Options
+    options?: prompts.Options,
 ): Promise<prompts.Answers<T>>;
 
 declare namespace prompts {
     // Circular reference from prompts
     const prompt: any;
 
-    function inject(obj: any): void;
+    function inject(arr: readonly any[]): void;
 
     namespace inject {
+        const prototype: {};
+    }
+
+    function override(obj: { [key: string]: any }): void;
+
+    namespace override {
         const prototype: {};
     }
 
@@ -48,39 +50,47 @@ declare namespace prompts {
         function toggle(args: PromptObject): void;
     }
 
+    // Based upon: https://github.com/terkelg/prompts/blob/d7d2c37a0009e3235b2e88a7d5cdbb114ac271b2/lib/elements/select.js#L29
     interface Choice {
         title: string;
-        value: string;
-        disable?: boolean;
+        value?: any;
+        disabled?: boolean | undefined;
+        selected?: boolean | undefined;
+        description?: string | undefined;
     }
 
     interface Options {
-        onSubmit?: (prompt: PromptObject, answer: any, answers: any[]) => void;
-        onCancel?: (prompt: PromptObject, answers: any) => void;
+        onSubmit?: ((prompt: PromptObject, answer: any, answers: any[]) => void) | undefined;
+        onCancel?: ((prompt: PromptObject, answers: any) => void) | undefined;
     }
 
     interface PromptObject<T extends string = string> {
         type: PromptType | Falsy | PrevCaller<T, PromptType | Falsy>;
         name: ValueOrFunc<T>;
-        message?: ValueOrFunc<string>;
-        initial?: string | number | boolean | Date;
-        style?: string;
-        format?: PrevCaller<T, void>;
-        validate?: PrevCaller<T, boolean | string>;
-        onState?: PrevCaller<T, void>;
-        min?: number;
-        max?: number;
-        float?: boolean;
-        round?: number;
-        increment?: number;
-        seperator?: string;
-        active?: string;
-        inactive?: string;
-        choices?: Choice[];
-        hint?: string;
-        suggest?: ((prev: any, values: any, prompt: PromptObject) => void);
-        limit?: number;
-        mask?: string;
+        message?: ValueOrFunc<string> | undefined;
+        initial?: InitialReturnValue | PrevCaller<T, InitialReturnValue | Promise<InitialReturnValue>> | undefined;
+        style?: string | PrevCaller<T, string | Falsy> | undefined;
+        format?: PrevCaller<T, void> | undefined;
+        validate?: PrevCaller<T, boolean | string | Promise<boolean | string>> | undefined;
+        onState?: PrevCaller<T, void> | undefined;
+        onRender?: ((kleur: Kleur) => void) | undefined;
+        min?: number | PrevCaller<T, number | Falsy> | undefined;
+        max?: number | PrevCaller<T, number | Falsy> | undefined;
+        float?: boolean | PrevCaller<T, boolean | Falsy> | undefined;
+        round?: number | PrevCaller<T, number | Falsy> | undefined;
+        instructions?: string | boolean | undefined;
+        increment?: number | PrevCaller<T, number | Falsy> | undefined;
+        separator?: string | PrevCaller<T, string | Falsy> | undefined;
+        active?: string | PrevCaller<T, string | Falsy> | undefined;
+        inactive?: string | PrevCaller<T, string | Falsy> | undefined;
+        choices?: Choice[] | PrevCaller<T, Choice[] | Falsy> | undefined;
+        hint?: string | PrevCaller<T, string | Falsy> | undefined;
+        warn?: string | PrevCaller<T, string | Falsy> | undefined;
+        suggest?: ((input: any, choices: Choice[]) => Promise<any>) | undefined;
+        limit?: number | PrevCaller<T, number | Falsy> | undefined;
+        mask?: string | PrevCaller<T, string | Falsy> | undefined;
+        stdout?: Writable | undefined;
+        stdin?: Readable | undefined;
     }
 
     type Answers<T extends string> = { [id in T]: any };
@@ -88,12 +98,26 @@ declare namespace prompts {
     type PrevCaller<T extends string, R = T> = (
         prev: any,
         values: Answers<T>,
-        prompt: PromptObject
+        prompt: PromptObject,
     ) => R;
 
     type Falsy = false | null | undefined;
 
-    type PromptType = "text" | "password" | "invisible" | "number" | "confirm" | "list" | "toggle" | "select" | "multiselect" | "autocomplete" | "date" | "autocompleteMultiselect";
+    type PromptType =
+        | "text"
+        | "password"
+        | "invisible"
+        | "number"
+        | "confirm"
+        | "list"
+        | "toggle"
+        | "select"
+        | "multiselect"
+        | "autocomplete"
+        | "date"
+        | "autocompleteMultiselect";
 
     type ValueOrFunc<T extends string> = T | PrevCaller<T>;
+
+    type InitialReturnValue = string | number | boolean | Date;
 }

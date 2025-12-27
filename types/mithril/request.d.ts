@@ -1,10 +1,10 @@
-import { request, jsonp } from ".";
+import { jsonp, request } from ".";
 
 declare namespace RequestService {
-	interface Static {
-		request: typeof request;
-		jsonp: typeof jsonp;
-	}
+    interface Static {
+        request: typeof request;
+        jsonp: typeof jsonp;
+    }
 }
 
 declare const RequestService: RequestService.Static;

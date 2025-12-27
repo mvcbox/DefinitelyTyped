@@ -1,14 +1,8 @@
-// Type definitions for promise-ftp 1.3
-// Project: https://github.com/realtymaps/promise-ftp
-// Definitions by: coolreader18 <https://github.com/coolreader18>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 3.2
-
 /// <reference types="node" />
 
-import * as FtpClient from "ftp";
+import Promise = require("bluebird");
+import FtpClient = require("ftp");
 import * as PromiseFtpCommon from "promise-ftp-common";
-import * as Promise from "bluebird";
 
 declare namespace PromiseFtp {
     interface ERROR_CODES {
@@ -31,23 +25,23 @@ declare namespace PromiseFtp {
         553: "Requested action not taken / File name not allowed";
     }
     const ERROR_CODES: ERROR_CODES;
-    // tslint:disable-next-line strict-export-declare-modifiers
+    // eslint-disable-next-line @definitelytyped/strict-export-declare-modifiers
     export import FtpConnectionError = PromiseFtpCommon.FtpConnectionError;
-    // tslint:disable-next-line strict-export-declare-modifiers
+    // eslint-disable-next-line @definitelytyped/strict-export-declare-modifiers
     export import FtpReconnectError = PromiseFtpCommon.FtpReconnectError;
-    // tslint:disable-next-line strict-export-declare-modifiers
+    // eslint-disable-next-line @definitelytyped/strict-export-declare-modifiers
     export import STATUSES = PromiseFtpCommon.STATUSES;
 
     /**
      * Options for FtpPromise#connect()
      */
-    // tslint:disable-next-line strict-export-declare-modifiers
+    // eslint-disable-next-line @definitelytyped/strict-export-declare-modifiers
     export import Options = FtpClient.Options;
 
     /**
      * Element returned by FtpPromise#list()
      */
-    // tslint:disable-next-line strict-export-declare-modifiers
+    // eslint-disable-next-line @definitelytyped/strict-export-declare-modifiers
     export import ListingElement = FtpClient.ListingElement;
 }
 
@@ -88,8 +82,8 @@ declare class PromiseFtp {
      * @param useCompression - defaults to false.
      * @returns the contents of the specified directory
      */
-    list(path?: string, useCompression?: boolean): FtpClient.ListingElement[];
-    list(useCompression: boolean): FtpClient.ListingElement[];
+    list(path?: string, useCompression?: boolean): Promise<Array<FtpClient.ListingElement | string>>;
+    list(useCompression: boolean): Promise<Array<FtpClient.ListingElement | string>>;
 
     /**
      * Optional "standard" commands (RFC 959)
@@ -105,9 +99,9 @@ declare class PromiseFtp {
      */
     listSafe(
         path?: string,
-        useCompression?: boolean
-    ): FtpClient.ListingElement[];
-    listSafe(useCompression: boolean): FtpClient.ListingElement[];
+        useCompression?: boolean,
+    ): Promise<Array<FtpClient.ListingElement | string>>;
+    listSafe(useCompression: boolean): Promise<Array<FtpClient.ListingElement | string>>;
 
     /**
      * Retrieve a file at path from the server.
@@ -126,7 +120,7 @@ declare class PromiseFtp {
     put(
         input: NodeJS.ReadableStream | Buffer | string,
         destPath: string,
-        useCompression?: boolean
+        useCompression?: boolean,
     ): Promise<void>;
 
     /**
@@ -138,7 +132,7 @@ declare class PromiseFtp {
     append(
         input: NodeJS.ReadableStream | Buffer | string,
         destPath: string,
-        useCompression?: boolean
+        useCompression?: boolean,
     ): Promise<void>;
 
     /**

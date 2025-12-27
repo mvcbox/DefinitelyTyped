@@ -1,33 +1,35 @@
-// Type definitions for axios-token-interceptor 0.1
-// Project: https://github.com/sandrinodimattia/axios-token-interceptor#readme
-// Definitions by: Mike Dodge <https://github.com/innovation-team>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
-
-import { AxiosRequestConfig } from 'axios';
+import { AxiosInstance } from "axios";
 
 // Module
 declare function AxiosTokenProvider(Options: AxiosTokenProvider.InterceptorOptions): AxiosTokenProvider.TokenProvider;
 declare namespace AxiosTokenProvider {
-	function tokenCache(getToken: Promise<string>, options: TokenCacheOptions): TokenCache;
+    function tokenCache<T>(getToken: () => Promise<T>, options: TokenCacheOptions<T>): TokenCache<T>;
 
-	// Interfaces
-	interface InterceptorOptions {
-		token?: string;
-		getToken?: () => string | Promise<string>;
-		header?: string;
-		headerFormatter?: (token: string) => string;
-	}
+    // Interfaces
+    interface InterceptorOptions<T = unknown> {
+        token?: string | undefined;
+        getToken?: (() => T | Promise<T>) | undefined;
+        header?: string | undefined;
+        headerFormatter?: ((token: T) => string) | undefined;
+    }
 
-	type TokenProvider = (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;
+    interface Token {
+        access_token: string;
+        expires_in: number;
+    }
 
-	interface TokenCacheOptions {
-		getMaxAge?: () => number;
-		maxAge?: number;
-	}
+    type _InterceptorsRequestUseParam = Parameters<AxiosInstance["interceptors"]["request"]["use"]>[0];
+    type InternalAxiosRequestConfig = Parameters<NonNullable<_InterceptorsRequestUseParam>>[0];
+    type TokenProvider = (config: InternalAxiosRequestConfig) => Promise<InternalAxiosRequestConfig>;
 
-	interface TokenCache {
-		reset(): void;
-	}
+    interface TokenCacheOptions<T = unknown> {
+        getMaxAge?: (() => number) | ((el: T) => number) | undefined;
+        maxAge?: number | undefined;
+    }
+
+    interface TokenCache<T = string> {
+        (): Promise<T>;
+        reset(): void;
+    }
 }
 export = AxiosTokenProvider;

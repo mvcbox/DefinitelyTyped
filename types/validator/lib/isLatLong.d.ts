@@ -1,3 +1,3 @@
-import * as validator from "validator";
-declare const isLatLong: typeof validator.isLatLong;
-export = isLatLong;
+import validator from "../";
+export type IsLatLongOptions = validator.IsLatLongOptions;
+export default validator.isLatLong;

@@ -1,8 +1,8 @@
-import lockfile = require('lockfile');
+import lockfile = require("lockfile");
 
 let bool: boolean;
 const num = 1;
-const path = '';
+const path = "";
 
 let opts: lockfile.Options;
 const callback = (err: Error) => {
@@ -11,10 +11,10 @@ const callback2 = (err: Error, isLocked: boolean) => {
 };
 
 opts = {
-	wait: num,
-	stale: num,
-	retries: num,
-	retryWait: num
+    wait: num,
+    stale: num,
+    retries: num,
+    retryWait: num,
 };
 
 lockfile.lock(path, opts, callback);

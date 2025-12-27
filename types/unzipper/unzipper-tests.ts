@@ -1,6 +1,7 @@
-import { createReadStream } from 'fs';
-import { get } from 'http';
-import { CentralDirectory, Entry, Open, Parse } from 'unzipper';
+import { createReadStream } from "fs";
+import { get } from "http";
+import { Readable } from "stream";
+import { CentralDirectory, Entry, Open, Parse } from "unzipper";
 
 createReadStream("http://example.org/path/to/archive.zip")
     .pipe(Parse())
@@ -17,7 +18,7 @@ createReadStream("http://example.org/path/to/archive.zip")
         const s1: string = entry.path;
         const s2: string = entry.type;
         const o1: {
-            signature?: number;
+            signature?: number | undefined;
             versionsNeededToExtract: number;
             flags: number;
             compressionMethod: number;
@@ -26,8 +27,7 @@ createReadStream("http://example.org/path/to/archive.zip")
             compressedSize: number;
             fileNameLength: number;
             extraFieldLength: number;
-        } =
-            entry.vars;
+        } = entry.vars;
 
         const o2: {
             signature: number;
@@ -36,8 +36,7 @@ createReadStream("http://example.org/path/to/archive.zip")
             compressedSize: number;
             offset: number;
             disknum: number;
-        } =
-            entry.extra;
+        } = entry.extra;
     })
     .promise()
     .then(() => {
@@ -47,4 +46,15 @@ createReadStream("http://example.org/path/to/archive.zip")
 const dir1: Promise<CentralDirectory> = Open.file("Z:\\path\\to\\archive.zip");
 const dir2: Promise<CentralDirectory> = Open.url(get("url/to/archive.zip"), {});
 const dir3: Promise<CentralDirectory> = Open.s3("any", "any");
-const dir4: Promise<CentralDirectory> = Open.buffer(Buffer.from('ZIPDATA'));
+const dir4: Promise<CentralDirectory> = Open.buffer(Buffer.from("ZIPDATA"));
+const dir5: Promise<CentralDirectory> = Open.custom({
+    size: async () => 10,
+    stream: (offset, length) => Readable.from(["0123456789".substring(offset, offset + length)]),
+});
+
+(async () => {
+    const cd = await dir1;
+    await cd.extract({
+        path: "path/to/extraction/root",
+    });
+})();

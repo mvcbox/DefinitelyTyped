@@ -1,42 +1,54 @@
-// Type definitions for localtunnel 1.9
-// Project: https://github.com/localtunnel/localtunnel
-// Definitions by: Vladyslav Khrapov <https://github.com/vladhrapov>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+/// <reference types="node" />
+
+import { EventEmitter } from "events";
 
 export = localtunnel;
 
 declare function localtunnel(
-    port: number,
-    opt: localtunnel.TunnelConfig,
-    callback: localtunnel.TunnelCallback
+    port: number | localtunnel.TunnelConfig & { port: number },
+): Promise<localtunnel.Tunnel>;
+
+declare function localtunnel(
+    opts: localtunnel.TunnelConfig & { port: number },
+    callback: localtunnel.TunnelCallback,
 ): localtunnel.Tunnel;
 
 declare function localtunnel(
     port: number,
-    callback: localtunnel.TunnelCallback
+    opts: localtunnel.TunnelConfig,
+): Promise<localtunnel.Tunnel>;
+
+declare function localtunnel(
+    port: number,
+    opts: localtunnel.TunnelConfig,
+    callback: localtunnel.TunnelCallback,
 ): localtunnel.Tunnel;
 
 declare namespace localtunnel {
     type TunnelCallback = (
-        err: string,
-        tunnel?: Tunnel
+        err?: string,
+        tunnel?: Tunnel,
     ) => void;
 
     interface TunnelConfig {
-        host?: string;
-        subdomain?: string;
-        port?: number;
-        local_host?: string;
+        subdomain?: string | undefined;
+        host?: string | undefined;
+        local_host?: string | undefined;
+        local_https?: boolean | undefined;
+        local_cert?: string | undefined;
+        local_key?: string | undefined;
+        local_ca?: string | undefined;
+        allow_invalid_cert?: boolean | undefined;
     }
 
-    interface Tunnel {
+    interface Tunnel extends EventEmitter {
         url: string;
-        tunnel_cluster: TunnelCluster;
-        open(err: string, tunnel?: Tunnel): void;
+        tunnelCluster: TunnelCluster;
+        open(cb: ((err: string) => void) | (() => void)): void;
         close(): void;
     }
 
-    interface TunnelCluster {
-        domain: string;
+    interface TunnelCluster extends EventEmitter {
+        open(): void;
     }
 }

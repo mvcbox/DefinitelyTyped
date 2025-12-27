@@ -1,12 +1,7 @@
-// Type definitions for datadog-statsd-metrics-collector 1.1
-// Project: https://github.com/xzyfer/datadog-statsd-metrics-collector#readme
-// Definitions by: Michael Mifsud <https://github.com/xzyfer>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-import dogstatsd = require('node-dogstatsd');
+import dogstatsd = require("node-dogstatsd");
 
 declare class Collector implements dogstatsd.StatsDClient {
-    constructor(client: dogstatsd.StatsDClient, delayMilliseconds?: number);
+    constructor(client: dogstatsd.StatsDClient | null, delayMilliseconds?: number);
 
     timing(stat: string, time: number, sample_rate?: number, tags?: string[]): void;
 

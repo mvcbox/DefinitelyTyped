@@ -1,6 +1,6 @@
-import chai = require('chai');
-import jsxChai = require('jsx-chai');
+import jsxChai = require("jsx-chai");
 
-function testUseJsxChai() {
-	chai.use(jsxChai.jsxChai);
+async function testUseJsxChai() {
+    const chai = await import("chai");
+    chai.use(jsxChai.jsxChai);
 }

@@ -1,4 +1,4 @@
-import * as gaussian from "gaussian";
+import gaussian from "gaussian";
 
 const d = gaussian(0, 1);
 const a = d.mean !== d.variance;
@@ -14,3 +14,5 @@ gaussian(1, 1).sub(gaussian(1, 2));
 gaussian(1, 1).div(gaussian(1, 2));
 gaussian(1, 1).div(2);
 gaussian(1, 1).scale(2);
+gaussian(1, 1).random(1);
+gaussian(1, 1).random(1, () => 0.5);

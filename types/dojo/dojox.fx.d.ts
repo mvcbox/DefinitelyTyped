@@ -1,9 +1,3 @@
-// Type definitions for Dojo v1.9
-// Project: http://dojotoolkit.org
-// Definitions by: Michael Van Sickle <https://github.com/vansimke>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-
 declare namespace dojox {
 
     /**
@@ -937,9 +931,9 @@ declare namespace dojox {
              * "both" (default) : both
              *
              * axis: String
-             * "center" (default)      : the node is flipped around his center
-             * "shortside"             : the node is flipped around his "short" (in perspective) side
-             * "longside"              : the node is flipped around his "long" (in perspective) side
+             * "center" (default)      : the node is flipped around its center
+             * "shortside"             : the node is flipped around its "short" (in perspective) side
+             * "longside"              : the node is flipped around its "long" (in perspective) side
              * "cube"                  : the node flips around the central axis of the cube
              *
              * shift: Integer:
@@ -1156,9 +1150,9 @@ declare namespace dojox {
              * "both" (default) : both
              *
              * axis: String
-             * "center" (default)      : the node is flipped around his center
-             * "shortside"             : the node is flipped around his "short" (in perspective) side
-             * "longside"              : the node is flipped around his "long" (in perspective) side
+             * "center" (default)      : the node is flipped around its center
+             * "shortside"             : the node is flipped around its "short" (in perspective) side
+             * "longside"              : the node is flipped around its "long" (in perspective) side
              * "cube"                  : the node flips around the central axis of the cube
              *
              * shift: Integer:
@@ -1413,9 +1407,9 @@ declare namespace dojox {
              * "both" (default) : both
              *
              * axis: String
-             * "center" (default)      : the node is flipped around his center
-             * "shortside"             : the node is flipped around his "short" (in perspective) side
-             * "longside"              : the node is flipped around his "long" (in perspective) side
+             * "center" (default)      : the node is flipped around its center
+             * "shortside"             : the node is flipped around its "short" (in perspective) side
+             * "longside"              : the node is flipped around its "long" (in perspective) side
              * "cube"                  : the node flips around the central axis of the cube
              *
              * shift: Integer:
@@ -1654,9 +1648,9 @@ declare namespace dojox {
              * "both" (default) : both
              *
              * axis: String
-             * "center" (default)      : the node is flipped around his center
-             * "shortside"             : the node is flipped around his "short" (in perspective) side
-             * "longside"              : the node is flipped around his "long" (in perspective) side
+             * "center" (default)      : the node is flipped around its center
+             * "shortside"             : the node is flipped around its "short" (in perspective) side
+             * "longside"              : the node is flipped around its "long" (in perspective) side
              * "cube"                  : the node flips around the central axis of the cube
              *
              * shift: Integer:
@@ -1815,7 +1809,7 @@ declare namespace dojox {
          * @param end An Integer (or an Array of integers) to use as an ending point
          */
         interface _core{(start: any[], end: any[]): void}
-        module _core {
+        namespace _core {
             /**
              * An Integer (or an Array of integers) to use as an ending point
              *

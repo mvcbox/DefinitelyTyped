@@ -1,21 +1,22 @@
 import LinkifyIt = require("linkify-it");
 import * as React from "react";
-import ReactLinkify from 'react-linkify';
+import ReactLinkify from "react-linkify";
 
 const linkifier = new LinkifyIt();
 
 class ExampleOfUsingReactLinkify extends React.Component {
-	render() {
-		return (
-			<ReactLinkify
-				textDecorator={textDecorator}
-				hrefDecorator={hrefDecorator}
-				componentDecorator={componentDecorator}
-				matchDecorator={matchDecorator}>
-				This is a great website: www.wikipedia.org!
-			</ReactLinkify>
-		);
-	}
+    render() {
+        return (
+            <ReactLinkify
+                textDecorator={textDecorator}
+                hrefDecorator={hrefDecorator}
+                componentDecorator={componentDecorator}
+                matchDecorator={matchDecorator}
+            >
+                This is a great website: www.wikipedia.org!
+            </ReactLinkify>
+        );
+    }
 }
 
 function textDecorator(urlText: string): string {
@@ -23,17 +24,17 @@ function textDecorator(urlText: string): string {
 }
 
 function hrefDecorator(urlHref: string): string {
-	return urlHref;
+    return urlHref;
 }
 
 function componentDecorator(decoratedHref: string, decoratedText: string, key: number): React.ReactNode {
-	return (
-		<a href={decoratedHref} key={key}>
-			{decoratedText}
-		</a>
-	);
+    return (
+        <a href={decoratedHref} key={key}>
+            {decoratedText}
+        </a>
+    );
 }
 
 function matchDecorator(text: string) {
-	return linkifier.match(text);
+    return linkifier.match(text);
 }

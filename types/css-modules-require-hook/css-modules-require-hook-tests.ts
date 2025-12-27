@@ -1,45 +1,45 @@
-import * as hook from 'css-modules-require-hook';
+import hook from "css-modules-require-hook";
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#usage
 //
 
-hook({ generateScopedName: '[name]__[local]___[hash:base64:5]' });
+hook({ generateScopedName: "[name]__[local]___[hash:base64:5]" });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#adding-custom-postcss-plugins
 //
 
 hook({
-	prepend: [
-		() => {
-			// my prepender
-		},
-	],
+    prepend: [
+        () => {
+            // my prepender
+        },
+    ],
 });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#specify-custom-pattern-to-build-generic-names
 //
 
-hook({ generateScopedName: '[name]__[local]___[hash:base64:5]' });
+hook({ generateScopedName: "[name]__[local]___[hash:base64:5]" });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#using-stylus-as-a-preprocessor
 //
 
 hook({
-	extensions: ['.styl'],
-	preprocessCss: (css: string, filepath: string) => {
-		// my preprocesser
-	},
+    extensions: [".styl"],
+    preprocessCss: (css: string, filepath: string) => {
+        // my preprocesser
+    },
 });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#tuning-options
 //
 
-hook({ /* my option */ });
+hook({/* my option */});
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#devmode-boolean
@@ -51,14 +51,14 @@ hook({ devMode: false });
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#extensions-array
 //
 
-hook({ extensions: ['.scss', '.sass'] });
+hook({ extensions: [".scss", ".sass"] });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#ignore-functionregexstring
 //
 
 hook({ ignore: (file: string) => false });
-hook({ ignore: 'unused' });
+hook({ ignore: "unused" });
 hook({ ignore: /\.test\.(css|scss|sass)$/ });
 
 //
@@ -78,12 +78,12 @@ hook({ processCss: (css: string, filepath: string) => css });
 //
 
 hook({
-	extensions: '.scss',
-	processorOpts: {
-		parser: () => {
-			// my parser
-		},
-	},
+    extensions: ".scss",
+    processorOpts: {
+        parser: () => {
+            // my parser
+        },
+    },
 });
 
 //
@@ -97,11 +97,11 @@ hook({ camelCase: true });
 //
 
 hook({
-	append: [
-		() => {
-			// another plugin
-		},
-	],
+    append: [
+        () => {
+            // another plugin
+        },
+    ],
 });
 
 //
@@ -109,11 +109,11 @@ hook({
 //
 
 hook({
-	prepend: [
-		() => {
-			// again, another plugin
-		},
-	],
+    prepend: [
+        () => {
+            // again, another plugin
+        },
+    ],
 });
 
 //
@@ -121,11 +121,11 @@ hook({
 //
 
 hook({
-	use: [
-		() => {
-			// they like plugins very much
-		},
-	],
+    use: [
+        () => {
+            // they like plugins very much
+        },
+    ],
 });
 
 //
@@ -133,38 +133,38 @@ hook({
 //
 
 hook({
-	createImportedName: (css: string, filepath: string) => {
-		// my import name creator
-	},
+    createImportedName: (css: string, filepath: string) => {
+        // my import name creator
+    },
 });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#generatescopedname-stringfunction
 //
 
-hook({ generateScopedName: '[name]__[local]___[hash:base64:5]' });
+hook({ generateScopedName: "[name]__[local]___[hash:base64:5]" });
 hook({
-	generateScopedName: () => {
-		// should generate something
-	},
+    generateScopedName: () => {
+        // should generate something
+    },
 });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#hashprefix-string
 //
 
-hook({ hashPrefix: 'awesome_' });
+hook({ hashPrefix: "awesome_" });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#mode-string
 //
 
-hook({ mode: 'global' });
-hook({ mode: 'local' });
-hook({ mode: 'pure' });
+hook({ mode: "global" });
+hook({ mode: "local" });
+hook({ mode: "pure" });
 
 //
 // https://github.com/css-modules/css-modules-require-hook/blob/master/README.md#rootdir-string
 //
 
-hook({ rootDir: './my-folder' });
+hook({ rootDir: "./my-folder" });

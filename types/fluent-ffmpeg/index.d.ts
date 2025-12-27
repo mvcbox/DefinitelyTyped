@@ -1,15 +1,7 @@
-// Type definitions for node-fluent-ffmpeg 2.1
-// Project: https://github.com/fluent-ffmpeg/node-fluent-ffmpeg
-// Definitions by: KIM Jaesuck a.k.a. gim tcaesvk <https://github.com/tcaesvk>
-//                 DingWeizhe <https://github.com/DingWeizhe>
-//                 Mounir Abid <https://github.com/mabidina>
-//                 Doyoung Ha <https://github.com/hados99>
-// Definitions: https://github.com/DefinitelyType/DefinitelyTyped
-
 /// <reference types="node" />
 
-import * as events from "events";
-import * as stream from "stream";
+import events = require("events");
+import stream = require("stream");
 
 declare namespace Ffmpeg {
     interface FfmpegCommandLogger {
@@ -20,24 +12,25 @@ declare namespace Ffmpeg {
     }
 
     interface FfmpegCommandOptions {
-        logger?: FfmpegCommandLogger;
-        niceness?: number;
-        priority?: number;
-        presets?: string;
-        preset?: string;
-        stdoutLines?: number;
-        timeout?: number;
-        source?: string | stream.Readable;
+        logger?: FfmpegCommandLogger | undefined;
+        niceness?: number | undefined;
+        priority?: number | undefined;
+        presets?: string | undefined;
+        preset?: string | undefined;
+        stdoutLines?: number | undefined;
+        timeout?: number | undefined;
+        source?: string | stream.Readable | undefined;
+        cwd?: string | undefined;
     }
 
     interface FilterSpecification {
         filter: string;
-        inputs?: string | string[];
-        outputs?: string | string[];
-        options?: any | string | any[];
+        inputs?: string | string[] | undefined;
+        outputs?: string | string[] | undefined;
+        options?: any | string | any[] | undefined;
     }
 
-    type GetPreset = (command: FfmpegCommand) => string;
+    type PresetFunction = (command: FfmpegCommand) => void;
 
     interface Filter {
         description: string;
@@ -56,12 +49,12 @@ declare namespace Ffmpeg {
         description: string;
         canDecode: boolean;
         canEncode: boolean;
-        drawHorizBand?: boolean;
-        directRendering?: boolean;
-        weirdFrameTruncation?: boolean;
-        intraFrameOnly?: boolean;
-        isLossy?: boolean;
-        isLossless?: boolean;
+        drawHorizBand?: boolean | undefined;
+        directRendering?: boolean | undefined;
+        weirdFrameTruncation?: boolean | undefined;
+        intraFrameOnly?: boolean | undefined;
+        isLossy?: boolean | undefined;
+        isLossless?: boolean | undefined;
     }
     interface Codecs {
         [key: string]: Codec;
@@ -93,19 +86,100 @@ declare namespace Ffmpeg {
     type FormatsCallback = (err: Error, formats: Formats) => void;
 
     interface FfprobeData {
-        streams: any[];
-        format: any;
+        streams: FfprobeStream[];
+        format: FfprobeFormat;
         chapters: any[];
     }
 
+    interface FfprobeStream {
+        [key: string]: any;
+        index: number;
+        codec_name?: string | undefined;
+        codec_long_name?: string | undefined;
+        profile?: number | undefined;
+        codec_type?: string | undefined;
+        codec_time_base?: string | undefined;
+        codec_tag_string?: string | undefined;
+        codec_tag?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        coded_width?: number | undefined;
+        coded_height?: number | undefined;
+        has_b_frames?: number | undefined;
+        sample_aspect_ratio?: string | undefined;
+        display_aspect_ratio?: string | undefined;
+        pix_fmt?: string | undefined;
+        level?: string | undefined;
+        color_range?: string | undefined;
+        color_space?: string | undefined;
+        color_transfer?: string | undefined;
+        color_primaries?: string | undefined;
+        chroma_location?: string | undefined;
+        field_order?: string | undefined;
+        timecode?: string | undefined;
+        refs?: number | undefined;
+        id?: string | undefined;
+        r_frame_rate?: string | undefined;
+        avg_frame_rate?: string | undefined;
+        time_base?: string | undefined;
+        start_pts?: number | undefined;
+        start_time?: number | undefined;
+        duration_ts?: string | undefined;
+        duration?: string | undefined;
+        bit_rate?: string | undefined;
+        max_bit_rate?: string | undefined;
+        bits_per_raw_sample?: string | undefined;
+        nb_frames?: string | undefined;
+        nb_read_frames?: string | undefined;
+        nb_read_packets?: string | undefined;
+        sample_fmt?: string | undefined;
+        sample_rate?: number | undefined;
+        channels?: number | undefined;
+        channel_layout?: string | undefined;
+        bits_per_sample?: number | undefined;
+        disposition?: FfprobeStreamDisposition | undefined;
+        rotation?: string | number | undefined;
+    }
+
+    interface FfprobeStreamDisposition {
+        [key: string]: any;
+        default?: number | undefined;
+        dub?: number | undefined;
+        original?: number | undefined;
+        comment?: number | undefined;
+        lyrics?: number | undefined;
+        karaoke?: number | undefined;
+        forced?: number | undefined;
+        hearing_impaired?: number | undefined;
+        visual_impaired?: number | undefined;
+        clean_effects?: number | undefined;
+        attached_pic?: number | undefined;
+        timed_thumbnails?: number | undefined;
+    }
+
+    interface FfprobeFormat {
+        [key: string]: any;
+        filename?: string | undefined;
+        nb_streams?: number | undefined;
+        nb_programs?: number | undefined;
+        format_name?: string | undefined;
+        format_long_name?: string | undefined;
+        start_time?: number | undefined;
+        duration?: number | undefined;
+        size?: number | undefined;
+        bit_rate?: number | undefined;
+        probe_score?: number | undefined;
+        tags?: Record<string, string | number> | undefined;
+    }
+
     interface ScreenshotsConfig {
-        count?: number;
-        folder?: string;
-        filename?: string;
-        timemarks?: number[] | string[];
-        timestamps?: number[] | string[];
-        fastSeek?: boolean;
-        size?: string;
+        count?: number | undefined;
+        folder?: string | undefined;
+        filename?: string | undefined;
+        timemarks?: number[] | string[] | undefined;
+        timestamps?: number[] | string[] | undefined;
+        fastSeek?: boolean | undefined;
+        size?: string | undefined;
     }
 
     interface AudioVideoFilter {
@@ -150,7 +224,7 @@ declare namespace Ffmpeg {
         native(): FfmpegCommand;
         setStartTime(seek: string | number): FfmpegCommand;
         seekInput(seek: string | number): FfmpegCommand;
-        loop(duration: string | number): FfmpegCommand;
+        loop(duration?: string | number): FfmpegCommand;
 
         // options/audio
         withNoAudio(): FfmpegCommand;
@@ -175,8 +249,8 @@ declare namespace Ffmpeg {
         noVideo(): FfmpegCommand;
         withVideoCodec(codec: string): FfmpegCommand;
         videoCodec(codec: string): FfmpegCommand;
-        withVideoBitrate(bitrate: string | number): FfmpegCommand;
-        videoBitrate(bitrate: string | number): FfmpegCommand;
+        withVideoBitrate(bitrate: string | number, constant?: boolean): FfmpegCommand;
+        videoBitrate(bitrate: string | number, constant?: boolean): FfmpegCommand;
         withVideoFilter(filters: string | string[] | AudioVideoFilter[]): FfmpegCommand;
         withVideoFilters(filters: string | string[] | AudioVideoFilter[]): FfmpegCommand;
         videoFilter(filters: string | string[] | AudioVideoFilter[]): FfmpegCommand;
@@ -211,20 +285,20 @@ declare namespace Ffmpeg {
         setAspectRatio(aspect: string | number): FfmpegCommand;
         aspect(aspect: string | number): FfmpegCommand;
         aspectRatio(aspect: string | number): FfmpegCommand;
-        applyAutopadding(pad: boolean, color: string): FfmpegCommand;
-        applyAutoPadding(pad: boolean, color: string): FfmpegCommand;
-        applyAutopad(pad: boolean, color: string): FfmpegCommand;
-        applyAutoPad(pad: boolean, color: string): FfmpegCommand;
-        withAutopadding(pad: boolean, color: string): FfmpegCommand;
-        withAutoPadding(pad: boolean, color: string): FfmpegCommand;
-        withAutopad(pad: boolean, color: string): FfmpegCommand;
-        withAutoPad(pad: boolean, color: string): FfmpegCommand;
-        autoPad(pad: boolean, color: string): FfmpegCommand;
-        autopad(pad: boolean, color: string): FfmpegCommand;
+        applyAutopadding(pad?: boolean, color?: string): FfmpegCommand;
+        applyAutoPadding(pad?: boolean, color?: string): FfmpegCommand;
+        applyAutopad(pad?: boolean, color?: string): FfmpegCommand;
+        applyAutoPad(pad?: boolean, color?: string): FfmpegCommand;
+        withAutopadding(pad?: boolean, color?: string): FfmpegCommand;
+        withAutoPadding(pad?: boolean, color?: string): FfmpegCommand;
+        withAutopad(pad?: boolean, color?: string): FfmpegCommand;
+        withAutoPad(pad?: boolean, color?: string): FfmpegCommand;
+        autoPad(pad?: boolean, color?: string): FfmpegCommand;
+        autopad(pad?: boolean, color?: string): FfmpegCommand;
 
         // options/output
-        addOutput(target: string | stream.Writable, pipeopts?: { end?: boolean }): FfmpegCommand;
-        output(target: string | stream.Writable, pipeopts?: { end?: boolean }): FfmpegCommand;
+        addOutput(target: string | stream.Writable, pipeopts?: { end?: boolean | undefined }): FfmpegCommand;
+        output(target: string | stream.Writable, pipeopts?: { end?: boolean | undefined }): FfmpegCommand;
         seekOutput(seek: string | number): FfmpegCommand;
         seek(seek: string | number): FfmpegCommand;
         withDuration(duration: string | number): FfmpegCommand;
@@ -237,7 +311,6 @@ declare namespace Ffmpeg {
         map(spec: string): FfmpegCommand;
         updateFlvMetadata(): FfmpegCommand;
         flvmeta(): FfmpegCommand;
-        preset(format: string): FfmpegCommand;
 
         // options/custom
         addInputOption(options: string[]): FfmpegCommand;
@@ -272,12 +345,18 @@ declare namespace Ffmpeg {
         outputOption(...options: string[]): FfmpegCommand;
         outputOptions(options: string[]): FfmpegCommand;
         outputOptions(...options: string[]): FfmpegCommand;
-        filterGraph(spec: string | FilterSpecification | Array<string | FilterSpecification>, map: string[]): FfmpegCommand;
-        complexFilter(spec: string | FilterSpecification | Array<string | FilterSpecification>, map: string[]): FfmpegCommand;
+        filterGraph(
+            spec: string | FilterSpecification | Array<string | FilterSpecification>,
+            map?: string[] | string,
+        ): FfmpegCommand;
+        complexFilter(
+            spec: string | FilterSpecification | Array<string | FilterSpecification>,
+            map?: string[] | string,
+        ): FfmpegCommand;
 
         // options/misc
-        usingPreset(proset: string | GetPreset): FfmpegCommand;
-        pnreset(proset: string | GetPreset): FfmpegCommand;
+        usingPreset(preset: string | PresetFunction): FfmpegCommand;
+        preset(preset: string | PresetFunction): FfmpegCommand;
 
         // processor
         renice(niceness: number): FfmpegCommand;
@@ -303,20 +382,112 @@ declare namespace Ffmpeg {
         ffprobe(options: string[], callback: (err: any, data: FfprobeData) => void): void; // tslint:disable-line unified-signatures
         ffprobe(index: number, options: string[], callback: (err: any, data: FfprobeData) => void): void;
 
+        // event listeners
+        /**
+         * Emitted just after ffmpeg has been spawned.
+         *
+         * @event FfmpegCommand#start
+         * @param command ffmpeg command line
+         */
+        on(event: "start", listener: (command: string) => void): this;
+
+        /**
+         * Emitted when ffmpeg reports progress information
+         *
+         * @event FfmpegCommand#progress
+         * @param progress progress object
+         * @param progress.frames number of frames transcoded
+         * @param progress.currentFps current processing speed in frames per second
+         * @param progress.currentKbps current output generation speed in kilobytes per second
+         * @param progress.targetSize current output file size
+         * @param progress.timemark current video timemark
+         * @param [progress.percent] processing progress (may not be available depending on input)
+         */
+        on(
+            event: "progress",
+            listener: (progress: {
+                frames: number;
+                currentFps: number;
+                currentKbps: number;
+                targetSize: number;
+                timemark: string;
+                percent?: number | undefined;
+            }) => void,
+        ): this;
+
+        /**
+         * Emitted when ffmpeg outputs to stderr
+         *
+         * @event FfmpegCommand#stderr
+         * @param line stderr output line
+         */
+        on(event: "stderr", listener: (line: string) => void): this;
+
+        /**
+         * Emitted when ffmpeg reports input codec data
+         *
+         * @event FfmpegCommand#codecData
+         * @param codecData codec data object
+         * @param codecData.format input format name
+         * @param codecData.audio input audio codec name
+         * @param codecData.audio_details input audio codec parameters
+         * @param codecData.video input video codec name
+         * @param codecData.video_details input video codec parameters
+         * @param codecData.duration input video duration
+         */
+        on(
+            event: "codecData",
+            listener: (codecData: {
+                format: string;
+                audio: string;
+                audio_details: string[];
+                video: string;
+                video_details: string[];
+                duration: string;
+            }) => void,
+        ): this;
+
+        /**
+         * Emitted when an error happens when preparing or running a command
+         *
+         * @event FfmpegCommand#error
+         * @param error error object, with optional properties 'inputStreamError' / 'outputStreamError' for errors on their respective streams
+         * @param stdout ffmpeg stdout, unless outputting to a stream
+         * @param stderr ffmpeg stderr
+         */
+        on(event: "error", listener: (error: Error, stdout: string | null, stderr: string | null) => void): this;
+
+        /**
+         * Emitted when a taking screenshots
+         *
+         * @event FfmpegCommand#filenames
+         * @param filenames generated filenames when taking screenshots
+         */
+        on(event: "filenames", listener: (filenames: string[]) => void): this;
+
+        /**
+         * Emitted when a command finishes processing
+         *
+         * @event FfmpegCommand#end
+         * @param stdout ffmpeg stdout when not outputting to a stream, null otherwise
+         * @param stderr ffmpeg stderr
+         */
+        on(event: "end", listener: (stdout: string | null, stderr: string | null) => void): this;
+
         // recipes
         saveToFile(output: string): FfmpegCommand;
         save(output: string): FfmpegCommand;
-        writeToStream(stream: stream.Writable, options?: { end?: boolean }): stream.Writable;
-        pipe(stream?: stream.Writable, options?: { end?: boolean }): stream.Writable|stream.PassThrough;
-        stream(stream: stream.Writable, options?: { end?: boolean }): stream.Writable;
+        writeToStream(stream: stream.Writable, options?: { end?: boolean | undefined }): stream.Writable;
+        pipe(stream?: stream.Writable, options?: { end?: boolean | undefined }): stream.Writable | stream.PassThrough;
+        stream(stream: stream.Writable, options?: { end?: boolean | undefined }): stream.Writable;
         takeScreenshots(config: number | ScreenshotsConfig, folder?: string): FfmpegCommand;
         thumbnail(config: number | ScreenshotsConfig, folder?: string): FfmpegCommand;
         thumbnails(config: number | ScreenshotsConfig, folder?: string): FfmpegCommand;
         screenshot(config: number | ScreenshotsConfig, folder?: string): FfmpegCommand;
         screenshots(config: number | ScreenshotsConfig, folder?: string): FfmpegCommand;
-        mergeToFile(target: string | stream.Writable, options?: { end?: boolean }): FfmpegCommand;
-        concatenate(target: string | stream.Writable, options?: { end?: boolean }): FfmpegCommand;
-        concat(target: string | stream.Writable, options?: { end?: boolean }): FfmpegCommand;
+        mergeToFile(target: string | stream.Writable, tmpFolder: string): FfmpegCommand;
+        concatenate(target: string | stream.Writable, options?: { end?: boolean | undefined }): FfmpegCommand;
+        concat(target: string | stream.Writable, options?: { end?: boolean | undefined }): FfmpegCommand;
         clone(): FfmpegCommand;
         run(): void;
     }
@@ -324,7 +495,12 @@ declare namespace Ffmpeg {
     function ffprobe(file: string, callback: (err: any, data: FfprobeData) => void): void;
     function ffprobe(file: string, index: number, callback: (err: any, data: FfprobeData) => void): void;
     function ffprobe(file: string, options: string[], callback: (err: any, data: FfprobeData) => void): void; // tslint:disable-line unified-signatures
-    function ffprobe(file: string, index: number, options: string[], callback: (err: any, data: FfprobeData) => void): void;
+    function ffprobe(
+        file: string,
+        index: number,
+        options: string[],
+        callback: (err: any, data: FfprobeData) => void,
+    ): void;
 }
 declare function Ffmpeg(options?: Ffmpeg.FfmpegCommandOptions): Ffmpeg.FfmpegCommand;
 declare function Ffmpeg(input?: string | stream.Readable, options?: Ffmpeg.FfmpegCommandOptions): Ffmpeg.FfmpegCommand;

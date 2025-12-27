@@ -1,54 +1,53 @@
-// Type definitions for trusted-types 1.0
-// Project: https://github.com/WICG/trusted-types
-// Definitions by: Jakub Vrana <https://github.com/vrana>,
-//                 Damien Engels <https://github.com/engelsdamien>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.1
+import * as lib from "./lib";
 
-declare class TrustedHTML {
-    private readonly _brand: true; // To prevent structural typing.
+// Re-export the type definitions globally.
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface -- interface to allow module augmentation
+    interface TrustedHTML extends lib.TrustedHTML {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface -- interface to allow module augmentation
+    interface TrustedScript extends lib.TrustedScript {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface -- interface to allow module augmentation
+    interface TrustedScriptURL extends lib.TrustedScriptURL {}
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface -- interface to allow module augmentation
+    interface TrustedTypePolicy extends lib.TrustedTypePolicy {}
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface -- interface to allow module augmentation
+    interface TrustedTypePolicyFactory extends lib.TrustedTypePolicyFactory {}
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface -- interface to allow module augmentation
+    interface TrustedTypePolicyOptions extends lib.TrustedTypePolicyOptions {}
+
+    // Attach the relevant Trusted Types properties to the Window object.
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface -- interface to allow module augmentation
+    interface Window extends lib.TrustedTypesWindow {}
 }
 
-declare class TrustedScript {
-    private readonly _brand: true; // To prevent structural typing.
+// These are the available exports when using the polyfill as npm package (e.g. in nodejs)
+interface InternalTrustedTypePolicyFactory extends lib.TrustedTypePolicyFactory {
+    TrustedHTML: typeof lib.TrustedHTML;
+    TrustedScript: typeof lib.TrustedScript;
+    TrustedScriptURL: typeof lib.TrustedScriptURL;
 }
 
-declare class TrustedScriptURL {
-    private readonly _brand: true; // To prevent structural typing.
+declare const trustedTypes: InternalTrustedTypePolicyFactory;
+
+declare class TrustedTypesEnforcer {
+    constructor(config: TrustedTypeConfig);
+    install: () => void;
+    uninstall: () => void;
 }
 
-declare class TrustedURL {
-    private readonly _brand: true; // To prevent structural typing.
+// tslint:disable-next-line no-unnecessary-class
+declare class TrustedTypeConfig {
+    constructor(
+        isLoggingEnabled: boolean,
+        isEnforcementEnabled: boolean,
+        allowedPolicyNames: string[],
+        allowDuplicates: boolean,
+        cspString?: string | null,
+        windowObject?: Window,
+    );
 }
 
-declare class TrustedTypePolicy {
-    readonly name: string;
-    createHTML(input: string): TrustedHTML;
-    createScript(input: string): TrustedScript;
-    createScriptURL(input: string): TrustedScriptURL;
-    createURL(input: string): TrustedURL;
-}
-
-interface TrustedTypePolicyOptions {
-    createHTML?: (input: string) => string;
-    createScript?: (input: string) => string;
-    createScriptURL?: (input: string) => string;
-    createURL?: (input: string) => string;
-}
-
-declare class TrustedTypePolicyFactory {
-    createPolicy<Keys extends keyof TrustedTypePolicyOptions>(
-        name: string,
-        policyOptions: Pick<TrustedTypePolicyOptions, Keys>,
-        expose?: boolean,
-        ): Pick<TrustedTypePolicy, 'name'|Keys>;
-    getExposedPolicy(name: string): TrustedTypePolicy|null;
-    getPolicyNames(): string[];
-
-    isHTML(value: any): value is TrustedHTML;
-    isScript(value: any): value is TrustedScript;
-    isScriptURL(value: any): value is TrustedScriptURL;
-    isURL(value: any): value is TrustedURL;
-}
-
-declare const TrustedTypes: TrustedTypePolicyFactory;
+export { TrustedTypeConfig, TrustedTypePolicy, TrustedTypePolicyFactory, trustedTypes, TrustedTypesEnforcer };

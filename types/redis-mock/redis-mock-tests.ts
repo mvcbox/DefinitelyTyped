@@ -4,6 +4,7 @@ declare const value: any;
 let valueArr: any[];
 declare const commandArr: any[][];
 let num = 1;
+let num_or_error: number | Error = 1;
 const str = "hi";
 let bool = false;
 const err: Error = new Error();
@@ -32,27 +33,27 @@ client = redis.createClient(num, str, options);
 // Test the `retry_strategy` property
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 function retryStrategyNumber(options: redis.RetryStrategyOptions): number {
-  // Ensure that the properties of RetryStrategyOptions are resilient to breaking change.
-  // If the properties of the interface changes, the variables below will also need to be adapted.
-  const error: Error = options.error;
-  const total_retry_time: number = options.total_retry_time;
-  const times_connected: number = options.times_connected;
-  const attempt: number = options.attempt;
-  return 5000;
+    // Ensure that the properties of RetryStrategyOptions are resilient to breaking change.
+    // If the properties of the interface changes, the variables below will also need to be adapted.
+    const error: Error = options.error;
+    const total_retry_time: number = options.total_retry_time;
+    const times_connected: number = options.times_connected;
+    const attempt: number = options.attempt;
+    return 5000;
 }
 function retryStrategyError(options: redis.RetryStrategyOptions): Error {
-  return new Error('Foo');
+    return new Error("Foo");
 }
 client = redis.createClient({
-  retry_strategy: retryStrategyNumber
+    retry_strategy: retryStrategyNumber,
 });
 client = redis.createClient({
-  retry_strategy: retryStrategyError
+    retry_strategy: retryStrategyError,
 });
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 bool = client.connected;
-num = client.retry_delay;
+num_or_error = client.retry_delay;
 num = client.retry_backoff;
 valueArr = client.command_queue;
 valueArr = client.offline_queue;
@@ -82,10 +83,10 @@ client.once(str, messageHandler);
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 // some of the bulk methods
-client.get('test');
-client.get('test', resCallback);
-client.set('test', 'test');
-client.set('test', 'test', resCallback);
+client.get("test");
+client.get("test", resCallback);
+client.set("test", "test");
+client.set("test", "test", resCallback);
 client.mset(args, resCallback);
 
 client.incr(str, resCallback);
@@ -101,13 +102,13 @@ client.subscribe(str);
 
 // Multi
 client.multi()
-  .scard(str)
-  .smembers(str)
-  .keys('*', resCallback)
-  .dbsize()
-  .exec(resCallback);
+    .scard(str)
+    .smembers(str)
+    .keys("*", resCallback)
+    .dbsize()
+    .exec(resCallback);
 
-client.multi([['get', 'test']]).exec();
+client.multi([["get", "test"]]).exec();
 
 // Monitor mode
 client.monitor(resCallback);

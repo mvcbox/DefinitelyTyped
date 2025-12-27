@@ -1,25 +1,16 @@
-// Type definitions for request-promise-native 1.0
-// Project: https://github.com/request/request-promise-native
-// Definitions by: Gustavo Henke <https://github.com/gustavohenke>
-//                 Matt R. Wilson <https://github.com/mastermatt>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
-
-import request = require('request');
-import http = require('http');
+import request = require("request");
+import http = require("http");
 
 declare namespace requestPromise {
-    interface RequestPromise<T = any> extends request.Request {
-        then: Promise<T>["then"];
-        catch: Promise<T>["catch"];
+    interface RequestPromise<T = any> extends request.Request, Promise<T> {
         promise(): Promise<T>;
     }
 
     interface RequestPromiseOptions extends request.CoreOptions {
-        simple?: boolean;
+        simple?: boolean | undefined;
         transform?(body: any, response: request.Response, resolveWithFullResponse?: boolean): any;
-        transform2xxOnly?: boolean;
-        resolveWithFullResponse?: boolean;
+        transform2xxOnly?: boolean | undefined;
+        resolveWithFullResponse?: boolean | undefined;
     }
 
     type RequestPromiseAPI = request.RequestAPI<RequestPromise, RequestPromiseOptions, request.RequiredUriUrl>;

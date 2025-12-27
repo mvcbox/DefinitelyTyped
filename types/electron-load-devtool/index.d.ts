@@ -1,8 +1,3 @@
-// Type definitions for electron-load-devtool 1.0
-// Project: https://github.com/akameco/electron-load-devtool#readme
-// Definitions by: prince <https://github.com/prince0203>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 interface ElectronLoadDevtool {
     (devtoolId: string, options?: ElectronLoadDevtoolOptions): void;
     REDUX_DEVTOOLS: string;
@@ -12,13 +7,14 @@ interface ElectronLoadDevtool {
     JQUERY_DEBUGGER: string;
     ANGULARJS_BATARANG: string;
     VUEJS_DEVTOOLS: string;
+    VUEJS_DEVTOOLS_BETA: string;
 }
 
 interface ElectronLoadDevtoolOptions {
-    enabled?: boolean;
-    name?: string;
-    profile?: string;
-    version?: string;
+    enabled?: boolean | undefined;
+    name?: string | undefined;
+    profile?: string | undefined;
+    version?: string | undefined;
 }
 
 declare const electronLoadDevtool: ElectronLoadDevtool;

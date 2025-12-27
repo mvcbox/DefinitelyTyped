@@ -5,17 +5,16 @@ const moduleSpecifications = [{}];
 const fullInjector = new di.Injector(moduleSpecifications);
 const childInjector = new di.Injector(moduleSpecifications, emptyInjector);
 
-const dep: {} = fullInjector.get('foo');
+const dep: {} = fullInjector.get("foo");
 
 const factory = (context: {}, deps: Array<{}>) => {
-	return {};
+    return {};
 };
 
 const invoked: {} = fullInjector.invoke(factory, {});
 
-const oldTimeyClass = {prototype: {}};
+const oldTimeyClass = { prototype: {} };
 
 const instance: {} = fullInjector.instantiate(oldTimeyClass);
 
-const anotherChildInjector: di.Injector =
-		fullInjector.createChild(moduleSpecifications);
+const anotherChildInjector: di.Injector = fullInjector.createChild(moduleSpecifications);

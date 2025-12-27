@@ -1,8 +1,10 @@
-import * as React from 'react';
-import DocumentTitle from 'react-document-title';
+import * as React from "react";
+import DocumentTitle, { DocumentTitleProps } from "react-document-title";
 
-class TitleTest extends React.Component<any, any> {
-	render() {
-		return <DocumentTitle title="Test" />;
-	}
-}
+<DocumentTitle title="Test" />;
+
+<DocumentTitle title="Test">A Child</DocumentTitle>;
+
+<DocumentTitle title="Test">
+    <div>A Child</div>
+</DocumentTitle>;

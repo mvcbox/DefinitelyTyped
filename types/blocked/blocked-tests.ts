@@ -1,7 +1,8 @@
-import * as blocked from 'blocked';
+import blocked from "blocked";
 
 blocked((ms: number) => {
-  // todo: show warning
+    // todo: show warning
 }, {
-  threshold: 10
+    threshold: 10,
+    interval: 10,
 });

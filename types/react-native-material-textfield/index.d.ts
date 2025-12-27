@@ -1,65 +1,87 @@
-// Type definitions for react-native-material-textfield 0.12
-// Project: https://github.com/n4kz/react-native-material-textfield
-// Definitions by: Ville Venäläinen <https://github.com/mindhivefi>
-//                 Kyle Roach <https://github.com/iRoachie>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.8
+import * as React from "react";
+import { StyleProp, TextInputProps, TextStyle, ViewStyle } from "react-native";
 
-import * as React from 'react';
-import {
-    StyleProp,
-    TextInputProps,
-    TextStyle,
-    ViewStyle,
-    View
-} from 'react-native';
+export interface ContentInset {
+    top?: number | undefined;
+    label?: number | undefined;
+    input?: number | undefined;
+}
 
 export interface TextFieldProps extends TextInputProps {
-    animationDuration?: number;
+    animationDuration?: number | undefined;
 
-    fontSize?: number;
-    titleFontSize?: number;
-    labelFontSize?: number;
-    labelHeight?: number;
-    labelPadding?: number;
-    inputContainerPadding?: number;
+    fontSize?: number | undefined;
+    labelFontSize?: number | undefined;
+    contentInset?: ContentInset | undefined;
 
-    style?: StyleProp<TextStyle>;
-    labelTextStyle?: StyleProp<TextStyle>;
-    titleTextStyle?: StyleProp<TextStyle>;
-    affixTextStyle?: StyleProp<TextStyle>;
+    style?: StyleProp<TextStyle> | undefined;
+    labelTextStyle?: StyleProp<TextStyle> | undefined;
+    titleTextStyle?: StyleProp<TextStyle> | undefined;
+    affixTextStyle?: StyleProp<TextStyle> | undefined;
 
-    tintColor?: string;
-    textColor?: string;
-    baseColor?: string;
+    tintColor?: string | undefined;
+    textColor?: string | undefined;
+    baseColor?: string | undefined;
 
-    label?: string;
-    title?: string;
+    label?: string | undefined;
+    title?: string | undefined;
 
-    characterRestriction?: number;
+    characterRestriction?: number | undefined;
 
-    error?: string;
-    errorColor?: string;
+    error?: string | undefined;
+    errorColor?: string | undefined;
 
-    lineWidth?: number;
-    activeLineWidth?: number;
+    lineWidth?: number | undefined;
+    activeLineWidth?: number | undefined;
 
-    disabled?: boolean;
+    disabled?: boolean | undefined;
 
-    disabledLineWidth?: number;
+    disabledLineWidth?: number | undefined;
 
-    renderAccessory?(): JSX.Element;
+    clearTextOnFocus?: boolean | undefined;
 
-    clearTextOnFocus?: boolean;
+    prefix?: string | undefined;
+    suffix?: string | undefined;
 
-    prefix?: string;
-    suffix?: string;
-
-    containerStyle?: StyleProp<ViewStyle>;
-    inputContainerStyle?: StyleProp<ViewStyle>;
+    containerStyle?: StyleProp<ViewStyle> | undefined;
+    inputContainerStyle?: StyleProp<ViewStyle> | undefined;
 
     onPress?(event: Event): void;
     onChangeText?(text: string): void;
+
+    renderLeftAccessory?(): React.JSX.Element;
+    renderRightAccessory?(): React.JSX.Element;
+
+    lineType?: "solid" | "dotted" | "dashed" | "none" | undefined;
+    disabledLineType?: "solid" | "dotted" | "dashed" | "none" | undefined;
+
+    editable?: boolean | undefined;
+    multiline?: boolean | undefined;
+
+    formatText?(text: string): string;
+    /**
+     * Label position adjustment
+     */
+    labelOffset?: LabelOffset | undefined;
+}
+
+export interface LabelOffset {
+    /**
+     * Horizontal offset for inactive state
+     */
+    x0?: number | undefined;
+    /**
+     * Vertical offset for inactive state
+     */
+    y0?: number | undefined;
+    /**
+     * Horizontal offset for active state
+     */
+    x1?: number | undefined;
+    /**
+     * Vertical offset for active state
+     */
+    y1?: number | undefined;
 }
 
 /**
@@ -91,4 +113,11 @@ export class TextField extends React.Component<TextFieldProps, any> {
      * Get current restriction state
      */
     isRestricted(): boolean;
+    /*
+     * Set current value
+     */
+    setValue(value?: string): void;
 }
+
+export class OutlinedTextField extends TextField {}
+export class FilledTextField extends TextField {}

@@ -1,9 +1,4 @@
-// Type definitions for chai-string 1.4.0
-// Project: https://github.com/onechiporenko/chai-string
-// Definitions by: Nick Malaguti <https://github.com/nmalaguti>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-///<reference types="chai" />
+/// <reference types="chai" />
 
 declare global {
     namespace Chai {
@@ -48,6 +43,6 @@ declare global {
     }
 }
 
-declare function chaiString(chai: any, utils: any): void;
-declare namespace chaiString { }
+declare const chaiString: Chai.ChaiPlugin;
+declare namespace chaiString {}
 export = chaiString;

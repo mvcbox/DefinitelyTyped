@@ -1,6 +1,6 @@
-import * as typer from 'media-typer';
+import typer = require("media-typer");
 
-const obj = typer.parse('image/svg+xml');
+const obj = typer.parse("image/svg+xml");
 // $ExpectType MediaType
 obj;
 // $ExpectType string
@@ -11,5 +11,8 @@ obj.subtype;
 obj.suffix;
 
 // $ExpectType string
-typer.format({type: 'image', subtype: 'svg', suffix: 'xml'});
-typer.format({type: 'image', subtype: 'svg'});
+typer.format({ type: "image", subtype: "svg", suffix: "xml" });
+typer.format({ type: "image", subtype: "svg" });
+
+// $ExpectType boolean
+const valid = typer.test("image/svg+xml");

@@ -1,74 +1,89 @@
-// Type definitions for sanitize-html 1.20.1
-// Project: https://github.com/punkave/sanitize-html
-// Definitions by: Rogier Schouten <https://github.com/rogierschouten>
-//                 Afshin Darian <https://github.com/afshin>
-//                 BehindTheMath <https://github.com/BehindTheMath>
-//                 Rinze de Laat <https://github.com/biermeester>
-//                 Will Gibson <https://github.com/WillGibson>
-//                 A penguin <https://github.com/sirMerr>
-//                 Johan Davidsson <https://github.com/johandavidson>
-//                 Jianrong Yu <https://github.com/YuJianrong>
-//                 GP <https://github.com/paambaati>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
-
-///<reference types="htmlparser2"/>
-
-import { Options } from "htmlparser2";
+import { ParserOptions } from "htmlparser2";
 
 export = sanitize;
 
 declare function sanitize(dirty: string, options?: sanitize.IOptions): string;
 
 declare namespace sanitize {
-  type Attributes = { [attr: string]: string };
+    interface Attributes {
+        [attr: string]: string;
+    }
 
+    interface Tag {
+        tagName: string;
+        attribs: Attributes;
+        text?: string | undefined;
+    }
 
-  type Tag = { tagName: string; attribs: Attributes; text?: string; };
+    type Transformer = (tagName: string, attribs: Attributes) => Tag;
 
+    type AllowedAttribute = string | { name: string; multiple?: boolean | undefined; values: string[] };
 
-  type Transformer = (tagName: string, attribs: Attributes) => Tag;
+    type DisallowedTagsModes = "discard" | "escape" | "recursiveEscape" | "completelyDiscard";
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface IDefaults {
+        allowedAttributes: Record<string, AllowedAttribute[]>;
+        allowedSchemes: string[];
+        allowedSchemesByTag: { [index: string]: string[] };
+        allowedSchemesAppliedToAttributes: string[];
+        allowedTags: string[];
+        allowProtocolRelative: boolean;
+        disallowedTagsMode: DisallowedTagsModes;
+        enforceHtmlBoundary: boolean;
+        selfClosing: string[];
+        nonBooleanAttributes: string[];
+    }
 
-  interface IDefaults {
-    allowedAttributes: { [index: string]: string[] };
-    allowedSchemes: string[];
-    allowedSchemesByTag: { [index: string]: string[] };
-    allowedTags: string[];
-    selfClosing: string[];
-  }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface IFrame {
+        tag: string;
+        attribs: { [index: string]: string };
+        text: string;
+        tagPosition: number;
+        mediaChildren: string[];
+    }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface IOptions {
+        allowedAttributes?: Record<string, AllowedAttribute[]> | false | undefined;
+        allowedStyles?: { [index: string]: { [index: string]: RegExp[] } } | undefined;
+        allowedClasses?: { [index: string]: boolean | Array<string | RegExp> } | undefined;
+        allowedIframeDomains?: string[] | undefined;
+        allowedIframeHostnames?: string[] | undefined;
+        allowIframeRelativeUrls?: boolean | undefined;
+        allowedSchemes?: string[] | boolean | undefined;
+        allowedSchemesByTag?: { [index: string]: string[] } | boolean | undefined;
+        allowedSchemesAppliedToAttributes?: string[] | undefined;
+        allowedScriptDomains?: string[] | undefined;
+        allowedScriptHostnames?: string[] | undefined;
+        allowProtocolRelative?: boolean | undefined;
+        allowedTags?: string[] | false | undefined;
+        allowVulnerableTags?: boolean | undefined;
+        textFilter?: ((text: string, tagName: string) => string) | undefined;
+        exclusiveFilter?: ((frame: IFrame) => boolean | "excludeTag") | undefined;
+        nestingLimit?: number | undefined;
+        nonTextTags?: string[] | undefined;
+        /** @default true */
+        parseStyleAttributes?: boolean | undefined;
+        selfClosing?: string[] | undefined;
+        transformTags?: { [tagName: string]: string | Transformer } | undefined;
+        parser?: ParserOptions | undefined;
+        disallowedTagsMode?: DisallowedTagsModes | undefined;
+        /**
+         * Setting this option to true will instruct sanitize-html to discard all characters outside of html tag boundaries
+         * -- before `<html>` and after `</html>` tags
+         * @see {@link https://github.com/apostrophecms/sanitize-html/#discarding-text-outside-of-htmlhtml-tags}
+         * @default true
+         */
+        enforceHtmlBoundary?: boolean | undefined;
+        nonBooleanAttributes?: string[];
+        onOpenTag?: ((name: string, attribs: Attributes) => void) | undefined;
+        onCloseTag?: ((name: string, isImplied: boolean) => void) | undefined;
+    }
 
-  interface IFrame {
-    tag: string;
-    attribs: { [index: string]: string };
-    text: string;
-    tagPosition: number;
-  }
+    const defaults: IDefaults;
+    const options: IOptions;
 
-
-  interface IOptions {
-    allowedAttributes?: { [index: string]: string[] } | boolean;
-    allowedStyles?:  { [index: string]: { [index: string]: RegExp[] } };
-    allowedClasses?: { [index: string]: string[] } | boolean;
-    allowedIframeHostnames?: string[];
-    allowIframeRelativeUrls?: boolean;
-    allowedSchemes?: string[] | boolean;
-    allowedSchemesByTag?: { [index: string]: string[] } | boolean;
-    allowedSchemesAppliedToAttributes?: string[];
-    allowProtocolRelative?: boolean;
-    allowedTags?: string[] | boolean;
-    textFilter?: (text: string) => string; 
-    exclusiveFilter?: (frame: IFrame) => boolean;
-    nonTextTags?: string[];
-    selfClosing?: string[];
-    transformTags?: { [tagName: string]: string | Transformer };
-    parser?: Options;
-  }
-
-
-  var defaults: IDefaults;
-
-
-  function simpleTransform(tagName: string, attribs: Attributes, merge?: boolean): Transformer;
+    function simpleTransform(tagName: string, attribs: Attributes, merge?: boolean): Transformer;
 }

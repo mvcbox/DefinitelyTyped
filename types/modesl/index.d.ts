@@ -1,11 +1,7 @@
-// Type definitions for modesl 1.1
-// Project: https://github.com/englercj/node-esl
-// Definitions by: Nischit Ranganath <https://github.com/neeschit>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 /// <reference types="node" />
 
-import EventEmitter = NodeJS.EventEmitter;
+import { EventEmitter } from "events";
+
 export class Connection extends EventEmitter {
     constructor(...args: any[]);
 
@@ -19,7 +15,7 @@ export class Connection extends EventEmitter {
 
     disconnect(): void;
 
-    events(type: 'json' | 'plain' | 'xml', events: string, cb?: () => void): void;
+    events(type: "json" | "plain" | "xml", events: string, cb?: () => void): void;
 
     execute(app: any, arg?: string, uuid?: string, cb?: () => void): any;
 
@@ -77,7 +73,7 @@ export class Event {
 
     getBody(): any;
 
-    getHeader(name: any): string;
+    getHeader(name: any): string | null;
 
     getType(): any;
 

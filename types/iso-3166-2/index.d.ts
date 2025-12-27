@@ -1,10 +1,3 @@
-// Type definitions for iso-3166-2 0.6
-// Project: https://github.com/olahol/iso-3166-2.js
-// Definitions by: Matt Rollins <https://github.com/sicilica>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-export type InfoOrEmptyRecord<T> = T | {};
-
 export namespace CountryInfo {
     interface Partial {
         name: string;
@@ -40,13 +33,16 @@ export namespace SubdivisionInfo {
 }
 export type SubdivisionInfo = SubdivisionInfo.Full;
 
-export function subdivision(countryCodeOrFullSubdivisionCode: string, subdivisionCodeOrName?: string): InfoOrEmptyRecord<SubdivisionInfo>;
+export function subdivision(
+    countryCodeOrFullSubdivisionCode: string,
+    subdivisionCodeOrName?: string,
+): SubdivisionInfo | null;
 
-export function country(countryCodeOrName: string): InfoOrEmptyRecord<CountryInfo>;
+export function country(countryCodeOrName: string): CountryInfo | null;
 
 export const data: CountryInfo.Map;
 
-// map of alpha 3 codes to alpha 3 codes
+// map of alpha 3 codes to alpha 2 codes
 export const codes: {
-    [alpha3: string]: string
+    [alpha3: string]: string;
 };

@@ -1,11 +1,10 @@
-// Type definitions for indefinite 2.2
-// Project: https://github.com/tandrewnichols/indefinite
-// Definitions by: omaishar <https://github.com/omaishr>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-export interface Options {
-    capitalize?: boolean;
-    caseInsensitive?: boolean;
-    numbers?: "colloquial";
+interface Options {
+    articleOnly?: boolean | undefined;
+    capitalize?: boolean | undefined;
+    caseInsensitive?: boolean | undefined;
+    numbers?: "colloquial" | undefined;
 }
-export function indefinite(word: string | number, opts?: Options): string;
+
+declare function indefinite(word: string | number, opts?: Options): string;
+
+export = indefinite;

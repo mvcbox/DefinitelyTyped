@@ -1,13 +1,7 @@
-// Type definitions for slack-mock 1.1
-// Project: https://github.com/Skellington-Closet/slack-mock
-// Definitions by: Kris Kalavantavanich <https://github.com/kkalavantavanich>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.4
-
 import { IncomingHttpHeaders } from "http";
-import * as nock from "nock";
+import nock = require("nock");
 import { Url } from "url";
-import * as WebSocket from "ws";
+import WebSocket = require("ws");
 
 export = SlackMock;
 
@@ -29,8 +23,8 @@ declare namespace SlackMock {
     }
 
     interface ConfigOptions {
-        rtmPort?: number;
-        logLevel?: string;
+        rtmPort?: number | undefined;
+        logLevel?: string | undefined;
     }
 
     // Events
@@ -54,7 +48,7 @@ declare namespace SlackMock {
     // Incoming Webhooks
 
     type IncomingWebhookUrl = string;
-    type IncomingWebhookHttpHeaders = nock.HttpHeaders;
+    type IncomingWebhookHttpHeaders = nock.ReplyHeaders;
 
     interface IncomingWebhooks<T> {
         addResponse: (opts: IncomingWebhookOptions<T>) => void;
@@ -63,10 +57,10 @@ declare namespace SlackMock {
     }
 
     interface IncomingWebhookOptions<T> {
-        url?: IncomingWebhookUrl;
-        statusCode ?: number;
-        body ?: T;
-        headers ?: IncomingWebhookHttpHeaders;
+        url?: IncomingWebhookUrl | undefined;
+        statusCode?: number | undefined;
+        body?: T | undefined;
+        headers?: IncomingWebhookHttpHeaders | undefined;
     }
 
     interface IncomingWebhookCall<T> {
@@ -78,7 +72,7 @@ declare namespace SlackMock {
     // Interactive Buttons
 
     type InteractiveButtonUrl = string | Url;
-    type InteractiveButtonHttpHeaders = nock.HttpHeaders;
+    type InteractiveButtonHttpHeaders = nock.ReplyHeaders;
 
     interface InteractiveButtons<T> {
         send: (targetUrl: InteractiveButtonUrl, body: T) => Promise<void>;
@@ -88,10 +82,10 @@ declare namespace SlackMock {
     }
 
     interface InteractiveButtonOptions<T> {
-        url?: InteractiveButtonUrl;
-        statusCode ?: number;
-        body ?: T;
-        headers ?: InteractiveButtonHttpHeaders;
+        url?: InteractiveButtonUrl | undefined;
+        statusCode?: number | undefined;
+        body?: T | undefined;
+        headers?: InteractiveButtonHttpHeaders | undefined;
     }
 
     interface InteractiveButtonCall<T> {
@@ -103,8 +97,8 @@ declare namespace SlackMock {
     }
 
     enum InteractiveButtonCallType {
-        response = 'response',
-        response_url = 'response_url'
+        response = "response",
+        response_url = "response_url",
     }
 
     // Outgoing Webhooks
@@ -155,10 +149,10 @@ declare namespace SlackMock {
     }
 
     interface SlashCommandOptions<T> {
-        url?: SlashCommandUrl;
-        statusCode ?: number;
-        body ?: T;
-        headers ?: SlashCommandHttpHeaders;
+        url?: SlashCommandUrl | undefined;
+        statusCode?: number | undefined;
+        body?: T | undefined;
+        headers?: SlashCommandHttpHeaders | undefined;
     }
 
     interface SlashCommandCall<T> {
@@ -170,14 +164,14 @@ declare namespace SlackMock {
     }
 
     enum SlashCommandCallType {
-        response = 'response',
-        response_url = 'response_url'
+        response = "response",
+        response_url = "response_url",
     }
 
     // Web
 
     type WebUrl = string;
-    type WebHttpHeaders = nock.HttpHeaders;
+    type WebHttpHeaders = nock.ReplyHeaders;
 
     interface Web<T> {
         addResponse: (opts: WebOptions<T>) => void;
@@ -186,10 +180,10 @@ declare namespace SlackMock {
     }
 
     interface WebOptions<T> {
-        url?: WebUrl;
-        statusCode ?: number;
-        body ?: T;
-        headers ?: WebHttpHeaders;
+        url?: WebUrl | undefined;
+        statusCode?: number | undefined;
+        body?: T | undefined;
+        headers?: WebHttpHeaders | undefined;
     }
 
     interface WebCall<T> {

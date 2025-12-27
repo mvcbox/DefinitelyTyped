@@ -1,441 +1,1178 @@
-import { ApplePay } from "..";
-import * as braintree from "..";
+import * as braintree from "braintree-web";
+import { ApplePayError } from "braintree-web/apple-pay";
+import { HostedFieldsBinPayload } from "braintree-web/hosted-fields";
 
-let version: string = braintree.VERSION;
+const version: string = braintree.VERSION;
 
-let clientToken: string = "eyJ2ZXJzaW9uIjoyLCJhdXRob3JpemF0aW9uRmluZ2VycHJpbnQiOiI0YjlhYzVmYmI4ZTNkYzQzMmFkZjJhNzBlNjZlMWNjY2M5ODRkYzE4ZTM4YmY4NjYzZTM5NjM3NWZjYmQzY2U5fGNyZWF0ZWRfYXQ9MjAxNi0wOS0wOFQwNTowMzo0MC4xNjk1NTUwMzUrMDAwMFx1MDAyNm1lcmNoYW50X2lkPTM0OHBrOWNnZjNiZ3l3MmJcdTAwMjZwdWJsaWNfa2V5PTJuMjQ3ZHY4OWJxOXZtcHIiLCJjb25maWdVcmwiOiJodHRwczovL2FwaS5zYW5kYm94LmJyYWludHJlZWdhdGV3YXkuY29tOjQ0My9tZXJjaGFudHMvMzQ4cGs5Y2dmM2JneXcyYi9jbGllbnRfYXBpL3YxL2NvbmZpZ3VyYXRpb24iLCJjaGFsbGVuZ2VzIjpbXSwiZW52aXJvbm1lbnQiOiJzYW5kYm94IiwiY2xpZW50QXBpVXJsIjoiaHR0cHM6Ly9hcGkuc2FuZGJveC5icmFpbnRyZWVnYXRld2F5LmNvbTo0NDMvbWVyY2hhbnRzLzM0OHBrOWNnZjNiZ3l3MmIvY2xpZW50X2FwaSIsImFzc2V0c1VybCI6Imh0dHBzOi8vYXNzZXRzLmJyYWludHJlZWdhdGV3YXkuY29tIiwiYXV0aFVybCI6Imh0dHBzOi8vYXV0aC52ZW5tby5zYW5kYm94LmJyYWludHJlZWdhdGV3YXkuY29tIiwiYW5hbHl0aWNzIjp7InVybCI6Imh0dHBzOi8vY2xpZW50LWFuYWx5dGljcy5zYW5kYm94LmJyYWludHJlZWdhdGV3YXkuY29tLzM0OHBrOWNnZjNiZ3l3MmIifSwidGhyZWVEU2VjdXJlRW5hYmxlZCI6dHJ1ZSwicGF5cGFsRW5hYmxlZCI6dHJ1ZSwicGF5cGFsIjp7ImRpc3BsYXlOYW1lIjoiQWNtZSBXaWRnZXRzLCBMdGQuIChTYW5kYm94KSIsImNsaWVudElkIjpudWxsLCJwcml2YWN5VXJsIjoiaHR0cDovL2V4YW1wbGUuY29tL3BwIiwidXNlckFncmVlbWVudFVybCI6Imh0dHA6Ly9leGFtcGxlLmNvbS90b3MiLCJiYXNlVXJsIjoiaHR0cHM6Ly9hc3NldHMuYnJhaW50cmVlZ2F0ZXdheS5jb20iLCJhc3NldHNVcmwiOiJodHRwczovL2NoZWNrb3V0LnBheXBhbC5jb20iLCJkaXJlY3RCYXNlVXJsIjpudWxsLCJhbGxvd0h0dHAiOnRydWUsImVudmlyb25tZW50Tm9OZXR3b3JrIjp0cnVlLCJlbnZpcm9ubWVudCI6Im9mZmxpbmUiLCJ1bnZldHRlZE1lcmNoYW50IjpmYWxzZSwiYnJhaW50cmVlQ2xpZW50SWQiOiJtYXN0ZXJjbGllbnQzIiwiYmlsbGluZ0FncmVlbWVudHNFbmFibGVkIjp0cnVlLCJtZXJjaGFudEFjY291bnRJZCI6ImFjbWV3aWRnZXRzbHRkc2FuZGJveCIsImN1cnJlbmN5SXNvQ29kZSI6IlVTRCJ9LCJjb2luYmFzZUVuYWJsZWQiOmZhbHNlLCJtZXJjaGFudElkIjoiMzQ4cGs5Y2dmM2JneXcyYiIsInZlbm1vIjoib2ZmIn0=";
+const clientToken = "eyJ2ZXJzaW9uIjoyLCJhdXRob3JpemF0aW9uRmluZ2VycHJpbnQiOiI0YjlhYzVmYmI4ZTNkYzQzMmFkZjJh"
+    + "NzBlNjZlMWNjY2M5ODRkYzE4ZTM4YmY4NjYzZTM5NjM3NWZjYmQzY2U5fGNyZWF0ZWRfYXQ9MjAxNi0wOS0w"
+    + "OFQwNTowMzo0MC4xNjk1NTUwMzUrMDAwMFx1MDAyNm1lcmNoYW50X2lkPTM0OHBrOWNnZjNiZ3l3MmJcdTAw"
+    + "MjZwdWJsaWNfa2V5PTJuMjQ3ZHY4OWJxOXZtcHIiLCJjb25maWdVcmwiOiJodHRwczovL2FwaS5zYW5kYm94"
+    + "LmJyYWludHJlZWdhdGV3YXkuY29tOjQ0My9tZXJjaGFudHMvMzQ4cGs5Y2dmM2JneXcyYi9jbGllbnRfYXBp"
+    + "L3YxL2NvbmZpZ3VyYXRpb24iLCJjaGFsbGVuZ2VzIjpbXSwiZW52aXJvbm1lbnQiOiJzYW5kYm94IiwiY2xp"
+    + "ZW50QXBpVXJsIjoiaHR0cHM6Ly9hcGkuc2FuZGJveC5icmFpbnRyZWVnYXRld2F5LmNvbTo0NDMvbWVyY2hh"
+    + "bnRzLzM0OHBrOWNnZjNiZ3l3MmIvY2xpZW50X2FwaSIsImFzc2V0c1VybCI6Imh0dHBzOi8vYXNzZXRzLmJy"
+    + "YWludHJlZWdhdGV3YXkuY29tIiwiYXV0aFVybCI6Imh0dHBzOi8vYXV0aC52ZW5tby5zYW5kYm94LmJyYWlu"
+    + "dHJlZWdhdGV3YXkuY29tIiwiYW5hbHl0aWNzIjp7InVybCI6Imh0dHBzOi8vY2xpZW50LWFuYWx5dGljcy5z"
+    + "YW5kYm94LmJyYWludHJlZWdhdGV3YXkuY29tLzM0OHBrOWNnZjNiZ3l3MmIifSwidGhyZWVEU2VjdXJlRW5h"
+    + "YmxlZCI6dHJ1ZSwicGF5cGFsRW5hYmxlZCI6dHJ1ZSwicGF5cGFsIjp7ImRpc3BsYXlOYW1lIjoiQWNtZSBX"
+    + "aWRnZXRzLCBMdGQuIChTYW5kYm94KSIsImNsaWVudElkIjpudWxsLCJwcml2YWN5VXJsIjoiaHR0cDovL2V4"
+    + "YW1wbGUuY29tL3BwIiwidXNlckFncmVlbWVudFVybCI6Imh0dHA6Ly9leGFtcGxlLmNvbS90b3MiLCJiYXNl"
+    + "VXJsIjoiaHR0cHM6Ly9hc3NldHMuYnJhaW50cmVlZ2F0ZXdheS5jb20iLCJhc3NldHNVcmwiOiJodHRwczov"
+    + "L2NoZWNrb3V0LnBheXBhbC5jb20iLCJkaXJlY3RCYXNlVXJsIjpudWxsLCJhbGxvd0h0dHAiOnRydWUsImVu"
+    + "dmlyb25tZW50Tm9OZXR3b3JrIjp0cnVlLCJlbnZpcm9ubWVudCI6Im9mZmxpbmUiLCJ1bnZldHRlZE1lcmNo"
+    + "YW50IjpmYWxzZSwiYnJhaW50cmVlQ2xpZW50SWQiOiJtYXN0ZXJjbGllbnQzIiwiYmlsbGluZ0FncmVlbWVu"
+    + "dHNFbmFibGVkIjp0cnVlLCJtZXJjaGFudEFjY291bnRJZCI6ImFjbWV3aWRnZXRzbHRkc2FuZGJveCIsImN1"
+    + "cnJlbmN5SXNvQ29kZSI6IlVTRCJ9LCJjb2luYmFzZUVuYWJsZWQiOmZhbHNlLCJtZXJjaGFudElkIjoiMzQ4"
+    + "cGs5Y2dmM2JneXcyYiIsInZlbm1vIjoib2ZmIn0=";
 
-braintree.client.create({
-  authorization: clientToken
-}, function (error: braintree.BraintreeError, clientInstance: braintree.Client) {
-
-  var form: HTMLFormElement = document.getElementById('my-form-id') as HTMLFormElement;
-  var data: { creditCard: braintree.CreditCardInfo } = {
-    creditCard: {
-      number: form['cc-number'].value,
-      cvv: form['cc-cvv'].value,
-      expirationDate: form['cc-date'].value,
-      billingAddress: {
-        postalCode: form['cc-postal'].value
-      }
-    }
-  };
-
-  clientInstance.request({
-    endpoint: 'payment_methods/credit_cards',
-    method: 'post',
-    data: data
-  }, function (requestErr: braintree.BraintreeError, response: { creditCards: any[]; }) {
-    if (requestErr) { throw new Error(requestErr.message); }
-
-    console.log('Got nonce:', response.creditCards[0].nonce);
-  });
-
-  braintree.hostedFields.create({
-    client: clientInstance,
-    styles: {
-      'input': {
-        'font-size': '16pt',
-        'color': '#3A3A3A'
-      },
-
-      '.number': {
-        'font-family': 'monospace'
-      },
-      '.valid': {
-        'color': 'green'
-      }
+braintree.client.create(
+    {
+        authorization: clientToken,
     },
-    fields: {
-      number: {
-        selector: '#card-number'
-      },
-      cvv: {
-        selector: '#cvv',
-        type: 'password'
-      },
-      expirationMonth: {
-        selector: '#expiration-month',
-        select: {
-          options: ["01 - Jan", "02 - Feb", "03 - Mar", "04 - Apr", "05 - May", "06 - Jun", "07 - Jul", "08 - Aug", "09 - Sep", "10 - Oct", "11 - Nov", "12 - Dec"]
-        }
-      },
-      expirationYear: {
-        selector: '#expiration-year',
-        select: true
-      }
-    }
-  }, function (hostedFieldsErr?: braintree.BraintreeError, hostedFieldsInstance?: braintree.HostedFields) {
+    (error: braintree.BraintreeError, clientInstance: braintree.Client) => {
+        const form: HTMLFormElement = document.getElementById("my-form-id") as HTMLFormElement;
+        const data: { creditCard: braintree.CreditCardInfo } = {
+            creditCard: {
+                number: form["cc-number"].value,
+                cvv: form["cc-cvv"].value,
+                expirationDate: form["cc-date"].value,
+                billingAddress: {
+                    postalCode: form["cc-postal"].value,
+                },
+            },
+        };
 
-    if (hostedFieldsErr) {
-      // Handle error in Hosted Fields creation
-      console.log(`Error Code: ${error.code}, Type: ${error.type}, Message: ${error.message}, Details: ${error.details}`);
-      return;
-    }
+        braintree.threeDSecure
+            .create({
+                version: 2,
+                client: clientInstance,
+            })
+            .then(threeDSecureInstance => {
+                const testBin = "123456";
+                threeDSecureInstance
+                    .prepareLookup({
+                        nonce: existingNonce,
+                        bin: testBin,
+                    })
+                    .then(payload => {})
+                    .catch((err: braintree.BraintreeError) => {});
+            });
 
-    let form = new HTMLFormElement();
+        clientInstance.request(
+            {
+                endpoint: "payment_methods/credit_cards",
+                method: "post",
+                data,
+            },
+            (requestErr: braintree.BraintreeError, response: { creditCards: any[] }) => {
+                if (requestErr) {
+                    throw new Error(requestErr.message);
+                }
 
-    form.addEventListener('submit', function (event: Event) {
-      event.preventDefault();
+                console.log("Got nonce:", response.creditCards[0].nonce);
+            },
+        );
 
-      hostedFieldsInstance.tokenize(function (tokenizeErr: braintree.BraintreeError, payload: braintree.HostedFieldsTokenizePayload) {
-        if (tokenizeErr) {
-          // Handle error in Hosted Fields tokenization
-          switch (tokenizeErr.code) {
-            case 'HOSTED_FIELDS_FIELDS_EMPTY':
-              console.error('All fields are empty! Please fill out the form.');
-              break;
-            case 'HOSTED_FIELDS_FIELDS_INVALID':
-              console.error('Some fields are invalid:', tokenizeErr.details.invalidFieldKeys);
-              break;
-            case 'HOSTED_FIELDS_FAILED_TOKENIZATION':
-              console.error('Tokenization failed server side. Is the card valid?');
-              break;
-            case 'HOSTED_FIELDS_TOKENIZATION_NETWORK_ERROR':
-              console.error('Network error occurred when tokenizing.');
-              break;
-            default:
-              console.error('Something bad happened!', tokenizeErr);
-          }
-          return;
-        }
+        const googlePaymentsClient = new google.payments.api.PaymentsClient({});
 
-        // Put `payload.nonce` into the `payment-method-nonce` input, and then
-        // submit the form. Alternatively, you could send the nonce to your server
-        // with AJAX.
-        (document.querySelector('input[name="payment-method-nonce"]') as HTMLInputElement).value = payload.nonce;
-        form.submit();
-      });
-    }, false);
+        braintree.googlePayment
+            .create({
+                client: clientInstance,
+            })
+            .then((googlePayInstance) => {
+                const button = new HTMLButtonElement();
 
-    hostedFieldsInstance.on('focus', function (event: braintree.HostedFieldsStateObject) {
-      console.log(event.emittedBy, 'has been focused');
-    });
+                button.addEventListener("click", event => {
+                    event.preventDefault();
 
-    hostedFieldsInstance.teardown(function (teardownErr: braintree.BraintreeError) {
-      if (teardownErr) {
-        console.error('Could not tear down Hosted Fields!');
-      } else {
-        console.info('Hosted Fields has been torn down!');
-      }
-    });
+                    const paymentDataRequest = googlePayInstance
+                        .createPaymentDataRequest({
+                            transactionInfo: {
+                                currencyCode: "USD",
+                                totalPriceStatus: "FINAL",
+                                totalPrice: "100.00",
+                            },
+                        });
 
-    hostedFieldsInstance.tokenize({
-      vault: true
-    }, function (tokenizeErr: braintree.BraintreeError, payload: braintree.HostedFieldsTokenizePayload) {
-      if (tokenizeErr) {
-        console.error(tokenizeErr);
-      } else {
-        console.log('Got nonce:', payload.nonce);
-      }
-    });
+                    googlePaymentsClient
+                        .loadPaymentData(paymentDataRequest)
+                        .then(paymentData => {
+                            return googlePayInstance.parseResponse(paymentData);
+                        })
+                        .then((result: braintree.GooglePaymentTokenizePayload) => {
+                            console.log("nonce", result.nonce);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                        });
+                });
+            });
 
-    hostedFieldsInstance.addClass('number', 'custom-class', function (addClassErr: braintree.BraintreeError) {
-      if (addClassErr) {
-        console.error(addClassErr);
-      }
-    });
+        braintree.googlePayment
+            .create({
+                client: clientInstance,
+                useDeferredClient: true,
+            })
+            .then((googlePayInstance) => {
+                const button = new HTMLButtonElement();
 
-    hostedFieldsInstance.addClass('number', 'custom-class', function (addClassErr: braintree.BraintreeError) {
-      if (addClassErr) {
-        console.error(addClassErr);
-        return;
-      }
+                button.addEventListener("click", event => {
+                    event.preventDefault();
 
-      // some time later...
-      hostedFieldsInstance.removeClass('number', 'custom-class');
-    });
+                    googlePayInstance
+                        .createPaymentDataRequest({
+                            transactionInfo: {
+                                currencyCode: "USD",
+                                totalPriceStatus: "FINAL",
+                                totalPrice: "100.00",
+                            },
+                        })
+                        .then((paymentDataRequest) => {
+                            googlePaymentsClient
+                                .loadPaymentData(paymentDataRequest)
+                                .then(paymentData => {
+                                    return googlePayInstance.parseResponse(paymentData);
+                                })
+                                .then((result: braintree.GooglePaymentTokenizePayload) => {
+                                    console.log("nonce", result.nonce);
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                });
+                        });
+                });
+            });
 
-    hostedFieldsInstance.setPlaceholder('number', '4111 1111 1111 1111', function (placeholderErr: braintree.BraintreeError) {
-      if (placeholderErr) {
-        console.error(placeholderErr);
-      }
-    });
+        braintree.hostedFields.create(
+            {
+                client: clientInstance,
+                authorization: clientToken,
+                styles: {
+                    input: {
+                        "font-size": "16pt",
+                        color: "#3A3A3A",
+                    },
 
-    hostedFieldsInstance.on('cardTypeChange', function (event: braintree.HostedFieldsStateObject) {
-      // Update the placeholder value if there is only one possible card type
-      if (event.cards.length === 1) {
-        braintree.hostedFields.setPlaceholder('cvv', event.cards[0].code.name, function (placeholderErr: braintree.BraintreeError) {
-          if (placeholderErr) {
-            // Handle errors, such as invalid field name
-            console.error(placeholderErr);
-          }
+                    ".number": {
+                        "font-family": "monospace",
+                    },
+                    ".valid": {
+                        color: "green",
+                    },
+                },
+                fields: {
+                    number: {
+                        container: document.createElement("div"),
+                        supportedCardBrands: {
+                            visa: false,
+                            "diners-club": false,
+                        },
+                    },
+                    cvv: {
+                        container: "#cvv",
+                        type: "password",
+                    },
+                    cardholderName: {
+                        container: "#cardholder-name",
+                    },
+                    expirationMonth: {
+                        container: "#expiration-month",
+                        select: {
+                            options: [
+                                "01 - Jan",
+                                "02 - Feb",
+                                "03 - Mar",
+                                "04 - Apr",
+                                "05 - May",
+                                "06 - Jun",
+                                "07 - Jul",
+                                "08 - Aug",
+                                "09 - Sep",
+                                "10 - Oct",
+                                "11 - Nov",
+                                "12 - Dec",
+                            ],
+                        },
+                    },
+                    expirationYear: {
+                        container: "#expiration-year",
+                        select: true,
+                    },
+                },
+            },
+            (hostedFieldsErr?: braintree.BraintreeError, hostedFieldsInstance?: braintree.HostedFields) => {
+                if (hostedFieldsErr) {
+                    // Handle error in Hosted Fields creation
+                    console.log(
+                        `Error Code: ${error.code}, Type: ${error.type}, Message: ${error.message}, Details: ${error.details}`,
+                    );
+                    return;
+                }
+
+                const form = new HTMLFormElement();
+
+                form.addEventListener(
+                    "submit",
+                    (event: Event) => {
+                        event.preventDefault();
+
+                        hostedFieldsInstance.tokenize(
+                            (tokenizeErr: braintree.BraintreeError, payload: braintree.HostedFieldsTokenizePayload) => {
+                                if (tokenizeErr) {
+                                    // Handle error in Hosted Fields tokenization
+                                    switch (tokenizeErr.code) {
+                                        case "HOSTED_FIELDS_FIELDS_EMPTY":
+                                            console.error("All fields are empty! Please fill out the form.");
+                                            break;
+                                        case "HOSTED_FIELDS_FIELDS_INVALID":
+                                            console.error(
+                                                "Some fields are invalid:",
+                                                tokenizeErr.details.invalidFieldKeys,
+                                            );
+                                            break;
+                                        case "HOSTED_FIELDS_FAILED_TOKENIZATION":
+                                            console.error("Tokenization failed server side. Is the card valid?");
+                                            break;
+                                        case "HOSTED_FIELDS_TOKENIZATION_NETWORK_ERROR":
+                                            console.error("Network error occurred when tokenizing.");
+                                            break;
+                                        default:
+                                            console.error("Something bad happened!", tokenizeErr);
+                                    }
+                                    return;
+                                }
+
+                                console.log(
+                                    "regulationEnvironment",
+                                    payload.authenticationInsight.regulationEnvironment,
+                                );
+
+                                // Put `payload.nonce` into the `payment-method-nonce` input, and then
+                                // submit the form. Alternatively, you could send the nonce to your server
+                                // with AJAX.
+                                const input = document.querySelector("input[name=\"payment-method-nonce\"]");
+                                (input as HTMLInputElement).value = payload.nonce;
+                                form.submit();
+                            },
+                        );
+                    },
+                    false,
+                );
+
+                hostedFieldsInstance.on("focus", (event: braintree.HostedFieldsEvent) => {
+                    console.log(event.emittedBy, "has been focused");
+                });
+
+                hostedFieldsInstance.teardown((teardownErr: braintree.BraintreeError) => {
+                    if (teardownErr) {
+                        console.error("Could not tear down Hosted Fields!");
+                    } else {
+                        console.info("Hosted Fields has been torn down!");
+                    }
+                });
+
+                hostedFieldsInstance.tokenize(
+                    {
+                        vault: true,
+                        fieldsToTokenize: ["number", "cvv"],
+                        billingAddress: {
+                            postalCode: "12345",
+                        },
+                    },
+                    (tokenizeErr: braintree.BraintreeError, payload: braintree.HostedFieldsTokenizePayload) => {
+                        if (tokenizeErr) {
+                            console.error(tokenizeErr);
+                        } else {
+                            console.log("Got nonce:", payload.nonce);
+                        }
+                    },
+                );
+
+                hostedFieldsInstance.addClass("number", "custom-class", (addClassErr: braintree.BraintreeError) => {
+                    if (addClassErr) {
+                        console.error(addClassErr);
+                    }
+                });
+
+                hostedFieldsInstance.addClass("number", "custom-class", (addClassErr: braintree.BraintreeError) => {
+                    if (addClassErr) {
+                        console.error(addClassErr);
+                        return;
+                    }
+
+                    // some time later...
+                    hostedFieldsInstance.removeClass("number", "custom-class");
+                });
+
+                hostedFieldsInstance.setPlaceholder(
+                    "number",
+                    "4111 1111 1111 1111",
+                    (placeholderErr: braintree.BraintreeError) => {
+                        if (placeholderErr) {
+                            console.error(placeholderErr);
+                        }
+                    },
+                );
+
+                hostedFieldsInstance.on("cardTypeChange", (event: braintree.HostedFieldsEvent) => {
+                    // Update the placeholder value if there is only one possible card type
+                    if (event.cards.length === 1) {
+                        hostedFieldsInstance.setPlaceholder(
+                            "cvv",
+                            event.cards[0].code.name,
+                            (placeholderErr: braintree.BraintreeError) => {
+                                if (placeholderErr) {
+                                    // Handle errors, such as invalid field name
+                                    console.error(placeholderErr);
+                                }
+                            },
+                        );
+                    }
+                });
+
+                hostedFieldsInstance.clear("number", (clearErr: braintree.BraintreeError) => {
+                    if (clearErr) {
+                        console.error(clearErr);
+                    }
+                });
+
+                hostedFieldsInstance.clear("number");
+                hostedFieldsInstance.clear("cvv");
+                hostedFieldsInstance.clear("expirationDate");
+
+                const state = hostedFieldsInstance.getState();
+                Object.keys(state.fields)
+                    .map(k => k as keyof typeof state.fields)
+                    .every(k => state.fields[k].isValid);
+
+                hostedFieldsInstance.focus("cardholderName");
+                hostedFieldsInstance.focus("number", (focusErr: braintree.BraintreeError) => {
+                    if (focusErr) {
+                        console.error(focusErr);
+                    }
+                });
+
+                function onValidityChange(fieldState: braintree.HostedFieldsEvent): void {
+                    console.log(fieldState);
+                }
+
+                hostedFieldsInstance.on("validityChange", onValidityChange);
+                hostedFieldsInstance.off("validityChange", onValidityChange);
+
+                function onBinAvailable(event: HostedFieldsBinPayload) {
+                    console.log(event.bin);
+                }
+
+                hostedFieldsInstance.on("binAvailable", onBinAvailable);
+                hostedFieldsInstance.off("binAvailable", onBinAvailable);
+
+                hostedFieldsInstance.setAttribute(
+                    {
+                        field: "number",
+                        attribute: "disabled",
+                        value: true,
+                    },
+                    attributeErr => {
+                        if (attributeErr) {
+                            console.error(attributeErr);
+                        }
+                    },
+                );
+
+                hostedFieldsInstance.removeAttribute(
+                    {
+                        field: "number",
+                        attribute: "disabled",
+                    },
+                    attributeErr => {
+                        if (attributeErr) {
+                            console.error(attributeErr);
+                        }
+                    },
+                );
+
+                hostedFieldsInstance.setMessage({
+                    field: "number",
+                    message: "The message",
+                });
+            },
+        );
+
+        braintree.ApplePaySession.canMakePayments(); // boolean
+        braintree.ApplePaySession.canMakePaymentsWithActiveCard("merchantIdentifier"); // boolean
+        braintree.ApplePaySession.supportsVersion(3); // boolean
+
+        braintree.applePay.create(
+            { client: clientInstance },
+            (createErr?: braintree.BraintreeError, applePayInstance?: braintree.ApplePay) => {
+                if (createErr) {
+                    // Handle error in client creation
+                    console.log(
+                        `Error Code: ${error.code}, Type: ${error.type}, Message: ${error.message}, Details: ${error.details}`,
+                    );
+
+                    return;
+                }
+
+                const request = {
+                    countryCode: "US",
+                    currencyCode: "USD",
+                    supportedNetworks: ["visa", "masterCard"],
+                    merchantCapabilities: ["supports3DS"],
+                    total: { label: "Your Label", amount: "10.00" },
+                };
+
+                const paymentRequest = applePayInstance.createPaymentRequest(request);
+
+                console.log(paymentRequest);
+                // { total: { }, countryCode: 'US', currencyCode: 'USD', merchantCapabilities: [ ], supportedNetworks: [ ] }
+
+                // $ExpectType Promise<void>
+                applePayInstance.teardown();
+
+                // $ExpectType void
+                applePayInstance.teardown(() => {
+                    // teardown with callback
+                });
+            },
+        );
+
+        // Check that apple pay createPaymentRequest fields are optional
+        braintree.applePay.create({ client: clientInstance }, (createErr, applePayInstance) => {
+            const request = {
+                total: { label: "Your Label", amount: "10.00" },
+            };
+
+            const paymentRequest = applePayInstance.createPaymentRequest(request);
+            console.log(paymentRequest);
+            // { total: { }, countryCode: 'US', currencyCode: 'USD', merchantCapabilities: [ ], supportedNetworks: [ ] }
         });
-      }
-    });
 
-    hostedFieldsInstance.clear('number', function (clearErr: braintree.BraintreeError) {
-      if (clearErr) {
-        console.error(clearErr);
-      }
-    });
+        braintree.applePay.create({ client: clientInstance }, (createErr, applePayInstance) => {
+            const request = {
+                countryCode: "US",
+                currencyCode: "USD",
+                supportedNetworks: ["visa", "masterCard"],
+                merchantCapabilities: ["supports3DS"],
+                total: { label: "Your Label", amount: "10.00" },
+            };
 
-    hostedFieldsInstance.clear('number');
-    hostedFieldsInstance.clear('cvv');
-    hostedFieldsInstance.clear('expirationDate');
+            const session = new braintree.ApplePaySession(1, request);
 
-    var state = braintree.hostedFields.getState();
+            session.onvalidatemerchant = (event: { validationURL: string }) => {
+                applePayInstance.performValidation(
+                    {
+                        validationURL: event.validationURL,
+                    },
+                    (err, validationData) => {
+                        if (err) {
+                            console.error(err);
+                            session.abort();
+                            return;
+                        }
+                        session.completeMerchantValidation(validationData);
+                    },
+                );
+            };
+        });
 
-    var formValid = Object.keys(state.fields).every(function (key) {
-      return state.fields[key].isValid;
-    });
-  });
+        braintree.applePay.create({ client: clientInstance }, (createErr, applePayInstance) => {
+            const request = {
+                countryCode: "US",
+                currencyCode: "USD",
+                supportedNetworks: ["visa", "masterCard"],
+                merchantCapabilities: ["supports3DS"],
+                total: { label: "Your Label", amount: "10.00" },
+            };
 
-  braintree.applePay.create({ client: clientInstance }, function (createErr?: braintree.BraintreeError, applePayInstance?: ApplePay) {
-    if (createErr) {
-      // Handle error in client creation
-      console.log(`Error Code: ${error.code}, Type: ${error.type}, Message: ${error.message}, Details: ${error.details}`);
+            const session = new braintree.ApplePaySession(1, request);
 
-      return;
-    }
+            session.onpaymentauthorized = event => {
+                applePayInstance.tokenize(
+                    {
+                        token: event.payment.token,
+                    },
+                    (err: braintree.BraintreeError, tokenizedPayload: braintree.ApplePayPayload) => {
+                        if (err) {
+                            session.completePayment(braintree.ApplePaySession.STATUS_FAILURE);
+                            return;
+                        }
 
-    let request = {
-      countryCode: 'US',
-      currencyCode: 'USD',
-      supportedNetworks: ['visa', 'masterCard'],
-      merchantCapabilities: ['supports3DS'],
-      total: { label: 'Your Label', amount: '10.00' },
-    };
+                        // Send the tokenizedPayload to your server.
+                        console.log(tokenizedPayload.nonce);
 
-    var paymentRequest = applePayInstance.createPaymentRequest(request);
+                        session.completePayment(braintree.ApplePaySession.STATUS_SUCCESS);
+                    },
+                );
+            };
+        });
 
-    console.log(paymentRequest);
-    // { total: { }, countryCode: 'US', currencyCode: 'USD', merchantCapabilities: [ ], supportedNetworks: [ ] }
-  });
+        braintree.applePay.create({ client: clientInstance }, (createErr, applePayInstance) => {
+            const request = {
+                countryCode: "US",
+                currencyCode: "USD",
+                supportedNetworks: ["visa", "masterCard"],
+                merchantCapabilities: ["supports3DS"],
+                total: { label: "Your Label", amount: "10.00" },
+            };
 
-  braintree.applePay.create({ client: clientInstance }, function (createErr, applePayInstance) {
-    let request = {
-      countryCode: 'US',
-      currencyCode: 'USD',
-      supportedNetworks: ['visa', 'masterCard'],
-      merchantCapabilities: ['supports3DS'],
-      total: { label: 'Your Label', amount: '10.00' },
-    };
+            // Creates apple pay with version 3
+            const session = new braintree.ApplePaySession(3, request);
 
-    var session = new braintree.ApplePaySession(1, request);
+            session.onpaymentauthorized = event => {
+                applePayInstance.tokenize(
+                    {
+                        token: event.payment.token,
+                    },
+                    (err: braintree.BraintreeError, tokenizedPayload: braintree.ApplePayPayload) => {
+                        if (err) {
+                            const errorVerion3: ApplePayError = {
+                                code: "unknown",
+                                message: "An error occurred",
+                            };
 
-    session.onvalidatemerchant = function (event: { validationURL: string }) {
-      braintree.applePay.performValidation({
-        validationURL: event.validationURL
-      }, function (err, validationData) {
-        if (err) {
-          console.error(err);
-          session.abort();
-          return;
-        }
-        session.completeMerchantValidation(validationData);
-      });
-    };
-  });
+                            session.completePayment({
+                                status: braintree.ApplePaySession.STATUS_FAILURE,
+                                errors: [errorVerion3],
+                            });
+                            return;
+                        }
+                        console.log(tokenizedPayload.nonce);
 
-  braintree.applePay.create({ client: clientInstance }, function (createErr, applePayInstance) {
-    let request = {
-      countryCode: 'US',
-      currencyCode: 'USD',
-      supportedNetworks: ['visa', 'masterCard'],
-      merchantCapabilities: ['supports3DS'],
-      total: { label: 'Your Label', amount: '10.00' },
-    };
+                        session.completePayment(braintree.ApplePaySession.STATUS_SUCCESS);
+                    },
+                );
+            };
+        });
 
-    var session = new braintree.ApplePaySession(1, request);
+        braintree.applePay.create({ client: clientInstance }).then(applePayInstance => {
+            const request = {
+                countryCode: "US",
+                currencyCode: "USD",
+                supportedNetworks: ["visa", "masterCard"],
+                merchantCapabilities: ["supports3DS"],
+                total: { label: "Your Label", amount: "10.00" },
+            };
 
-    session.onpaymentauthorized = function (event) {
-      braintree.applePay.tokenize({
-        token: event.payment.token
-      }, function (err, tokenizedPayload) {
-        if (err) {
-          session.completePayment(braintree.ApplePayStatusCodes.STATUS_FAILURE);
-          return;
-        }
-        session.completePayment(braintree.ApplePayStatusCodes.STATUS_SUCCESS);
+            const session = new braintree.ApplePaySession(1, request);
 
-        // Send the tokenizedPayload to your server.
-      });
-    };
-  });
+            session.onvalidatemerchant = event => {
+                applePayInstance
+                    .performValidation({ validationURL: event.validationURL })
+                    .then(merchantSession => {
+                        session.completeMerchantValidation(merchantSession);
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        session.abort();
+                        return;
+                    });
+            };
 
-  braintree.paypal.create({
-    client: clientInstance
-  }, function (createErr, paypalInstance) {
-    if (createErr) {
-      if (createErr.code === 'PAYPAL_BROWSER_NOT_SUPPORTED') {
-        console.error('This browser is not supported.');
-      } else {
-        console.error('Error!', createErr);
-      }
-    }
+            session.onpaymentauthorized = event => {
+                applePayInstance
+                    .tokenize({ token: event.payment.token })
+                    .then(payload => {
+                        console.log(payload.nonce);
+                        session.completePayment(braintree.ApplePaySession.STATUS_SUCCESS);
+                    })
+                    .catch(error => {
+                        session.completePayment(braintree.ApplePaySession.STATUS_FAILURE);
+                    });
+            };
+        });
 
-    let button = new HTMLButtonElement();
+        braintree.paypal.create(
+            {
+                client: clientInstance,
+            },
+            (createErr, paypalInstance: braintree.PayPal) => {
+                if (createErr) {
+                    if (createErr.code === "PAYPAL_BROWSER_NOT_SUPPORTED") {
+                        console.error("This browser is not supported.");
+                    } else {
+                        console.error("Error!", createErr);
+                    }
+                }
 
-    button.addEventListener('click', function () {
-      // Disable the button so that we don't attempt to open multiple popups.
-      button.setAttribute('disabled', 'disabled');
+                const button = new HTMLButtonElement();
 
-      // Because PayPal tokenization opens a popup, this must be called
-      // as a result of a user action, such as a button click.
-      paypalInstance.tokenize({
-        flow: 'vault' // Required
-        // Any other tokenization options
-      }, function (tokenizeErr: braintree.BraintreeError, payload: braintree.PayPalTokenizePayload) {
-        button.removeAttribute('disabled');
+                button.addEventListener("click", () => {
+                    // Disable the button so that we don't attempt to open multiple popups.
+                    button.setAttribute("disabled", "disabled");
 
-        if (tokenizeErr) {
-          // Handle tokenization errors or premature flow closure
+                    // Because PayPal tokenization opens a popup, this must be called
+                    // as a result of a user action, such as a button click.
+                    paypalInstance.tokenize(
+                        {
+                            flow: "vault", // Required
+                            // Any other tokenization options
+                        },
+                        (tokenizeErr: braintree.BraintreeError, payload: braintree.PayPalTokenizePayload) => {
+                            button.removeAttribute("disabled");
 
-          switch (tokenizeErr.code) {
-            case 'PAYPAL_POPUP_CLOSED':
-              console.error('Customer closed PayPal popup.');
-              break;
-            case 'PAYPAL_ACCOUNT_TOKENIZATION_FAILED':
-              console.error('PayPal tokenization failed. See details:', tokenizeErr.details);
-              break;
-            case 'PAYPAL_FLOW_FAILED':
-              console.error('Unable to initialize PayPal flow. Are your options correct?', tokenizeErr.details);
-              break;
-            default:
-              console.error('Error!', tokenizeErr);
-          }
-        } else {
-          // Submit payload.nonce to your server
-        }
-      });
-    });
-  });
+                            if (tokenizeErr) {
+                                // Handle tokenization errors or premature flow closure
 
-  braintree.unionpay.create({ client: clientInstance }, function (createErr, unionpayInstance) {
-    if (createErr) {
-      console.error(createErr);
-      return;
-    }
+                                switch (tokenizeErr.code) {
+                                    case "PAYPAL_POPUP_CLOSED":
+                                        console.error("Customer closed PayPal popup.");
+                                        break;
+                                    case "PAYPAL_ACCOUNT_TOKENIZATION_FAILED":
+                                        console.error("PayPal tokenization failed. See details:", tokenizeErr.details);
+                                        break;
+                                    case "PAYPAL_FLOW_FAILED":
+                                        console.error(
+                                            "Unable to initialize PayPal flow. Are your options correct?",
+                                            tokenizeErr.details,
+                                        );
+                                        break;
+                                    default:
+                                        console.error("Error!", tokenizeErr);
+                                }
+                            } else {
+                                // Submit payload.nonce to your server
+                            }
+                        },
+                    );
+                });
+            },
+        );
 
-    unionpayInstance.fetchCapabilities({
-      card: {
-        number: '4111111111111111'
-      }
-    }, function (fetchErr: braintree.BraintreeError, cardCapabilities: braintree.UnionPayFetchCapabilitiesPayload) {
-      if (fetchErr) {
-        console.error(fetchErr);
-        return;
-      }
+        braintree.paypal.create(
+            {
+                client: clientInstance,
+            },
+            (createErr, paypalInstance) => {
+                if (createErr) {
+                    if (createErr.code === "PAYPAL_BROWSER_NOT_SUPPORTED") {
+                        console.error("This browser is not supported.");
+                    } else {
+                        console.error("Error!", createErr);
+                    }
+                }
 
-      if (cardCapabilities.isUnionPay) {
-        if (cardCapabilities.unionPay && !cardCapabilities.unionPay.isSupported) {
-          // Braintree cannot process this UnionPay card.
-          // Ask the user for a different card.
-          return;
-        }
+                const button = new HTMLButtonElement();
 
-        if (cardCapabilities.isDebit) {
-          // CVV and expiration date are not required
-        } else {
-          // CVV and expiration date are required
-        }
+                button.addEventListener("click", async () => {
+                    // Disable the button so that we don't attempt to open multiple popups.
+                    button.setAttribute("disabled", "disabled");
 
-        // Show mobile phone number field for enrollment
-      }
-    });
+                    // Because PayPal tokenization opens a popup, this must be called
+                    // as a result of a user action, such as a button click.
+                    try {
+                        const payload = await paypalInstance.tokenize({
+                            flow: "vault", // Required
+                            // Any other tokenization options
+                        });
+                        payload.nonce;
+                        // Submit payload.nonce to your server
+                    } catch (tokenizeErr /*braintree.BraintreeError*/) {
+                        // Handle tokenization errors or premature flow closure
+                        switch (tokenizeErr.code) {
+                            case "PAYPAL_POPUP_CLOSED":
+                                console.error("Customer closed PayPal popup.");
+                                break;
+                            case "PAYPAL_ACCOUNT_TOKENIZATION_FAILED":
+                                console.error("PayPal tokenization failed. See details:", tokenizeErr.details);
+                                break;
+                            case "PAYPAL_FLOW_FAILED":
+                                console.error(
+                                    "Unable to initialize PayPal flow. Are your options correct?",
+                                    tokenizeErr.details,
+                                );
+                                break;
+                            default:
+                                console.error("Error!", tokenizeErr);
+                        }
+                    } finally {
+                        button.removeAttribute("disabled");
+                    }
+                });
+            },
+        );
 
-    unionpayInstance.enroll({
-      card: {
-        number: '4111111111111111',
-        expirationMonth: '12',
-        expirationYear: '2038'
-      },
-      mobile: {
-        countryCode: '62',
-        number: '111111111111'
-      }
-    }, function (enrollErr: braintree.BraintreeError, response: braintree.UnionPayEnrollPayload) {
-      if (enrollErr) {
-        console.error(enrollErr);
-        return;
-      }
+        braintree.paypalCheckout.create(
+            {
+                client: clientInstance,
+            },
+            (createErr, paypalInstance) => {
+                if (createErr) {
+                    if (createErr.code === "PAYPAL_BROWSER_NOT_SUPPORTED") {
+                        console.error("This browser is not supported.");
+                    } else {
+                        console.error("Error!", createErr);
+                    }
+                }
 
-      if (response.smsCodeRequired) {
-        // If smsCodeRequired, wait for SMS auth code from customer
-        // Then use response.enrollmentId during {@link UnionPay#tokenize}
-      } else {
-        // SMS code is not required from the user.
-        // {@link UnionPay#tokenize} can be called immediately
-      }
-    });
+                const button = new HTMLButtonElement();
 
-    let enrollResponse: {
-      enrollmentId: string
-    };
+                paypalInstance
+                    .loadPayPalSDK({
+                        "client-id": "PayPal Client Id",
+                        currency: "USD",
+                        intent: "capture",
+                        vault: true,
+                    })
+                    .then(paypalCheckout => {
+                        // window.paypal.Buttons is now available to use
+                        window.paypal.Buttons({
+                            onApprove(data) {
+                                return paypalCheckout.tokenizePayment(data);
+                            },
+                            onInit(data) {
+                                paypalCheckout.updatePayment({
+                                    amount: "10.00",
+                                    currency: "USD",
+                                    paymentId: data.paymentId,
+                                }).then(res => res);
+                            },
+                        });
+                    });
 
-    unionpayInstance.tokenize({
-      card: {
-        number: '4111111111111111',
-        expirationMonth: '12',
-        expirationYear: '2038',
-        cvv: '123'
-      },
-      enrollmentId: enrollResponse.enrollmentId, // Returned from enroll
-      smsCode: '11111' // Received by customer's phone, if SMS enrollment was required. Otherwise it should be omitted
-    }, function (tokenizeErr: braintree.BraintreeError, response: braintree.UnionPayTokenizePayload) {
-      if (tokenizeErr) {
-        console.error(tokenizeErr);
-        return;
-      }
+                button.addEventListener("click", () => {
+                    // Disable the button so that we don't attempt to open multiple popups.
+                    button.setAttribute("disabled", "disabled");
 
-      // Send response.nonce to your server
-    });
+                    // Because PayPal tokenization opens a popup, this must be called
+                    // as a result of a user action, such as a button click.
+                    paypalInstance.tokenizePayment(
+                        {
+                            payerId: "payer_id", // Required
+                            // Any other tokenization options
+                        },
+                        (tokenizeErr: braintree.BraintreeError, payload: braintree.PayPalTokenizePayload) => {
+                            button.removeAttribute("disabled");
 
-    unionpayInstance.teardown(function (teardownErr: braintree.BraintreeError) {
-      if (teardownErr) {
-        console.error('Could not tear down UnionPay.');
-      } else {
-        console.log('UnionPay has been torn down.');
-      }
-    });
-  });
-});
+                            if (tokenizeErr) {
+                                // Handle tokenization errors or premature flow closure
 
-let existingNonce = "fake-valid-nonce";
-let submitNonceToServer: (nonce: string) => void;
+                                switch (tokenizeErr.code) {
+                                    case "PAYPAL_POPUP_CLOSED":
+                                        console.error("Customer closed PayPal popup.");
+                                        break;
+                                    case "PAYPAL_ACCOUNT_TOKENIZATION_FAILED":
+                                        console.error("PayPal tokenization failed. See details:", tokenizeErr.details);
+                                        break;
+                                    case "PAYPAL_FLOW_FAILED":
+                                        console.error(
+                                            "Unable to initialize PayPal flow. Are your options correct?",
+                                            tokenizeErr.details,
+                                        );
+                                        break;
+                                    default:
+                                        console.error("Error!", tokenizeErr);
+                                }
+                            } else {
+                                // Submit payload.nonce to your server
+                            }
+                        },
+                    );
+                });
+            },
+        );
 
-braintree.threeDSecure.verifyCard({
-  nonce: existingNonce,
-  amount: 123.45, // $ExpectType number
-  addFrame: function (err, iframe) {
-    // Set up your UI and add the iframe.
-    let my3DSContainer = document.createElement('div');
-    my3DSContainer.appendChild(iframe);
-    document.body.appendChild(my3DSContainer);
-  },
-  removeFrame: function () {
-    let my3DSContainer = document.createElement('div');
+        braintree.unionpay.create({ client: clientInstance }, (createErr, unionpayInstance) => {
+            if (createErr) {
+                console.error(createErr);
+                return;
+            }
 
-    // Remove UI that you added in addFrame.
-    document.body.removeChild(my3DSContainer);
-  }
-}, function (err: braintree.BraintreeError, payload: braintree.ThreeDSecureVerifyPayload) {
-  if (err) {
-    console.error(err);
-    return;
-  }
+            unionpayInstance.fetchCapabilities(
+                {
+                    card: {
+                        number: "4111111111111111",
+                    },
+                },
+                (fetchErr: braintree.BraintreeError, cardCapabilities: braintree.UnionPayFetchCapabilitiesPayload) => {
+                    if (fetchErr) {
+                        console.error(fetchErr);
+                        return;
+                    }
 
-  if (payload.liabilityShifted) {
-    // Liablity has shifted
-    submitNonceToServer(payload.nonce);
-  } else if (payload.liabilityShiftPossible) {
-    // Liablity may still be shifted
-    // Decide if you want to submit the nonce
-  } else {
-    // Liablity has not shifted and will not shift
-    // Decide if you want to submit the nonce
-  }
-});
+                    if (cardCapabilities.isUnionPay) {
+                        if (cardCapabilities.unionPay && !cardCapabilities.unionPay.isSupported) {
+                            // Braintree cannot process this UnionPay card.
+                            // Ask the user for a different card.
+                            return;
+                        }
 
-braintree.threeDSecure.cancelVerifyCard(function (err: braintree.BraintreeError, verifyPayload: braintree.ThreeDSecureVerifyPayload) {
-  if (err) {
-    // Handle error
-    console.log(err.message); // No verification payload available
-    return;
-  }
+                        if (cardCapabilities.isDebit) {
+                            // CVV and expiration date are not required
+                        } else {
+                            // CVV and expiration date are required
+                        }
 
-  verifyPayload.nonce; // The nonce returned from the 3ds lookup call
-  verifyPayload.liabilityShifted; // boolean
-  verifyPayload.liabilityShiftPossible; // boolean
+                        // Show mobile phone number field for enrollment
+                    }
+                },
+            );
+
+            unionpayInstance.enroll(
+                {
+                    card: {
+                        number: "4111111111111111",
+                        expirationMonth: "12",
+                        expirationYear: "2038",
+                    },
+                    mobile: {
+                        countryCode: "62",
+                        number: "111111111111",
+                    },
+                },
+                (enrollErr: braintree.BraintreeError, response: braintree.UnionPayEnrollPayload) => {
+                    if (enrollErr) {
+                        console.error(enrollErr);
+                        return;
+                    }
+
+                    if (response.smsCodeRequired) {
+                        // If smsCodeRequired, wait for SMS auth code from customer
+                        // Then use response.enrollmentId during {@link UnionPay#tokenize}
+                    } else {
+                        // SMS code is not required from the user.
+                        // {@link UnionPay#tokenize} can be called immediately
+                    }
+                },
+            );
+
+            const enrollResponse: {
+                enrollmentId: string;
+            } = {
+                enrollmentId: "foo",
+            };
+
+            unionpayInstance.tokenize(
+                {
+                    card: {
+                        number: "4111111111111111",
+                        expirationMonth: "12",
+                        expirationYear: "2038",
+                        cvv: "123",
+                    },
+                    enrollmentId: enrollResponse.enrollmentId, // Returned from enroll
+                    smsCode: "11111", // Received by customer's phone, if SMS enrollment was required. Otherwise it should be omitted
+                },
+                (tokenizeErr: braintree.BraintreeError, response: braintree.UnionPayTokenizePayload) => {
+                    if (tokenizeErr) {
+                        console.error(tokenizeErr);
+                        return;
+                    }
+
+                    // Send response.nonce to your server
+                },
+            );
+
+            unionpayInstance.teardown((teardownErr: braintree.BraintreeError) => {
+                if (teardownErr) {
+                    console.error("Could not tear down UnionPay.");
+                } else {
+                    console.log("UnionPay has been torn down.");
+                }
+            });
+        });
+
+        braintree.venmo.create({ client: clientInstance }, (createErr, venmoInstance) => {
+            const button = new HTMLButtonElement();
+
+            button.addEventListener("click", () => {
+                // Disable the button so that we don't attempt to open multiple popups.
+                button.setAttribute("disabled", "disabled");
+
+                // Because tokenize opens a new window, this must be called
+                // as a result of a user action, such as a button click.
+                venmoInstance
+                    .tokenize()
+                    .then((payload: braintree.VenmoTokenizePayload) => {
+                        console.log(payload.nonce);
+                    })
+                    .catch((tokenizeError: braintree.BraintreeError) => {
+                        // Handle flow errors or premature flow closure
+                        switch (tokenizeError.code) {
+                            case "VENMO_APP_CANCELED":
+                                console.log("User canceled Venmo flow.");
+                                break;
+                            case "VENMO_CANCELED":
+                                console.log("User canceled Venmo, or Venmo app is not available.");
+                                break;
+                            default:
+                                console.error("Error!", tokenizeError);
+                        }
+                    })
+                    .then(() => {
+                        button.removeAttribute("disabled");
+                    });
+            });
+        });
+
+        // Venmo Create With Desktop, Mobile , Payment Method Options
+        braintree.venmo.create({
+            client: clientInstance,
+            allowDesktop: true,
+            mobileWebFallBack: true,
+            allowDesktopWebLogin: true,
+            paymentMethodUsage: "multi_use",
+        }, (createErr, venmoInstance) => {
+            const button = new HTMLButtonElement();
+
+            button.addEventListener("click", () => {
+                // Disable the button so that we don't attempt to open multiple popups.
+                button.setAttribute("disabled", "disabled");
+
+                // Because tokenize opens a new window, this must be called
+                // as a result of a user action, such as a button click.
+                venmoInstance
+                    .tokenize()
+                    .then((payload: braintree.VenmoTokenizePayload) => {
+                        console.log(payload.nonce);
+                    })
+                    .catch((tokenizeError: braintree.BraintreeError) => {
+                        // Handle flow errors or premature flow closure
+                        switch (tokenizeError.code) {
+                            case "VENMO_APP_CANCELED":
+                                console.log("User canceled Venmo flow.");
+                                break;
+                            case "VENMO_CANCELED":
+                                console.log("User canceled Venmo, or Venmo app is not available.");
+                                break;
+                            default:
+                                console.error("Error!", tokenizeError);
+                        }
+                    })
+                    .then(() => {
+                        button.removeAttribute("disabled");
+                    });
+            });
+        });
+
+        // Vault Manager
+        braintree.vaultManager.create({ client: clientInstance }, (createErr, vaultManagerInstance) => {
+            vaultManagerInstance
+                .fetchPaymentMethods()
+                .then((payload: braintree.FetchPaymentMethodsPayload[]) => {
+                    payload.forEach(paymentMethod => console.log(paymentMethod.nonce));
+                })
+                .catch((error: braintree.BraintreeError) => {
+                    console.error("Error!", error);
+                });
+        });
+
+        clientInstance.teardown(err => {
+            // implementation
+        });
+
+        // Local Payment
+        braintree.localPayment.create(
+            {
+                client: clientInstance,
+            },
+            (err, localPaymentInstance) => {
+                localPaymentInstance
+                    .startPayment({
+                        amount: 11.0,
+                        currencyCode: "EUR",
+                        paymentType: "sofort",
+                        onPaymentStart: (data, next) => {
+                            if (data.paymentId) {
+                                // Implementation
+                            }
+                            next();
+                        },
+                    })
+                    .then((payload: braintree.LocalPaymentTokenizePayload) => {
+                        console.log(payload.nonce);
+                    })
+                    .catch((error: braintree.BraintreeError) => {
+                        console.error("Error!", error);
+                    });
+
+                localPaymentInstance.tokenize(
+                    {
+                        btLpPayerId: "1234",
+                        btLpPaymentId: "1234",
+                        btLpToken: "1234",
+                    },
+                    (error, data) => {
+                        if (error) {
+                            console.error("Tokenize Error!", error);
+                            return;
+                        }
+
+                        // Implementation
+                        console.log(data.nonce);
+                    },
+                );
+
+                localPaymentInstance.teardown(err => {
+                    // Implementation
+                });
+            },
+        );
+
+        braintree.dataCollector.create({ client: clientInstance }, (error, dataCollectorInstance) => {
+            dataCollectorInstance.getDeviceData({ raw: false }, (err, deviceData) => {
+                // Implementation
+                console.log(deviceData);
+            });
+        });
+
+        braintree.dataCollector
+            .create({ client: clientInstance })
+            .then(dataCollectorInstance => dataCollectorInstance.getDeviceData())
+            .then(deviceData => {
+                // Implementation
+                console.log(deviceData);
+            });
+    },
+);
+
+const existingNonce = "fake-valid-nonce";
+const submitNonceToServer: (nonce: string) => void = (nonce: string) => {};
+
+braintree.client.create(
+    {
+        authorization: clientToken,
+    },
+    (error: braintree.BraintreeError, clientInstance: braintree.Client) => {
+        braintree.threeDSecure.create(
+            {
+                client: clientInstance,
+                version: "2",
+            },
+            (createError, threeDSecure) => {
+                // implementation
+            },
+        );
+        braintree.threeDSecure.create(
+            {
+                client: clientInstance,
+                version: 1,
+            },
+            (createError, threeDSecure) => {
+                // implementation
+            },
+        );
+        braintree.threeDSecure.create(
+            {
+                client: clientInstance,
+                version: "2-bootstrap3-modal",
+            },
+            (createError, threeDSecure) => {
+                threeDSecure.verifyCard(
+                    {
+                        nonce: existingNonce,
+                        amount: "123.45", // $ExpectType string
+                        bin: "1234",
+                        collectDeviceData: true,
+                        addFrame: (err, iframe) => {
+                            // Set up your UI and add the iframe.
+                            const my3DSContainer = document.createElement("div");
+                            my3DSContainer.appendChild(iframe);
+                            document.body.appendChild(my3DSContainer);
+                        },
+                        removeFrame: () => {
+                            const my3DSContainer = document.createElement("div");
+
+                            // Remove UI that you added in addFrame.
+                            document.body.removeChild(my3DSContainer);
+                        },
+                    },
+                    (err: braintree.BraintreeError, payload: braintree.ThreeDSecureVerifyPayload) => {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+
+                        if (payload.liabilityShifted) {
+                            // Liablity has shifted
+                            submitNonceToServer(payload.nonce);
+                        } else if (payload.liabilityShiftPossible) {
+                            // Liablity may still be shifted
+                            // Decide if you want to submit the nonce
+                        } else {
+                            // Liablity has not shifted and will not shift
+                            // Decide if you want to submit the nonce
+                        }
+                    },
+                );
+
+                // Check if verifyCard can be called without addFrame and removeFrame
+                threeDSecure.verifyCard(
+                    {
+                        nonce: existingNonce,
+                        amount: "123.45", // $ExpectType string
+                        bin: "1234",
+                    },
+                    (err: braintree.BraintreeError) => {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                    },
+                );
+
+                threeDSecure.cancelVerifyCard(
+                    (err: braintree.BraintreeError, verifyPayload: braintree.ThreeDSecureVerifyPayload) => {
+                        if (err) {
+                            // Handle error
+                            console.log(err.message); // No verification payload available
+                            return;
+                        }
+
+                        verifyPayload.nonce; // The nonce returned from the 3ds lookup call
+                        verifyPayload.type; // The payment method type.
+                        verifyPayload.liabilityShifted || verifyPayload.threeDSecureInfo.liabilityShifted; // boolean
+                        verifyPayload.liabilityShiftPossible || verifyPayload.threeDSecureInfo.liabilityShiftPossible; // boolean
+                        verifyPayload.binData.issuingBank; // The issuing bank.
+                        verifyPayload.threeDSecureInfo.status; // The 3D Secure status.
+                    },
+                );
+
+                threeDSecure.on("lookup-complete", (data, next) => {
+                    console.log("data from lookup", data);
+                    console.log("version", data.lookup.threeDSecureVersion);
+                    console.log("nonce", data.paymentMethod.nonce);
+                    console.log("liabilityShifted", data.threeDSecureInfo.liabilityShifted);
+                    next();
+                });
+            },
+        );
+    },
+);
+
+// Check if 'number' field is optional (#56167)
+braintree.hostedFields.create({
+    fields: {
+        cvv: {
+            container: "#cvv",
+            type: "password",
+        },
+        cardholderName: {
+            container: "#cardholder-name",
+        },
+        expirationMonth: {
+            container: "#expiration-month",
+            select: {
+                options: [
+                    "01 - Jan",
+                    "02 - Feb",
+                    "03 - Mar",
+                    "04 - Apr",
+                    "05 - May",
+                    "06 - Jun",
+                    "07 - Jul",
+                    "08 - Aug",
+                    "09 - Sep",
+                    "10 - Oct",
+                    "11 - Nov",
+                    "12 - Dec",
+                ],
+            },
+        },
+        expirationYear: {
+            container: "#expiration-year",
+            select: true,
+        },
+    },
 });

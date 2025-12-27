@@ -1,66 +1,59 @@
-// Type definitions for which 1.3.0
-// Project: https://github.com/isaacs/node-which
-// Definitions by: vvakame <https://github.com/vvakame>
-//                 cspotcode <https://github.com/cspotcode>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-
 /** Finds all instances of a specified executable in the PATH environment variable */
-declare function which(cmd: string, options: which.AsyncOptions & which.OptionsAll, cb: (err: Error | null, paths: Array<string> | undefined) => void): void;
-/** Finds the first instance of a specified executable in the PATH environment variable */
-declare function which(cmd: string, options: which.AsyncOptions & which.OptionsFirst, cb: (err: Error | null, path: string | undefined) => void): void;
-/** Finds the first instance of a specified executable in the PATH environment variable */
-declare function which(cmd: string, options: which.AsyncOptions, cb: (err: Error | null, path: string | Array<string> | undefined) => void): void;
-/** Finds the first instance of a specified executable in the PATH environment variable */
-declare function which(cmd: string, cb: (err: Error | null, path: string | undefined) => void): void;
+
+type AppendNullIfNothrow<TOptions, TRet> = TOptions extends { nothrow: infer TVal }
+    // nothrow is specified
+    ? TVal extends false
+        // TVal is false
+        ? TRet
+        // TVal is boolean or true
+    : TRet | null
+    // nothrow not specified
+    : TRet;
+
+type TransformToArrayIfAll<TOptions, TRet> = TOptions extends { all: infer TVal }
+    // all is specified
+    ? TVal extends true
+        // TVal is true
+        ? readonly TRet[]
+    : TVal extends false
+        // TVal is false
+        ? TRet
+        // TVal is boolean
+    : readonly TRet[] | TRet
+    // all not specified
+    : TRet;
+
+type ReturnType<TOptions> = AppendNullIfNothrow<TOptions, TransformToArrayIfAll<TOptions, string>>;
+
+type Exact<T, U extends T> = {
+    [Key in keyof U]: Key extends keyof T ? U[Key]
+        : never;
+};
+
+declare function which<TOptions extends which.Options>(
+    cmd: string,
+    options?: Exact<which.Options, TOptions>,
+): Promise<ReturnType<Exact<which.Options, TOptions>>>;
+
 declare namespace which {
     /** Finds all instances of a specified executable in the PATH environment variable */
-    function sync(cmd: string, options: which.Options & which.OptionsAll & which.OptionsNoThrow): Array<string> | null;
-    /** Finds the first instance of a specified executable in the PATH environment variable */
-    function sync(cmd: string, options: which.Options & which.OptionsFirst & which.OptionsNoThrow): string | null;
-    /** Finds all instances of a specified executable in the PATH environment variable */
-    function sync(cmd: string, options: which.Options & which.OptionsAll & which.OptionsThrow): Array<string>;
-    /** Finds the first instance of a specified executable in the PATH environment variable */
-    function sync(cmd: string, options: which.Options & which.OptionsFirst & which.OptionsThrow): string;
-    /** Finds the first instance of a specified executable in the PATH environment variable */
-    function sync(cmd: string, options: which.Options): string | Array<string> | null;
-    /** Finds the first instance of a specified executable in the PATH environment variable */
-    function sync(cmd: string): string;
+    function sync<TOptions extends Options>(
+        cmd: string,
+        options?: Exact<Options, TOptions>,
+    ): ReturnType<Exact<Options, TOptions>>;
 
-    /** Options that ask for all matches. */
-    interface OptionsAll extends AsyncOptions {
-        all: true;
-    }
-
-    /** Options that ask for the first match (the default behavior) */
-    interface OptionsFirst extends AsyncOptions {
-        all?: false | undefined;
-    }
-
-    /** Options that ask to receive null instead of a thrown error */
-    interface OptionsNoThrow extends Options {
-        nothrow: true;
-    }
-
-    /** Options that ask for a thrown error if executable is not found (the default behavior) */
-    interface OptionsThrow extends Options {
-        nothrow?: false | undefined;
-    }
-
-    /** Options for which() async API */
-    interface AsyncOptions {
+    /** Options for which() API */
+    interface Options {
         /** If true, return all matches, instead of just the first one. Note that this means the function returns an array of strings instead of a single string. */
-        all?: boolean;
+        all?: boolean | undefined;
         /** Use instead of the PATH environment variable. */
-        path?: string;
+        path?: string | undefined;
         /** Use instead of the PATHEXT environment variable. */
-        pathExt?: string;
-    }
-    
-    /** Options for which() sync and async APIs */
-    interface Options extends AsyncOptions {
+        pathExt?: string | undefined;
+        /** Use instead of the platform's native path separator. */
+        delimiter?: string | undefined;
         /** If true, returns null when not found */
-        nothrow?: boolean;
+        nothrow?: boolean | undefined;
     }
 }
 

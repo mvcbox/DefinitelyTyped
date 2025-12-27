@@ -1,8 +1,3 @@
-// Type definitions for gulp-zip 4.0
-// Project: https://github.com/sindresorhus/gulp-zip
-// Definitions by: Louis Orleans <https://github.com/dudeofawesome>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 /// <reference types="node" />
 
 declare namespace GulpZip {
@@ -11,7 +6,18 @@ declare namespace GulpZip {
          * Compress
          * @default true
          */
-        compress?: boolean;
+        compress?: boolean | undefined;
+
+        /**
+         * Overrides the modification timestamp for all files added to the archive.
+         *
+         * Tip: Setting it to the same value across executions enables you to create stable archives
+         * that change only when the contents of their entries change, regardless of whether those
+         * entries were "touched" or regenerated.
+         *
+         * @default undefined
+         */
+        modifiedTime?: Date | undefined;
     }
 }
 

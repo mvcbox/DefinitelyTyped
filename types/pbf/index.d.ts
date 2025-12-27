@@ -1,15 +1,15 @@
-// Type definitions for pbf 3.0
-// Project: https://github.com/mapbox/pbf
-// Definitions by: Christian Schwarz <https://github.com/cschwarz>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
 declare class Pbf {
+    static readonly Varint: 0;
+    static readonly Fixed64: 1;
+    static readonly Bytes: 2;
+    static readonly Fixed32: 5;
+
     buf: Uint8Array;
     pos: number;
     type: number;
     length: number;
 
-    constructor(buffer?: Uint8Array|ArrayBuffer);
+    constructor(buffer?: Uint8Array | ArrayBuffer);
 
     destroy(): void;
     readFields<T>(readField: (tag: number, result?: T, pbf?: Pbf) => void, result?: T, end?: number): T;

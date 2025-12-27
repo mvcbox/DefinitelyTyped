@@ -1,3 +1,5 @@
-import * as validator from "validator";
-declare const isMobilePhone: typeof validator.isMobilePhone;
-export = isMobilePhone;
+import validator from "../";
+export type MobilePhoneLocale = validator.MobilePhoneLocale;
+export type IsMobilePhoneOptions = validator.IsMobilePhoneOptions;
+export const locales: MobilePhoneLocale[];
+export default validator.isMobilePhone;

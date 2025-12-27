@@ -15,18 +15,18 @@
 //
 
 // Module dependencies.
-import { Azure } from 'azure-sb';
-import Dictionary = Azure.ServiceBus.Dictionary;
+import { Azure as Az } from "azure-sb";
+import Dictionary = Az.ServiceBus.Dictionary;
 
 export namespace Azure.ServiceBus.Results {
     export interface QueueResponse {
         body: any;
-        headers: Dictionary<string>
+        headers: Dictionary<string>;
     }
 
     export interface QueueMessageResponse {
         body: any;
-        brokerProperties?: Azure.ServiceBus.BrokerProperties;
+        brokerProperties?: Az.ServiceBus.BrokerProperties;
         customProperties?: Dictionary<any>;
         contentType?: string;
         location?: string;

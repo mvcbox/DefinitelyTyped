@@ -1,5 +1,4 @@
-type ReferOverlayOptions<O> =
-    O extends AMap.BezierCurve ? AMap.BezierCurve.Options
+type ReferOverlayOptions<O> = O extends AMap.BezierCurve ? AMap.BezierCurve.Options
     : O extends AMap.Polyline ? AMap.Polyline.Options
     : O extends AMap.Circle ? AMap.Circle.Options
     : O extends AMap.Ellipse ? AMap.Ellipse.Options
@@ -22,7 +21,7 @@ declare namespace AMap {
          */
         addOverlay(overlay: O | O[]): this;
         /**
-         * 	添加覆盖物数组到集合中，不支持添加重复的覆盖物
+         *     添加覆盖物数组到集合中，不支持添加重复的覆盖物
          * @param overlay 覆盖物数组
          */
         addOverlays(overlay: O | O[]): this;
@@ -41,7 +40,7 @@ declare namespace AMap {
          */
         removeOverlay(overlay: O | O[]): this;
         /**
-         * 	从集合中删除传入的覆盖物实例数组
+         *     从集合中删除传入的覆盖物实例数组
          * @param overlay 覆盖物数组
          */
         removeOverlays(overlay: O | O[]): this;
@@ -70,7 +69,7 @@ declare namespace AMap {
          */
         show(): this;
         /**
-         * 	在地图上隐藏集合中覆盖物
+         *     在地图上隐藏集合中覆盖物
          */
         hide(): this;
         /**

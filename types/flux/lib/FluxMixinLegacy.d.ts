@@ -1,8 +1,8 @@
-import * as FluxStore from "./FluxStore";
+import FluxStore = require("./FluxStore");
 
 declare namespace FluxMixinLegacy {
     interface Options {
-        withProps?: boolean;
+        withProps?: boolean | undefined;
     }
 }
 

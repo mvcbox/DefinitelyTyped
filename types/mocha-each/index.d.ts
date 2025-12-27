@@ -1,50 +1,34 @@
-// Type definitions for mocha-each 1.1
-// Project: https://github.com/ryym/mocha-each#readme
-// Definitions by: Tom Harley <https://github.com/magnostherobot>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.1
-
-import { ITest, ITestDefinition, ITestCallbackContext } from 'mocha';
+import { Context, Suite, SuiteFunction, Test, TestFunction } from "mocha";
 
 /**
  * This function takes an array collections of parameters to be used in
- * a series of mocha tests, defined using the `it` notation common to
+ * a series of mocha tests, defined using the `it` or `describe` notation common to
  * Mocha.
  */
 declare function forEach(
-    parameters: ReadonlyArray<any>,
-    defaultIt?: ITestDefinition
-): { it: ForEachITestDefinition };
+    parameters: readonly any[],
+    dIt?: TestFunction,
+    dDescribe?: SuiteFunction,
+): { it: ForEachTestFunction; describe: ForEachDescribeDefinition };
 
 /**
  * This interface describes the kind of `it` available from a `forEach` call.
- * The result is very similar to Mocha's `ITestDefinition` interface.
+ * The result is very similar to Mocha's `TestFunction` interface.
  */
-interface ForEachITestDefinition {
-    /*
-     * The callback functions in each of these properties take a variable
-     * number of arguments, based on how many values were passed in tuples
-     * in the call of forEach that generated this property.
-     *
-     * This problem is similar to `Function.prototype.apply`, which also
-     * does not have strong typing
-     * (see github.com/Microsoft/Typescript/issues/212).
-     *
-     * These callback functions can all accept an optional callback generated
-     * by mocha, which is used for asynchronous code testing. However,
-     * since rest parameters have to be the final parameter in a function
-     * declaration, this function cannot be explicitly mentioned here.
-     *
-     * A more accurate signature for the callback functions would be
-     *     callback?: (this, ...args, done?: MochaDone)
-     * Additionally, Mocha does not export its MochaDone interface.
-     */
-    (expectation: string, callback?:
-        (this: ITestCallbackContext, ...args: any[]) => any): ITest;
-    only(expectation: string, callback?:
-        (this: ITestCallbackContext, ...args: any[]) => any): ITest;
-    skip(expectation: string, callback?:
-        (this: ITestCallbackContext, ...args: any[]) => any): ITest;
+interface ForEachTestFunction {
+    (expectation: string, callback?: (this: Context, ...args: any[]) => any): Test;
+    only(expectation: string, callback?: (this: Context, ...args: any[]) => any): Test;
+    skip(expectation: string, callback?: (this: Context, ...args: any[]) => any): Test;
+}
+
+/**
+ * This interface describes the kind of `describe` available from a `forEach` call.
+ * The result is almost identical to Mocha's `SuiteFunction` interface.
+ */
+interface ForEachDescribeDefinition {
+    (expectation: string, callback?: (this: Context, ...args: any[]) => any): Suite;
+    only(expectation: string, callback?: (this: Context, ...args: any[]) => any): Suite;
+    skip(expectation: string, callback?: (this: Context, ...args: any[]) => any): Suite;
 }
 
 export = forEach;

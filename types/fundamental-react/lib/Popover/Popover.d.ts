@@ -14,24 +14,46 @@ export type PopperPlacement =
     | "top"
     | "top-end";
 
+export type PopoverTypes =
+    | true
+    | "dialog"
+    | "grid"
+    | "listbox"
+    | "menu"
+    | "tree";
+
+export type PopperSizingTypes =
+    | "none"
+    | "matchTarget"
+    | "minTarget"
+    | "maxTarget";
+
 export type PopoverProps = {
-    /* Node(s) to render in the overlay. */
     body: React.ReactNode;
-    /* Node to render as the reference element (that the `body` will be placed in relation to). */
     control: React.ReactNode;
-    className?: string;
-    disabled?: boolean;
-    /* Set to **true** to render a popover without an arrow. */
-    noArrow?: boolean;
-    /* Initial position of the `body` (overlay) related to the `control`. */
-    placement?: PopperPlacement;
-    /* Additional props to be spread to the overlay element. */
-    popperProps?: { [x: string]: any };
-    /* Callback for consumer clicking outside of popover body. */
-    onClickOutside?: (event: MouseEvent | TouchEvent | FocusEvent) => void;
-    /* Callback when escape key is pressed when popover body is visible. */
-    onEscapeKey?: () => void;
-} & { [x: string]: any };
+    className?: string | undefined;
+    disabled?: boolean | undefined;
+    disableEdgeDetection?: boolean | undefined;
+    disableKeyPressHandler?: boolean | undefined;
+    disableTriggerOnClick?: boolean | undefined;
+    /** Index of the focusable item to focus first within the Popover */
+    firstFocusIndex?: number;
+    /** The bounding container to use when determining if the popover is out of bounds */
+    flipContainer?: Element[];
+    /** If Popover is to be rendered in a modal, the parent modal manager can be passed as a prop */
+    modalManager?: object;
+    noArrow?: boolean | undefined;
+    placement?: PopperPlacement | undefined;
+    popperClassName?: string | undefined;
+    popperProps?: any;
+    /** Handling for show/hide popover if true show the popover */
+    show?: boolean;
+    type?: PopoverTypes | undefined;
+    useArrowKeyNavigation?: boolean | undefined;
+    widthSizingType?: PopperSizingTypes | undefined;
+    onClickOutside?: ((event: MouseEvent | TouchEvent | FocusEvent) => void) | undefined;
+    onEscapeKey?: (() => void) | undefined;
+} & React.HTMLAttributes<HTMLDivElement>;
 
 declare class Popover extends React.Component<PopoverProps> {}
 

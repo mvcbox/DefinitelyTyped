@@ -1,11 +1,5 @@
-// Type definitions for turndown 5.0
-// Project: https://github.com/domchristie/turndown
-// Definitions by: Sergey Zhidkov <https://github.com/sergey-zhidkov>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.7
-
 declare class TurndownService {
-    constructor(options?: TurndownService.Options)
+    constructor(options?: TurndownService.Options);
 
     addRule(key: string, rule: TurndownService.Rule): this;
     keep(filter: TurndownService.Filter): this;
@@ -23,25 +17,26 @@ export = TurndownService;
 
 declare namespace TurndownService {
     interface Options {
-        headingStyle?: "setext" | "atx";
-        hr?: string;
-        br?: string;
-        bulletListMarker?: "-" | "+" | "*";
-        codeBlockStyle?: "indented" | "fenced";
-        emDelimiter?: "_" | "*";
-        fence?: "```" | "~~~";
-        strongDelimiter?: "__" | "**";
-        linkStyle?: "inlined" | "referenced";
-        linkReferenceStyle?: "full" | "collapsed" | "shortcut";
+        headingStyle?: "setext" | "atx" | undefined;
+        hr?: string | undefined;
+        br?: string | undefined;
+        bulletListMarker?: "-" | "+" | "*" | undefined;
+        codeBlockStyle?: "indented" | "fenced" | undefined;
+        emDelimiter?: "_" | "*" | undefined;
+        fence?: "```" | "~~~" | undefined;
+        strongDelimiter?: "__" | "**" | undefined;
+        linkStyle?: "inlined" | "referenced" | undefined;
+        linkReferenceStyle?: "full" | "collapsed" | "shortcut" | undefined;
+        preformattedCode?: boolean;
 
-        keepReplacement?: ReplacementFunction;
-        blankReplacement?: ReplacementFunction;
-        defaultReplacement?: ReplacementFunction;
+        keepReplacement?: ReplacementFunction | undefined;
+        blankReplacement?: ReplacementFunction | undefined;
+        defaultReplacement?: ReplacementFunction | undefined;
     }
 
     interface Rule {
         filter: Filter;
-        replacement?: ReplacementFunction;
+        replacement?: ReplacementFunction | undefined;
     }
 
     interface Rules {
@@ -54,7 +49,7 @@ declare namespace TurndownService {
 
         add(key: Filter, rule: Rule): void;
         forEach(callback: (rule: Rule, index: number) => any): void;
-        forNode(node: Node): Rule;
+        forNode(node: HTMLElement): Rule;
         keep(filter: Filter): void;
         remove(filter: Filter): void;
     }
@@ -67,7 +62,7 @@ declare namespace TurndownService {
 
     type ReplacementFunction = (
         content: string,
-        node: Node,
+        node: HTMLElement,
         options: Options,
     ) => string;
 

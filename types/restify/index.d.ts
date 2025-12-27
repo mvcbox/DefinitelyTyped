@@ -1,73 +1,69 @@
-// Type definitions for restify 7.2
-// Project: https://github.com/restify/node-restify, http://restify.com
-// Definitions by: Bret Little <https://github.com/blittle>
-//                 Steve Hipwell <https://github.com/stevehipwell>
-//                 Leandro Almeida <https://github.com/leanazulyoro>
-//                 Mitchell Bundy <https://github.com/mgebundy>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
-
 /// <reference types="node" />
-import http = require('http');
-import https = require('https');
-import Logger = require('bunyan');
-import url = require('url');
-import spdy = require('spdy');
-import stream = require('stream');
-import zlib = require('zlib');
+import http = require("http");
+import https = require("https");
+import Logger = require("bunyan");
+import url = require("url");
+import spdy = require("spdy");
+import stream = require("stream");
+import zlib = require("zlib");
+import { File } from "formidable";
 
 export interface ServerOptions {
-    ca?: string | Buffer | ReadonlyArray<string | Buffer>;
+    ca?: string | Buffer | ReadonlyArray<string | Buffer> | undefined;
 
-    certificate?: string | Buffer | ReadonlyArray<string | Buffer>;
+    certificate?: string | Buffer | ReadonlyArray<string | Buffer> | undefined;
 
-    cert?: string | Buffer | ReadonlyArray<string | Buffer>;
+    cert?: string | Buffer | ReadonlyArray<string | Buffer> | undefined;
 
-    key?: string | Buffer | ReadonlyArray<string | Buffer>;
+    key?: string | Buffer | ReadonlyArray<string | Buffer> | undefined;
 
-    passphrase?: string;
+    passphrase?: string | undefined;
 
-    requestCert?: boolean;
+    requestCert?: boolean | undefined;
 
-    ciphers?: string;
+    ciphers?: string | undefined;
 
-    formatters?: Formatters;
+    formatters?: Formatters | undefined;
 
-    log?: Logger;
+    log?: Logger | undefined;
 
-    name?: string;
+    name?: string | undefined;
 
-    spdy?: spdy.ServerOptions;
+    spdy?: spdy.ServerOptions | undefined;
 
-    version?: string;
+    version?: string | undefined;
 
-    versions?: string[];
+    versions?: string[] | undefined;
 
-    handleUpgrades?: boolean;
+    handleUpgrades?: boolean | undefined;
 
-    httpsServerOptions?: https.ServerOptions;
+    httpsServerOptions?: https.ServerOptions | undefined;
 
-    handleUncaughtExceptions?: boolean;
+    handleUncaughtExceptions?: boolean | undefined;
 
-    router?: Router;
+    router?: Router | undefined;
 
-    socketio?: boolean;
+    socketio?: boolean | undefined;
 
-    noWriteContinue?: boolean;
+    noWriteContinue?: boolean | undefined;
 
-    rejectUnauthorized?: boolean;
+    rejectUnauthorized?: boolean | undefined;
 
-    secureOptions?: number;
+    secureOptions?: number | undefined;
 
     http2?: any;
 
-    dtrace?: boolean;
+    dtrace?: boolean | undefined;
 
-    onceNext?: boolean;
+    onceNext?: boolean | undefined;
 
-    strictNext?: boolean;
+    strictNext?: boolean | undefined;
 
-    ignoreTrailingSlash?: boolean;
+    ignoreTrailingSlash?: boolean | undefined;
+
+    maxParamLength?: number | undefined;
+
+    strictFormatters?: boolean | undefined;
 }
 
 export interface AddressInterface {
@@ -269,25 +265,25 @@ export interface Server extends http.Server {
 
     useChain: Chain;
 
-    spdy?: boolean;
+    spdy?: boolean | undefined;
 
-    http2?: boolean;
+    http2?: boolean | undefined;
 
-    ca: ServerOptions['ca'];
+    ca: ServerOptions["ca"];
 
-    certificate: ServerOptions['certificate'];
+    certificate: ServerOptions["certificate"];
 
-    key: ServerOptions['key'];
+    key: ServerOptions["key"];
 
-    passphrase: ServerOptions['passphrase'] | null;
+    passphrase: ServerOptions["passphrase"] | null;
 
-    secure?: boolean;
+    secure?: boolean | undefined;
 }
 
 export interface ChainOptions {
-    onceNext?: boolean;
+    onceNext?: boolean | undefined;
 
-    strictNext?: boolean;
+    strictNext?: boolean | undefined;
 }
 
 export interface Chain {
@@ -338,15 +334,15 @@ export interface RouterRegistryRadix {
 }
 
 export interface RouterOptions {
-    log?: Logger;
+    log?: Logger | undefined;
 
-    onceNext?: boolean;
+    onceNext?: boolean | undefined;
 
-    strictNext?: boolean;
+    strictNext?: boolean | undefined;
 
-    ignoreTrailingSlash?: boolean;
+    ignoreTrailingSlash?: boolean | undefined;
 
-    registry?: RouterRegistryRadix;
+    registry?: RouterRegistryRadix | undefined;
 }
 
 export class Router {
@@ -367,7 +363,7 @@ export class Router {
      * @param    options an options object
      * @returns  returns the route name if creation is successful.
      */
-    mount(options: RouteOptions, ...handlers: RequestHandlerType[]): string;
+    mount(options: MountOptions, ...handlers: RequestHandlerType[]): string;
 
     /**
      * unmounts a route.
@@ -407,16 +403,11 @@ export class Router {
 
     name: string;
 
-    log?: Logger;
+    log?: Logger | undefined;
 
     onceNext: boolean;
 
     strictNext: boolean;
-}
-
-export interface RequestFileInterface {
-    path: string;
-    type: string;
 }
 
 export interface RequestAuthorization {
@@ -425,7 +416,7 @@ export interface RequestAuthorization {
     basic?: {
         username: string;
         password: string;
-    };
+    } | undefined;
 }
 
 export interface Request extends http.IncomingMessage {
@@ -626,7 +617,7 @@ export interface Request extends http.IncomingMessage {
      *  name: 'getpingname'
      * }
      */
-    getRoute(): RouteSpec;
+    getRoute(): Route;
 
     /** bunyan logger you can piggyback on. */
     log: Logger;
@@ -637,17 +628,20 @@ export interface Request extends http.IncomingMessage {
     /** available when bodyParser plugin is used. */
     body?: any;
 
+    /** available when bodyParser plugin is used. */
+    rawBody?: any;
+
     /** available when queryParser or bodyParser plugin is used with mapParams enabled. */
     params?: any;
 
-    /** available when serveStatic plugin is used. */
-    files?: { [name: string]: RequestFileInterface };
+    /** available when multipartBodyParser plugin is used. */
+    files?: { [name: string]: File | undefined } | undefined;
 
     /** available when authorizationParser plugin is used */
-    username?: string;
+    username?: string | undefined;
 
     /** available when authorizationParser plugin is used */
-    authorization?: RequestAuthorization;
+    authorization?: RequestAuthorization | undefined;
 }
 
 export interface CacheOptions {
@@ -808,7 +802,7 @@ export interface Response extends http.ServerResponse {
      * @param    code the status code
      * @param    url to redirect to
      * @param    next - mandatory, to complete the response and trigger audit logger
-     * @emits    redirect
+     * @fires    redirect
      */
     redirect(code: number, url: string, next: Next): void;
 
@@ -818,7 +812,7 @@ export interface Response extends http.ServerResponse {
      * `next` is mandatory, to complete the response and trigger audit logger.
      * @param    url to redirect to or options object to configure a redirect or
      * @param    next - mandatory, to complete the response and trigger audit logger
-     * @emits    redirect
+     * @fires    redirect
      */
     redirect(opts: string | RedirectOptions, next: Next): void;
 
@@ -839,27 +833,27 @@ export interface RedirectOptions {
     /**
      * whether to redirect to http or https
      */
-    secure?: boolean;
+    secure?: boolean | undefined;
 
     /**
      * redirect location's hostname
      */
-    hostname?: string;
+    hostname?: string | undefined;
 
     /**
      * redirect location's pathname
      */
-    pathname?: string;
+    pathname?: string | undefined;
 
     /**
      * redirect location's port number
      */
-    port?: string;
+    port?: string | undefined;
 
     /**
      * redirect location's query string parameters
      */
-    query?: string|object;
+    query?: string | object | undefined;
 
     /**
      * if true, `options.query`
@@ -867,25 +861,23 @@ export interface RedirectOptions {
      * parameters on current URL.
      * by default, will merge the two.
      */
-    overrideQuery?: boolean;
+    overrideQuery?: boolean | undefined;
 
     /**
      * if true, sets 301. defaults to 302.
      */
-    permanent?: boolean;
+    permanent?: boolean | undefined;
 }
 
 export interface Next {
     (err?: any): void;
-
-    ifError(err?: any): void;
 }
 
 export interface RouteSpec {
     method: string;
-    name?: string;
+    name?: string | undefined;
     path: string | RegExp;
-    versions?: string[];
+    versions?: string[] | undefined;
 }
 
 export interface Route {
@@ -897,19 +889,19 @@ export interface Route {
 }
 
 export interface RouteOptions {
-    name?: string;
+    name?: string | undefined;
 
-    path?: string | RegExp;
+    path?: string | RegExp | undefined;
 
-    url?: string | RegExp;
+    url?: string | RegExp | undefined;
 
-    urlParamPattern?: RegExp;
+    urlParamPattern?: RegExp | undefined;
 
-    contentType?: string | string[];
+    contentType?: string | string[] | undefined;
 
-    version?: string;
+    version?: string | undefined;
 
-    versions?: string[];
+    versions?: string[] | undefined;
 }
 
 export interface MountOptions {
@@ -917,17 +909,17 @@ export interface MountOptions {
 
     method: string;
 
-    path?: string | RegExp;
+    path?: string | RegExp | undefined;
 
-    url?: string | RegExp;
+    url?: string | RegExp | undefined;
 
-    urlParamPattern?: RegExp;
+    urlParamPattern?: RegExp | undefined;
 
-    contentType?: string | string[];
+    contentType?: string | string[] | undefined;
 
-    version?: string;
+    version?: string | undefined;
 
-    versions?: string[];
+    versions?: string[] | undefined;
 }
 
 export type FindRouteCallback = (err: Error, route?: Route, params?: any) => void;
@@ -981,32 +973,32 @@ export interface ServerUpgradeResponse {
 export namespace bunyan {
     interface RequestCaptureOptions {
         /** The stream to which to write when dumping captured records. */
-        stream?: Logger.Stream;
+        stream?: Logger.Stream | undefined;
 
         /** The streams to which to write when dumping captured records. */
-        streams?: ReadonlyArray<Logger.Stream>;
+        streams?: readonly Logger.Stream[] | undefined;
 
         /**
          * The level at which to trigger dumping captured records. Defaults to
          * bunyan.WARN.
          */
-        level?: Logger.LogLevel;
+        level?: Logger.LogLevel | undefined;
 
         /** Number of records to capture. Default 100. */
-        maxRecords?: number;
+        maxRecords?: number | undefined;
 
         /**
          * Number of simultaneous request id capturing buckets to maintain.
          * Default 1000.
          */
-        maxRequestIds?: number;
+        maxRequestIds?: number | undefined;
 
         /**
          * If true, then dump captured records on the *default* request id when
          * dumping. I.e. dump records logged without "req_id" field. Default
          * false.
          */
-        dumpDefault?: boolean;
+        dumpDefault?: boolean | undefined;
     }
 
     /**
@@ -1022,11 +1014,11 @@ export namespace bunyan {
     }
 
     const serializers: Logger.Serializers & {
-        err: Logger.Serializer,
-        req: Logger.Serializer,
-        res: Logger.Serializer,
-        client_req: Logger.Serializer,
-        client_res: Logger.Serializer
+        err: Logger.Serializer;
+        req: Logger.Serializer;
+        res: Logger.Serializer;
+        client_req: Logger.Serializer;
+        client_res: Logger.Serializer;
     };
 
     /** create a bunyan logger */
@@ -1075,7 +1067,9 @@ export namespace plugins {
         /**
          * Regexp to capture curl user-agents
          */
-        function userAgentConnection(options?: { userAgentRegExp: any }): RequestHandler;
+        function userAgentConnection(options?: {
+            userAgentRegExp: any;
+        }): RequestHandler;
     }
 
     // *************** This module includes the following header parser plugins:
@@ -1085,7 +1079,12 @@ export namespace plugins {
      */
     function acceptParser(accepts: string[]): RequestHandler;
 
-    type AuditLoggerContext = (req: Request, res: Response, route: any, error: any) => any;
+    type AuditLoggerContext = (
+        req: Request,
+        res: Response,
+        route: any,
+        error: any,
+    ) => any;
 
     interface AuditLoggerOptions {
         /**
@@ -1097,12 +1096,12 @@ export namespace plugins {
          * The event from the server which initiates the
          * log, one of 'pre', 'routed', or 'after'
          */
-        event: 'pre' | 'routed' | 'after';
+        event: "pre" | "routed" | "after";
 
         /**
          * Restify server. If passed in, causes server to emit 'auditlog' event after audit logs are flushed
          */
-        server?: Server;
+        server?: Server | undefined;
 
         /**
          * The optional context function of signature
@@ -1111,7 +1110,7 @@ export namespace plugins {
          * req, res, route, and err objects. The output of this function will be
          * available on the `context` key in the audit object.
          */
-        context?: AuditLoggerContext;
+        context?: AuditLoggerContext | undefined;
 
         /**
          * Ringbuffer which is written to if passed in
@@ -1121,9 +1120,9 @@ export namespace plugins {
         /**
          * When true, prints audit logs. default true.
          */
-        printLog?: boolean;
+        printLog?: boolean | undefined;
 
-        body?: boolean;
+        body?: boolean | undefined;
     }
 
     /**
@@ -1138,14 +1137,16 @@ export namespace plugins {
 
     interface HandlerCandidate {
         handler: RequestHandler | RequestHandler[];
-        version?: string | string[];
-        contentType?: string | string[];
+        version?: string | string[] | undefined;
+        contentType?: string | string[] | undefined;
     }
 
     /**
      * Runs first handler that matches to the condition
      */
-    function conditionalHandler(candidates: HandlerCandidate | HandlerCandidate[]): RequestHandler;
+    function conditionalHandler(
+        candidates: HandlerCandidate | HandlerCandidate[],
+    ): RequestHandler;
 
     /**
      * Conditional headers (If-*)
@@ -1153,10 +1154,10 @@ export namespace plugins {
     function conditionalRequest(): RequestHandler[];
 
     interface CpuUsageThrottleOptions {
-        limit?: number;
-        max?: number;
-        interval?: number;
-        halfLife?: number;
+        limit?: number | undefined;
+        max?: number | undefined;
+        interval?: number | undefined;
+        halfLife?: number | undefined;
     }
 
     /**
@@ -1175,26 +1176,26 @@ export namespace plugins {
         /**
          * The maximum size in bytes allowed in the HTTP body. Useful for limiting clients from hogging server memory.
          */
-        maxBodySize?: number;
+        maxBodySize?: number | undefined;
 
         /**
          * If req.params should be filled with parsed parameters from HTTP body.
          */
-        mapParams?: boolean;
+        mapParams?: boolean | undefined;
 
         /**
          * If req.params should be filled with the contents of files sent through a multipart request.
          * Formidable is used internally for parsing, and a file is denoted as a multipart part with the filename option set in its Content-Disposition.
          * This will only be performed if mapParams is true.
          */
-        mapFiles?: boolean;
+        mapFiles?: boolean | undefined;
 
         /**
          * If an entry in req.params should be overwritten by the value in the body if the names are the same.
          * For instance, if you have the route /:someval, and someone posts an x-www-form-urlencoded Content-Type with the body someval=happy to /sad,
          * the value will be happy if overrideParams is true, sad otherwise.
          */
-        overrideParams?: boolean;
+        overrideParams?: boolean | undefined;
 
         /**
          * A callback to handle any multipart part which is not a file.
@@ -1213,35 +1214,35 @@ export namespace plugins {
         /**
          * If you want the uploaded files to include the extensions of the original files (multipart uploads only). Does nothing if multipartFileHandler is defined.
          */
-        keepExtensions?: boolean;
+        keepExtensions?: boolean | undefined;
 
         /**
          * Where uploaded files are intermediately stored during transfer before the contents is mapped into req.params. Does nothing if multipartFileHandler is defined.
          */
-        uploadDir?: string;
+        uploadDir?: string | undefined;
 
         /**
          * If you want to support html5 multiple attribute in upload fields.
          */
-        multiples?: boolean;
+        multiples?: boolean | undefined;
 
         /**
          * If you want checksums calculated for incoming files, set this to either sha1 or md5.
          */
-        hash?: string;
+        hash?: string | undefined;
 
         /**
          * Set to true if you want to end the request with a UnsupportedMediaTypeError when none of the supported content types was given.
          */
-        rejectUnknown?: boolean;
+        rejectUnknown?: boolean | undefined;
 
-        requestBodyOnGet?: boolean;
+        requestBodyOnGet?: boolean | undefined;
 
         reviver?: any;
 
-        maxFieldsSize?: number;
+        maxFieldsSize?: number | undefined;
 
-        maxFileSize?: number;
+        maxFileSize?: number | undefined;
     }
 
     /**
@@ -1252,12 +1253,12 @@ export namespace plugins {
     /**
      * Reads the body of the request.
      */
-    function bodyReader(options?: { maxBodySize?: number }): RequestHandler;
+    function bodyReader(options?: { maxBodySize?: number | undefined }): RequestHandler;
 
     interface UrlEncodedBodyParserOptions {
-        mapParams?: boolean;
-        overrideParams?: boolean;
-        bodyReader?: boolean;
+        mapParams?: boolean | undefined;
+        overrideParams?: boolean | undefined;
+        bodyReader?: boolean | undefined;
     }
 
     /**
@@ -1266,13 +1267,15 @@ export namespace plugins {
      * If req.params already contains a given key, that key is skipped and an
      * error is logged.
      */
-    function urlEncodedBodyParser(options?: UrlEncodedBodyParserOptions): RequestHandler[];
+    function urlEncodedBodyParser(
+        options?: UrlEncodedBodyParserOptions,
+    ): RequestHandler[];
 
     interface JsonBodyParserOptions {
-        mapParams?: boolean;
-        overrideParams?: boolean;
+        mapParams?: boolean | undefined;
+        overrideParams?: boolean | undefined;
         reviver?(key: any, value: any): any;
-        bodyReader?: boolean;
+        bodyReader?: boolean | undefined;
     }
 
     /**
@@ -1286,17 +1289,17 @@ export namespace plugins {
     function jsonp(): RequestHandler;
 
     interface MultipartBodyParser {
-        overrideParams?: boolean;
-        multiples?: boolean;
-        keepExtensions?: boolean;
-        uploadDir?: string;
-        maxFieldsSize?: number;
-        hash?: string;
+        overrideParams?: boolean | undefined;
+        multiples?: boolean | undefined;
+        keepExtensions?: boolean | undefined;
+        uploadDir?: string | undefined;
+        maxFieldsSize?: number | undefined;
+        hash?: string | undefined;
         multipartFileHandler?: any;
         multipartHandler?: any;
-        mapParams?: boolean;
-        mapFiles?: boolean;
-        maxFileSize?: number;
+        mapParams?: boolean | undefined;
+        mapFiles?: boolean | undefined;
+        maxFileSize?: number | undefined;
     }
 
     /**
@@ -1308,48 +1311,48 @@ export namespace plugins {
         /**
          * Default `false`. Copies parsed query parameters into `req.params`.
          */
-        mapParams?: boolean;
+        mapParams?: boolean | undefined;
 
         /**
          * Default `false`. Only applies when if mapParams true. When true, will stomp on req.params field when existing value is found.
          */
-        overrideParams?: boolean;
+        overrideParams?: boolean | undefined;
 
         /**
          *  Default false. Transform `?foo.bar=baz` to a nested object: `{foo: {bar: 'baz'}}`.
          */
-        allowDots?: boolean;
+        allowDots?: boolean | undefined;
 
         /**
          * Default 20. Only transform `?a[$index]=b` to an array if `$index` is less than `arrayLimit`.
          */
-        arrayLimit?: number;
+        arrayLimit?: number | undefined;
 
         /**
          * Default 5. The depth limit for parsing nested objects, e.g. `?a[b][c][d][e][f][g][h][i]=j`.
          */
-        depth?: number;
+        depth?: number | undefined;
 
         /**
          * Default 1000. Maximum number of query params parsed. Additional params are silently dropped.
          */
-        parameterLimit?: number;
+        parameterLimit?: number | undefined;
 
         /**
          * Default true. Whether to parse `?a[]=b&a[1]=c` to an array, e.g. `{a: ['b', 'c']}`.
          */
-        parseArrays?: boolean;
+        parseArrays?: boolean | undefined;
 
         /**
          * Default false. Whether `req.query` is a "plain" object -- does not inherit from `Object`.
          * This can be used to allow query params whose names collide with Object methods, e.g. `?hasOwnProperty=blah`.
          */
-        plainObjects?: boolean;
+        plainObjects?: boolean | undefined;
 
         /**
          * Default false. If true, `?a&b=` results in `{a: null, b: ''}`. Otherwise, `{a: '', b: ''}`.
          */
-        strictNullHandling?: boolean;
+        strictNullHandling?: boolean | undefined;
     }
 
     /**
@@ -1391,18 +1394,20 @@ export namespace plugins {
         err: any;
     }
 
-    function inflightRequestThrottle(opts: InflightRequestThrottleOptions): RequestHandler;
+    function inflightRequestThrottle(
+        opts: InflightRequestThrottleOptions,
+    ): RequestHandler;
 
     interface ServeStatic {
-        appendRequestPath?: boolean;
-        directory?: string;
-        maxAge?: number;
+        appendRequestPath?: boolean | undefined;
+        directory?: string | undefined;
+        maxAge?: number | undefined;
         match?: any;
-        charSet?: string;
-        file?: string;
-        etag?: string;
+        charSet?: string | undefined;
+        file?: string | undefined;
+        etag?: string | undefined;
         default?: any;
-        gzip?: boolean;
+        gzip?: boolean | undefined;
     }
 
     /**
@@ -1410,15 +1415,29 @@ export namespace plugins {
      */
     function serveStatic(options?: ServeStatic): RequestHandler;
 
+    interface ServeStaticFiles {
+        maxAge?: number | undefined;
+        etag?: string | undefined;
+        setHeaders?: ((res: Response, path: string, stat: any) => any) | undefined;
+    }
+
+    /**
+     * Used to serve static files from a given directory
+     */
+    function serveStaticFiles(
+        dir: string,
+        options?: ServeStaticFiles,
+    ): RequestHandler;
+
     interface ThrottleOptions {
-        burst?: number;
-        rate?: number;
-        setHeaders?: boolean;
-        ip?: boolean;
-        username?: boolean;
-        xff?: boolean;
+        burst?: number | undefined;
+        rate?: number | undefined;
+        setHeaders?: boolean | undefined;
+        ip?: boolean | undefined;
+        username?: boolean | undefined;
+        xff?: boolean | undefined;
         tokensTable?: any;
-        maxKeys?: number;
+        maxKeys?: number | undefined;
         overrides?: any; // any
     }
 
@@ -1432,29 +1451,25 @@ export namespace plugins {
          *  An error if the request had an error
          */
         err: Error,
-
         /**
          *  Object that contains the various metrics that are returned
          */
         metrics: MetricsCallbackOptions,
-
         /**
          * The request obj
          */
         req: Request,
-
         /**
          * The response obj
          */
         res: Response,
-
         /**
          * The route obj that serviced the request
          */
         route: Route,
     ) => void;
 
-    type TMetricsCallback = 'close' | 'aborted' | undefined;
+    type TMetricsCallback = "close" | "aborted" | undefined;
 
     interface MetricsCallbackOptions {
         /**
@@ -1521,7 +1536,10 @@ export namespace plugins {
      * }));
      * ```
      */
-    function metrics(opts: { server: Server }, callback: MetricsCallback): (...args: any[]) => void;
+    function metrics(
+        opts: { server: Server },
+        callback: MetricsCallback,
+    ): (...args: any[]) => void;
 
     /**
      * Parse the client's request for an OAUTH2 access tokensTable
@@ -1539,17 +1557,17 @@ export namespace plugins {
         /**
          * Header name of the absolute time for request expiration
          */
-        absoluteHeader?: string;
+        absoluteHeader?: string | undefined;
 
         /**
          * Header name for the start time of the request
          */
-        startHeader?: string;
+        startHeader?: string | undefined;
 
         /**
          * The header name for the time in milliseconds that should ellapse before the request is considered expired.
          */
-        timeoutHeader?: string;
+        timeoutHeader?: string | undefined;
     }
 
     /**

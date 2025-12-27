@@ -1,10 +1,4 @@
-// Type definitions for koa-log 2.1
-// Project: https://github.com/vicanso/koa-log#readme
-// Definitions by: Uladzimir Havenchyk <https://github.com/havenchyk>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
-
-import * as Koa from 'koa';
+import Koa = require("koa");
 
 declare function koaLog(type: string): Koa.Middleware;
 
@@ -24,7 +18,7 @@ declare namespace koaLog {
 
         function status(ctx: Koa.BaseContext): number;
 
-        function token(name: string, fn: (ctx: Koa.BaseContext) => string): void;
+        function token(name: string, fn: (ctx: Koa.ParameterizedContext) => string): void;
 
         function url(ctx: Koa.BaseContext): string;
     }

@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6",
             "dom"
@@ -9,10 +9,6 @@
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
         "types": [],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true,
@@ -20,9 +16,6 @@
     },
     "files": [
         "index.d.ts",
-        "Tabs.d.ts",
-        "TabLink.d.ts",
-        "TabContent.d.ts",
         "react-tabs-redux-tests.tsx"
     ]
 }

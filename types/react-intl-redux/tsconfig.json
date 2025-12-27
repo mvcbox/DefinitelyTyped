@@ -1,22 +1,26 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "lib": [
             "es6",
-            "dom"
+            "dom",
+            "es2017.intl",
+            "es2018.intl",
+            "esnext.intl"
         ],
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
-        "baseUrl": "../",
-        "typeRoots": [
-            "../"
-        ],
         "types": [],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true,
-        "jsx": "react"
+        "jsx": "react",
+        "paths": {
+            "react": [
+                "../react/v16/index.d.ts"
+            ]
+        }
     },
     "files": [
         "index.d.ts",

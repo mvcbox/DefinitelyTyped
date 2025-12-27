@@ -1,4 +1,4 @@
-import { Tail } from 'tail';
+import { Tail } from "tail";
 
 const tail = new Tail("test.txt");
 
@@ -7,7 +7,7 @@ tail.on("line", data => {
 });
 
 tail.on("error", error => {
-    console.log('ERROR: ', error);
+    console.log("ERROR: ", error);
 });
 
 tail.unwatch();
@@ -22,5 +22,7 @@ const tail2 = new Tail("test2.txt", {
     follow: true,
     logger: console,
     useWatchFile: false,
-    encoding: 'utf-8'
+    encoding: "utf-8",
+    flushAtEOF: false,
+    nLines: 10,
 });

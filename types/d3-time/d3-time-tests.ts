@@ -6,7 +6,7 @@
  * are not intended as functional tests.
  */
 
-import * as d3Time from 'd3-time';
+import * as d3Time from "d3-time";
 
 let countableI: d3Time.CountableTimeInterval;
 let simpleI: d3Time.TimeInterval;
@@ -21,9 +21,13 @@ let count: number;
 
 simpleI = d3Time.timeInterval(
     // floor function
-    (d: Date) => { d.setUTCMinutes(0, 0, 0); },
+    (d: Date) => {
+        d.setUTCMinutes(0, 0, 0);
+    },
     // offset function
-    (d: Date, step: number) => { d.setUTCHours(d.getUTCHours() + step); }
+    (d: Date, step: number) => {
+        d.setUTCHours(d.getUTCHours() + step);
+    },
 );
 
 // Below test fails, as generating countable interval requires count function argument
@@ -36,28 +40,37 @@ simpleI = d3Time.timeInterval(
 
 countableI = d3Time.timeInterval(
     // floor function
-    (d: Date) => { d.setUTCMinutes(0, 0, 0); },
+    (d: Date) => {
+        d.setUTCMinutes(0, 0, 0);
+    },
     // offset function
-    (d: Date, step: number) => { d.setUTCHours(d.getUTCHours() + step); },
+    (d: Date, step: number) => {
+        d.setUTCHours(d.getUTCHours() + step);
+    },
     // count function
-    (start: Date, end: Date) => (end.valueOf() - start.valueOf()) / 36e5
+    (start: Date, end: Date) => (end.valueOf() - start.valueOf()) / 36e5,
 );
 
 countableI = d3Time.timeInterval(
     // floor function
-    (d: Date) => { d.setUTCMinutes(0, 0, 0); },
+    (d: Date) => {
+        d.setUTCMinutes(0, 0, 0);
+    },
     // offset function
-    (d: Date, step: number) => { d.setUTCHours(d.getUTCHours() + step); },
+    (d: Date, step: number) => {
+        d.setUTCHours(d.getUTCHours() + step);
+    },
     // count function
     (start: Date, end: Date) => (end.valueOf() - start.valueOf()) / 36e5,
     // field function
-    (d: Date) => d.valueOf() / 36e5
+    (d: Date) => d.valueOf() / 36e5,
 );
 
 // Test signatures of (Countable)Interval methods ------------------------------
 
 countableI = d3Time.timeMonday;
 
+resultDate = countableI();
 resultDate = countableI(inBetween);
 resultDate = countableI.floor(inBetween);
 resultDate = countableI.round(inBetween);
@@ -75,7 +88,7 @@ simpleI = countableI.filter((d: Date) => d.getMonth() === 2);
 count = countableI.count(start, end);
 
 // let countableIOrNull: d3Time.CountableTimeInterval | null = countableI.every(10); // Test fails, since .every(...) return Interval and not CountableInterval
-const simpleIOrNull: d3Time.TimeInterval | null = countableI.every(10);
+let simpleIOrNull: d3Time.TimeInterval | null = countableI.every(10);
 
 resultDate = simpleI.floor(inBetween);
 resultDate = simpleI.round(inBetween);
@@ -209,3 +222,13 @@ dateArray = d3Time.utcMonths(start, end, 3);
 countableI = d3Time.utcYear;
 dateArray = d3Time.utcYears(start, end);
 dateArray = d3Time.utcYears(start, end, 2);
+
+countableI = d3Time.unixDay;
+dateArray = d3Time.unixDays(start, end);
+dateArray = d3Time.unixDays(start, end, 2);
+
+dateArray = d3Time.timeTicks(start, end, 2);
+simpleIOrNull = d3Time.timeTickInterval(start, end, 2);
+
+dateArray = d3Time.utcTicks(start, end, 2);
+simpleIOrNull = d3Time.utcTickInterval(start, end, 2);

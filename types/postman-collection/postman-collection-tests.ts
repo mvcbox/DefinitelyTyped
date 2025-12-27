@@ -1,4 +1,4 @@
-import * as pmCollection from 'postman-collection';
+import * as pmCollection from "postman-collection";
 
 // PropertyBaseDefinition tests
 const pbDef: pmCollection.PropertyBaseDefinition = {};
@@ -9,18 +9,18 @@ const PropertyBase = pmCollection.PropertyBase;
 
 let pb = new PropertyBase();
 pb = new PropertyBase("string definition");
-pb = new PropertyBase({description: "string description"});
-pb = new PropertyBase({info: {}});
-pb = new PropertyBase({info: {description: "string description"}});
+pb = new PropertyBase({ description: "string description" });
+pb = new PropertyBase({ info: {} });
+pb = new PropertyBase({ info: { description: "string description" } });
 
 pb.description; // $ExpectType string | DescriptionDefinition | undefined
 pb.findInParents("string"); // $ExpectType PropertyBase<PropertyBaseDefinition>
-pb.findInParents("string", (el) => true); // $ExpectType PropertyBase<PropertyBaseDefinition>
+pb.findInParents("string", el => true); // $ExpectType PropertyBase<PropertyBaseDefinition>
 
-pb.findParentContaining("string", (el) => true); // $ExpectType PropertyBase<PropertyBaseDefinition>
+pb.findParentContaining("string", el => true); // $ExpectType PropertyBase<PropertyBaseDefinition>
 
-pb.forEachParent((el) => {}); // $ExpectType void
-pb.forEachParent({withRoot: true}, (el) => {}); // $ExpectType void
+pb.forEachParent(el => {}); // $ExpectType void
+pb.forEachParent({ withRoot: true }, el => {}); // $ExpectType void
 
 pb.meta(); // $ExpectType any
 
@@ -47,7 +47,7 @@ propDef.description; // $$ExpectType string | DescriptionDefinition | undefined
 const Property = pmCollection.Property;
 let p = new Property();
 p = new Property(propDef);
-p = new Property({info: propDef, disabled: true});
+p = new Property({ info: propDef, disabled: true });
 
 p.id; // $ExpectType string
 p.name; // $ExpectType string
@@ -57,15 +57,15 @@ p.describe("string"); // $ExpectType void
 p.describe("String", "string"); // $ExpectType void
 
 p.toObjectResolved(null, []); // $ExpectType {}
-p.toObjectResolved({variables: new pmCollection.VariableList(p, [])}, []); // $ExpectType {}
-p.toObjectResolved(null, [], {ignoreOwnVariables: true}); // $ExpectType {}
+p.toObjectResolved({ variables: new pmCollection.VariableList(p, []) }, []); // $ExpectType {}
+p.toObjectResolved(null, [], { ignoreOwnVariables: true }); // $ExpectType {}
 
 Property.replaceSubstitutions("string", new pmCollection.VariableList(p, [])); // $ExpectType string
 Property.replaceSubstitutionsIn({}, [new pmCollection.VariableList(p, [])], false); // $ExpectType {}
 
 // CertificateDefinition Tests
 const certDef: pmCollection.CertificateDefinition = {};
-certDef.matches; // $ExpectType string[] | UrlMatchPatternList | undefined
+certDef.matches; // $ExpectType string[] | UrlMatchPatternList | undefined || UrlMatchPatternList | string[] | undefined
 certDef.key; // $ExpectType string | { src?: string | undefined; } | undefined
 certDef.cert; // $ExpectType string | { src?: string | undefined; } | undefined
 certDef.passphrase; // $ExpectType string | undefined
@@ -78,7 +78,7 @@ certificate.matches; // $ExpectType UrlMatchPatternList
 certificate.passphrase; // $ExpectType string
 
 certificate.canApplyTo("string"); // $ExpectType boolean
-certificate.canApplyTo(new pmCollection.Url({host: "string", path: "string"})); // $ExpectType boolean
+certificate.canApplyTo(new pmCollection.Url({ host: "string", path: "string" })); // $ExpectType boolean
 
 certificate.update({}); // $ExpectType void
 
@@ -97,8 +97,8 @@ pList.each((el: pmCollection.Certificate) => {}); // $ExpectType void
 pList.each((el: pmCollection.Certificate) => {}, pList); // $ExpectType void
 pList.eachParent((el: any) => {}); // $ExpectType void
 pList.eachParent((el: any) => {}, pList); // $ExpectType void
-pList.filter((el) => true, pList); // $ExpectType Certificate[]
-pList.find((el) => true, pList); // $ExpectType Certificate
+pList.filter(el => true, pList); // $ExpectType Certificate[]
+pList.find(el => true, pList); // $ExpectType Certificate
 pList.get("string"); // $ExpectType any
 pList.has("string"); // $ExpectType boolean
 pList.has("string", null); // $ExpectType boolean
@@ -109,11 +109,11 @@ pList.insert(certificate, "string"); // ExpectType void
 pList.insert(certificate, certificate); // ExpectType void
 pList.insertAfter(certificate, "string"); // ExpectType void
 pList.insertAfter(certificate, certificate); // ExpectType void
-pList.map((el) => el); // ExpectType any
-pList.map((el) => el, pList); // ExpectType any
+pList.map(el => el); // ExpectType any
+pList.map(el => el, pList); // ExpectType any
 pList.one("string"); // ExpectType Certificate
 pList.populate([]); // ExpectType void
-pList.remove((el) => true, pList); // ExpectType void
+pList.remove(el => true, pList); // ExpectType void
 pList.remove("string", pList); // ExpectType void
 pList.remove(certificate, pList); // $ExpectType void
 pList.repopulate(null); // $ExpectType void
@@ -144,8 +144,8 @@ ig.authorizeRequestsUsing("string"); // $ExpectType void
 ig.authorizeRequestsUsing({}); // $ExpectType void
 ig.authorizeRequestsUsing("string", new pmCollection.VariableList(ig, [])); // $ExpectType void
 
-ig.forEachItem((el) => {}); // $ExpectType void
-ig.forEachItemGroup((el) => {}); // $ExpectType void
+ig.forEachItem(el => {}); // $ExpectType void
+ig.forEachItemGroup(el => {}); // $ExpectType void
 
 ig.oneDeep("string"); // $ExpectType Certificate
 
@@ -153,8 +153,8 @@ pmCollection.ItemGroup.isItemGroup(ig); // $ExpectType boolean
 
 // CollectionDefinition Tests
 const colDef: pmCollection.CollectionDefinition = {};
-colDef.info; // $ExpectType { id?: string | undefined; name?: string | undefined; version?: string | undefined; } | undefined
-colDef.variable; // $ExpectType VariableDefinition | undefined
+colDef.info; // $ExpectType { id?: string | undefined; name?: string | undefined; version?: string | undefined; description?: { content?: string | undefined; type?: string | undefined; version?: string | undefined; } | undefined; } | undefined
+colDef.variable; // $ExpectType VariableDefinition[] | undefined
 
 let collection: pmCollection.Collection;
 collection = new pmCollection.Collection();
@@ -177,11 +177,11 @@ pmCollection.Collection.isCollection(collection); // $ExpectType boolean
 // CookieDefinition Tests
 const cookieDef: pmCollection.CookieDefinition = {
     domain: "string",
-    path: "string"
+    path: "string",
 };
 cookieDef.key; // $ExpectType string | undefined
 cookieDef.value; // ExpectType string | undefined
-cookieDef.expires; // $ExpectType string | Date | undefined
+cookieDef.expires; // $ExpectType string | number | Date | undefined
 cookieDef.maxAge; // $ExpectType number | undefined
 cookieDef.domain; // $ExpectType string
 cookieDef.path; // $ExpectType string
@@ -195,7 +195,7 @@ cookieDef.extensions; // $ExpectType { key: string; value: string; }[] | undefin
 
 let cookie = new pmCollection.Cookie();
 cookie = new pmCollection.Cookie(cookieDef);
-
+cookie.name; // $ExpectType string | undefined
 cookie.domain; // $ExpectType string
 cookie.expires; // $ExpectType Date
 cookie.extensions; // $ExpectType { key: string; value: string; }[] | undefined
@@ -206,15 +206,12 @@ cookie.path; // $ExpectType string
 cookie.secure; // $ExpectType boolean | undefined
 cookie.session; // $ExpectType boolean | undefined
 cookie.value; // $ExpectType string | undefined
-
 cookie.update(cookieDef); // $ExpectType void
-
 cookie.valueOf(); // $ExpectType string
-
 pmCollection.Cookie.isCookie({}); // $ExpectType boolean
-pmCollection.Cookie.parse("string"); // $ExpectType CookieDefinition
-pmCollection.Cookie.splitParam("string"); // $ExpectType { key: string; value: string | boolean; }
-
+const parsed = pmCollection.Cookie.parse("string"); // $ExpectType CookieDefinition
+const unparsed = pmCollection.Cookie.unparseSingle(parsed); // $ExpectType string
+pmCollection.Cookie.stringify(parsed); // $ExpectType string
 // CookieList Tests
 
 const cookieList = new pmCollection.CookieList(null, [cookie]);
@@ -225,7 +222,7 @@ pmCollection.CookieList.isCookieList(cookieList); // $ExpectType boolean
 
 const descDef: pmCollection.DescriptionDefinition = {
     content: "string",
-    type: "string"
+    type: "string",
 };
 descDef.content; // $ExpectType string
 descDef.type; // $ExpectType string | undefined
@@ -250,7 +247,7 @@ pmCollection.Description.isDescription(desc); // $ExpectType boolean
 // EventDefinition Tests
 
 const eventDesc: pmCollection.EventDefinition = {
-    script: "string"
+    script: "string",
 };
 eventDesc.listen; // $ExpectType string | undefined
 eventDesc.script; // $ExpectType string | string[] | ScriptDefinition | Script
@@ -290,7 +287,7 @@ fp.valueOf(); // $ExpectType any
 
 const headerDef: pmCollection.HeaderDefinition = {
     key: "string",
-    value: "string"
+    value: "string",
 };
 headerDef.key; // $ExpectType string | undefined
 headerDef.value; // $ExpectType string | undefined
@@ -339,7 +336,7 @@ pmCollection.HeaderList.isHeaderList(headerList); // $ExpectType boolean
 
 const itemDef: pmCollection.ItemDefinition = {};
 itemDef.request; // $ExpectType RequestDefinition | undefined
-itemDef.responses; // $ExpectType ResponseDefinition[] | undefined
+itemDef.response; // $ExpectType ResponseDefinition[] | undefined
 itemDef.events; // $ExpectType EventDefinition[] | undefined
 
 // Item Tests
@@ -364,7 +361,7 @@ pmCollection.Item.isItem(item); // $ExpectType boolean
 // ProxyConfigDefinition Tests
 
 const proxyConfDef: pmCollection.ProxyConfigDefinition = {};
-proxyConfDef.match; // $ExpectType string | { pattern: string; } | UrlMatchPattern | undefined
+proxyConfDef.match; // $ExpectType string | { pattern: string; } | UrlMatchPattern | undefined || string | UrlMatchPattern | { pattern: string; } | undefined
 proxyConfDef.host; // $ExpectType string | undefined
 proxyConfDef.port; // $ExpectType number | undefined
 proxyConfDef.tunnel; // $ExpectType boolean | undefined
@@ -396,7 +393,7 @@ pmCollection.ProxyConfig.isProxyConfig(proxyConf); // $ExpectType boolean
 const proxyConfigList = new pmCollection.ProxyConfigList(null, [proxyConf]);
 
 proxyConfigList.resolve("string"); // $ExpectType ProxyConfig
-proxyConfigList.resolve(new pmCollection.Url({host: "string", path: "string"})); // $ExpectType ProxyConfig
+proxyConfigList.resolve(new pmCollection.Url({ host: "string", path: "string" })); // $ExpectType ProxyConfig
 
 pmCollection.ProxyConfigList.isProxyConfigList(proxyConfigList); // $ExpectType boolean
 
@@ -404,7 +401,7 @@ pmCollection.ProxyConfigList.isProxyConfigList(proxyConfigList); // $ExpectType 
 
 const qpDef: pmCollection.QueryParamDefinition = {
     key: null,
-    value: null
+    value: null,
 };
 qpDef.key; // $ExpectType string | null
 qpDef.value; // $ExpectType string | null
@@ -422,8 +419,8 @@ qp.system; // $ExpectType boolean | undefined
 qp.toString(); // $ExpectType string
 
 qp.update("string"); // $ExpectType void
-qp.update({key: "string"}); // $ExpectType void
-qp.update({key: "string", value: "string"}); // $ExpectType void
+qp.update({ key: "string" }); // $ExpectType void
+qp.update({ key: "string", value: "string" }); // $ExpectType void
 
 qp.valueOf(); // $ExpectType string
 
@@ -435,20 +432,20 @@ pmCollection.QueryParam.parse("string"); // $ExpectType QueryParamDefinition[]
 pmCollection.QueryParam.parseSingle("string", 1, ["string"]); // $ExpectType QueryParamDefinition
 
 pmCollection.QueryParam.unparse([qpDef]); // $ExpectType string
-pmCollection.QueryParam.unparse([qpDef], {encode: true}); // $ExpectType string
-pmCollection.QueryParam.unparse([qpDef], {encode: true, ignoreDisabled: true}); // $ExpectType string
+pmCollection.QueryParam.unparse([qpDef], { encode: true }); // $ExpectType string
+pmCollection.QueryParam.unparse([qpDef], { encode: true, ignoreDisabled: true }); // $ExpectType string
 
 pmCollection.QueryParam.unparseSingle(qpDef, true); // $ExpectType string
 
 // RequestDefinition Tests
 
 const reqDef: pmCollection.RequestDefinition = {
-    url: "string"
+    url: "string",
 };
-reqDef.url; // $ExpectType string | Url
+reqDef.url; // $ExpectType string | UrlDefinition
 reqDef.method; // $ExpectType string | undefined
-reqDef.header; // $ExpectType HeaderDefinition | undefined
-reqDef.body; // $ExpectType RequestBody | undefined
+reqDef.header; // $ExpectType HeaderDefinition[] | undefined
+reqDef.body; // $ExpectType RequestBodyDefinition | undefined
 reqDef.auth; // $ExpectType RequestAuthDefinition | undefined
 reqDef.proxy; // $ExpectType ProxyConfigDefinition | undefined
 reqDef.certificate; // $ExpectType CertificateDefinition | undefined
@@ -473,9 +470,9 @@ req.authorizeUsing(null); // $ExpectType void
 req.authorizeUsing("string", new pmCollection.VariableList(p, []));
 
 req.getHeaders(); // $ExpectType any
-req.getHeaders({ignoreCase: true}); // $ExpectType any
-req.getHeaders({enabled: true}); // $ExpectType any
-req.getHeaders({ignoreCase: true, enabled: true}); // $ExpectType any
+req.getHeaders({ ignoreCase: true }); // $ExpectType any
+req.getHeaders({ enabled: true }); // $ExpectType any
+req.getHeaders({ ignoreCase: true, enabled: true }); // $ExpectType any
 
 req.forEachHeader((header: pmCollection.Header, context: pmCollection.Request) => {}); // $ExpectType void
 
@@ -484,7 +481,7 @@ req.addHeader(headerDef); // $ExpectType void
 
 req.removeHeader("string"); // $ExpectType void
 req.removeHeader(header); // $ExpectType void
-req.removeHeader(header, {ignoreCase: true}); // $ExpectType void
+req.removeHeader(header, { ignoreCase: true }); // $ExpectType void
 
 req.upsertHeader(headerDef); // $ExpectType void
 
@@ -505,23 +502,23 @@ pmCollection.Request.isRequest(req); // $ExpectType boolean
 // RequestAuthDefinition Tests
 
 const reqAuthDef: pmCollection.RequestAuthDefinition = {};
-reqAuthDef.type; // $ExpectType string | undefined
+reqAuthDef.type; // $ExpectType "basic" | "oauth2" | "hawk" | "noauth" | "oauth1" | "apikey" | "digest" | "bearer" | "awsv4" | "edgegrid" | "ntlm" | undefined || "oauth2" | "hawk" | "noauth" | "basic" | "oauth1" | "apikey" | "digest" | "bearer" | "awsv4" | "edgegrid" | "ntlm" | undefined
 
 // RequestAuth Tests
 
 let reqAuth = new pmCollection.RequestAuth(reqAuthDef);
 reqAuth = new pmCollection.RequestAuth(reqAuthDef, collection);
 
-reqAuth.type; // $ExpectType string
+reqAuth.type; // $ExpectType NonNullable<"basic" | "oauth2" | "hawk" | "noauth" | "oauth1" | "apikey" | "digest" | "bearer" | "awsv4" | "edgegrid" | "ntlm" | undefined> || NonNullable<"oauth2" | "hawk" | "noauth" | "basic" | "oauth1" | "apikey" | "digest" | "bearer" | "awsv4" | "edgegrid" | "ntlm" | undefined> || "oauth2" | "hawk" | "noauth" | "basic" | "oauth1" | "apikey" | "digest" | "bearer" | "awsv4" | "edgegrid" | "ntlm"
 
 reqAuth.update(new pmCollection.VariableList(collection, [])); // $ExpectType void
-reqAuth.update({key: "string", value: "string"}); // $ExpectType void
-reqAuth.update([{key: "string", value: "string"}]); // $ExpectType void
-reqAuth.update([{key: "string", value: "string"}], "string"); // $ExpectType void
+reqAuth.update({ key: "string", value: "string" }); // $ExpectType void
+reqAuth.update([{ key: "string", value: "string" }]); // $ExpectType void
+reqAuth.update([{ key: "string", value: "string" }], "string"); // $ExpectType void
 
 reqAuth.use("string", new pmCollection.VariableList(collection, [])); // $ExpectType void
-reqAuth.use("string", {key: "string", value: "string"}); // $ExpectType void
-reqAuth.use("string", [{key: "string", value: "string"}]); // $ExpectType void
+reqAuth.use("string", { key: "string", value: "string" }); // $ExpectType void
+reqAuth.use("string", [{ key: "string", value: "string" }]); // $ExpectType void
 
 reqAuth.current(); // $ExpectType any
 
@@ -533,7 +530,7 @@ pmCollection.RequestAuth.isValidType(reqAuth); // $ExpectType boolean
 
 // RequestBodyDefinition Tests
 
-const reqBodyDef: pmCollection.RequestBodyDefinition = {mode: 'raw'};
+const reqBodyDef: pmCollection.RequestBodyDefinition = { mode: "raw" };
 reqBodyDef.mode; // $ExpectType string
 reqBodyDef.raw; // $ExpectType string | undefined
 reqBodyDef.urlencoded; // $ExpectType string | QueryParamDefinition[] | PropertyList<QueryParam> | undefined
@@ -562,12 +559,12 @@ pmCollection.RequestBody.MODES.urlencoded; // $ExpectType string
 pmCollection.RequestBody.MODES.file; // $ExpectType string
 
 // ResponseDefinition Tests
-const respDef: pmCollection.ResponseDefinition = {code: 200, responseTime: 1};
+const respDef: pmCollection.ResponseDefinition = { code: 200, responseTime: 1 };
 respDef.code; // $ExpectType number
 respDef.header; // $ExpectType HeaderDefinition[] | undefined
 respDef.cookie; // $ExpectType CookieDefinition[] | undefined
 respDef.body; // $ExpectType string | undefined
-respDef.stream; // $ExpectType Buffer | Uint8Array | undefined
+respDef.stream; // $ExpectType Buffer | Uint8Array | undefined || Uint8Array | Buffer | undefined || Buffer<ArrayBufferLike> | Uint8Array<ArrayBufferLike> | undefined
 respDef.responseTime; // $ExpectType number
 respDef.originalRequest; // $ExpectType RequestDefinition | undefined
 
@@ -580,7 +577,7 @@ response.headers; // $ExpectType HeaderList
 response.originalRequest; // $ExpectType Request | undefined
 response.responseTime; // $ExpectType number
 response.status; // $ExpectType string
-response.stream; // $ExpectType Buffer | Uint8Array | undefined
+response.stream; // $ExpectType Buffer | Uint8Array | undefined || Uint8Array | Buffer | undefined || Buffer<ArrayBufferLike> | Uint8Array<ArrayBufferLike> | undefined
 response.responseSize; // $ExpectType number | undefined
 
 response.update(respDef); // $ExpectType void
@@ -601,7 +598,7 @@ response.size(); // $ExpectType number
 
 response.encoding(); // $ExpectType { format: string; source: string; }
 
-pmCollection.Response.createFromNode({body: "string", statusCode: 200, elapsedTime: 1}, []); // $ExpectType Response
+pmCollection.Response.createFromNode({ body: "string", statusCode: 200, elapsedTime: 1 }, []); // $ExpectType Response
 
 pmCollection.Response.isResponse(response); // $ExpectType boolean
 
@@ -635,17 +632,17 @@ pmCollection.Script.isScript(script); // $ExpectType boolean
 
 let urlDef: pmCollection.UrlDefinition = {
     host: "string",
-    path: "string"
+    path: "string",
 };
 urlDef = {
     host: ["string"],
-    path: ["string"]
+    path: ["string"],
 };
 
 urlDef.auth; // $ExpectType { user: string; password: string; } | undefined
 urlDef.hash; // $ExpectType string | undefined
 urlDef.host; // $ExpectType string | string[] | undefined
-urlDef.path; // $ExpectType string | string[]
+urlDef.path; // $ExpectType string | string[] | undefined
 urlDef.port; // $ExpectType string | undefined
 urlDef.query; // $ExpectType string | QueryParamDefinition[] | PropertyList<QueryParam> | undefined
 urlDef.variable; // $ExpectType VariableDefinition[] | undefined
@@ -659,7 +656,7 @@ url = new pmCollection.Url("string");
 url.auth; // $ExpectType { user: string; password: string; } | undefined
 url.hash; // $ExpectType string | undefined
 url.host; // $ExpectType string[] | undefined
-url.path; // $ExpectType string[]
+url.path; // $ExpectType string[] | undefined
 url.port; // $ExpectType string | undefined
 url.protocol; // $ExpectType string | undefined
 url.query; // $ExpectType PropertyList<QueryParam>
@@ -679,19 +676,19 @@ url.toString(); // $ExpectType string
 url.toString(false); // $ExpectType string
 
 url.getPath(); // $ExpectType string
-url.getPath({unresolved: true}); // $ExpectType string
+url.getPath({ unresolved: true }); // $ExpectType string
 
 url.getQueryString(); // $ExpectType string
-url.getQueryString({encode: true}); // $ExpectType string
-url.getQueryString({ignoredDisabled: true}); // $ExpectType string
-url.getQueryString({encode: true, ignoredDisabled: true}); // $ExpectType string
+url.getQueryString({ encode: true }); // $ExpectType string
+url.getQueryString({ ignoredDisabled: true }); // $ExpectType string
+url.getQueryString({ encode: true, ignoredDisabled: true }); // $ExpectType string
 
 url.getPathWithQuery(); // $ExpectType string
 
 url.getHost(); // $ExpectType string
 
 url.getRemote(); // $ExpectType string
-url.getRemote({forcePort: true}); // $ExpectType string
+url.getRemote({ forcePort: true }); // $ExpectType string
 
 url.getOAuth1BaseUrl(); // $ExpectType string
 
@@ -701,11 +698,11 @@ pmCollection.Url.isUrl(url); // $ExpectType boolean
 
 // UrlMatchPattern Tests
 let urlMatch = new pmCollection.UrlMatchPattern("string");
-urlMatch = new pmCollection.UrlMatchPattern({pattern: "string"});
+urlMatch = new pmCollection.UrlMatchPattern({ pattern: "string" });
 
 urlMatch.pattern; // $ExpectType string | undefined
 
-urlMatch.update({pattern: "string"}); // $ExpectType void
+urlMatch.update({ pattern: "string" }); // $ExpectType void
 
 urlMatch.createMatchPattern(); // $ExpectType { protocols: string[]; host: string; path: RegExp; } | undefined
 
@@ -717,11 +714,11 @@ urlMatch.getProtocols(); // $ExpectType string[]
 
 urlMatch.testHost("string"); // $ExpectType boolean
 
-urlMatch.matchAnyHost({protocols: [], host: "string", path: new RegExp('')}); // $ExpectType boolean
+urlMatch.matchAnyHost({ protocols: [], host: "string", path: new RegExp("") }); // $ExpectType boolean
 
-urlMatch.matchSuffixHostPattern({protocols: [], host: "string", path: new RegExp('')}, "string"); // $ExpectType boolean
+urlMatch.matchSuffixHostPattern({ protocols: [], host: "string", path: new RegExp("") }, "string"); // $ExpectType boolean
 
-urlMatch.matchAbsoluteHostPattern({protocols: [], host: "string", path: new RegExp('')}, "string"); // $ExpectType boolean
+urlMatch.matchAbsoluteHostPattern({ protocols: [], host: "string", path: new RegExp("") }, "string"); // $ExpectType boolean
 
 urlMatch.testPath("string"); // $ExpectType boolean
 
@@ -748,7 +745,7 @@ varDef.key; // $ExpectType string | undefined
 
 // Variable Tests
 let variable = new pmCollection.Variable(varDef);
-variable = new pmCollection.Variable({key: varDef});
+variable = new pmCollection.Variable({ key: varDef });
 
 variable.key; // $ExpectType string | undefined
 variable.type; // $ExpectType string
@@ -796,7 +793,7 @@ vList.syncFromObject({}, false); // $ExpectType { created: string[]; updated: st
 vList.syncFromObject({}, false, false); // $ExpectType { created: string[]; updated: string[]; deleted: string[]; } | undefined
 
 vList.syncToObject(); // $ExpectType { [key: string]: VariableDefinition; }
-vList.syncToObject({key: varDef}); // $ExpectType { [key: string]: VariableDefinition; }
+vList.syncToObject({ key: varDef }); // $ExpectType { [key: string]: VariableDefinition; }
 
 pmCollection.VariableList.isVariableList(vList); // $ExpectType boolean
 
@@ -831,7 +828,7 @@ varScope.syncVariablesFrom({}, false); // $ExpectType { created: string[]; updat
 varScope.syncVariablesFrom({}, false, false); // $ExpectType { created: string[]; updated: string[]; deleted: string[]; } | undefined
 
 varScope.syncVariablesTo(); // $ExpectType { [key: string]: VariableDefinition; }
-varScope.syncVariablesTo({key: varDef}); // $ExpectType { [key: string]: VariableDefinition; }
+varScope.syncVariablesTo({ key: varDef }); // $ExpectType { [key: string]: VariableDefinition; }
 
 varScope.toJSON(); // $ExpectType any
 

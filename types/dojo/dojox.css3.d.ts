@@ -1,9 +1,3 @@
-// Type definitions for Dojo v1.9
-// Project: http://dojotoolkit.org
-// Definitions by: Michael Van Sickle <https://github.com/vansimke>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-
 declare namespace dojox {
 
 
@@ -187,8 +181,8 @@ declare namespace dojox {
              */
             expand(args: Object): any;
             /**
-             * Returns an animation that flips an element around his y axis.
-             * Flips an element around his y axis. The default is a 360deg flip
+             * Returns an animation that flips an element around its y axis.
+             * Flips an element around its y axis. The default is a 360deg flip
              * but it is possible to run a partial flip using args.whichAnims.
              *
              * @param args
